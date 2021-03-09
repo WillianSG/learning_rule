@@ -39,7 +39,7 @@ exp_name = '_param_variation'
 
 # varying_params = ['wmax', 'c', 'tau_pre', 'tau_post', 'rho_neg', 'rho_neg2', 'thr_post', 'thr_pre']
 
-varying_params = ['wmax']
+varying_params = ['none', 'wmax', 'all']
 
 simulation_folder = os.path.join(parent_dir, 'network_results')
 

@@ -658,8 +658,10 @@ class AttractorNetwork:
 		else:
 			pass
 
-	def vary_param_per_synapse(self, parameter = 'wmax'):		
-		if parameter == 'wmax':
+	def vary_param_per_synapse(self, parameter = 'wmax'):
+		if parameter == 'none':
+			pass
+		elif parameter == 'wmax':
 			for pre_id in range(0, len(self.E)):
 				for post_id in range(0, len(self.E)):
 					if isnan(self.M_ee[pre_id][post_id]) == False:
@@ -723,6 +725,50 @@ class AttractorNetwork:
 						s = np.random.normal(self.thr_pre_tunned, sigma, 1)
 
 						self.thr_pre = round(s[0], 4)*-1
+		elif parameter == 'all':
+			for pre_id in range(0, len(self.E)):
+				for post_id in range(0, len(self.E)):
+					if isnan(self.M_ee[pre_id][post_id]) == False:
+						# altering wmax
+						sigma = (self.w_e_e_max_tunned*15)/100
+						s = np.random.normal(self.w_e_e_max_tunned, sigma, 1)
+						self.w_e_e_max = round(s[0], 4)*mV
+
+						# altering c
+						sigma = (self.xpre_factor_tunned*15)/100
+						s = np.random.normal(self.xpre_factor_tunned, sigma, 1)
+						self.xpre_factor = round(s[0], 4)
+
+						# altering tau_pre
+						sigma = (self.tau_xpre_tunned*15)/100
+						s = np.random.normal(self.tau_xpre_tunned, sigma, 1)
+						self.tau_xpre = round(s[0], 4)*ms
+
+						# altering tau_post
+						sigma = (self.tau_xpost_tunned*15)/100
+						s = np.random.normal(self.tau_xpost_tunned, sigma, 1)
+						self.tau_xpost = round(s[0], 4)*ms
+
+						# altering rho_neg
+						sigma = (self.rho_neg_tunned*15)/100
+						s = np.random.normal(self.rho_neg_tunned, sigma, 1)
+						self.rho_neg = round(s[0], 4)*-1
+
+						# altering rho_neg2
+						sigma = (self.rho_neg2_tunned*15)/100
+						s = np.random.normal(self.rho_neg2_tunned, sigma, 1)
+						self.rho_neg2 = round(s[0], 4)*-1
+
+						# altering thr_post
+						sigma = (self.thr_post_tunned*15)/100
+						s = np.random.normal(self.thr_post_tunned, sigma, 1)
+						self.thr_post = round(s[0], 4)*-1
+
+						# altering thr_pre
+						sigma = (self.thr_pre_tunned*15)/100
+						s = np.random.normal(self.thr_pre_tunned, sigma, 1)
+						self.thr_pre = round(s[0], 4)*-1
+
 		else:
 			pass
 
