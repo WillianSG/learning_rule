@@ -40,6 +40,10 @@ def varying_params_plot_performance_analysis(
 	count_fading_da = np.zeros(len(varying_params))
 	count_no_da = np.zeros(len(varying_params))
 
+	no_da_hline = 0
+	fading_da_hline = 0
+	da_hline = 0
+
 	for i in np.arange(0, len(delay_activities), 1):
 		dataset_temp = delay_activities[sim_folders_list[i]]
 		flag_pos = simulation_flags[i][0]
@@ -56,9 +60,21 @@ def varying_params_plot_performance_analysis(
 		if dataset_temp.count(True) == 2:
 			count_da[flag_pos] += 1
 
+		param = sim_folders_list[i].split('_')[-1]
+
+		if param == 'none':
+			no_da_hline += count_no_da[flag_pos]
+			fading_da_hline += count_fading_da[flag_pos]
+			da_hline += count_da[flag_pos]
+
 	count_no_da = count_no_da/num_networks
 	count_fading_da = count_fading_da/num_networks
 	count_da = count_da/num_networks
+
+	no_da_hline = no_da_hline/num_networks
+	fading_da_hline = fading_da_hline/num_networks
+	da_hline = da_hline/num_networks
+
 
 	all_counts_concatenated = np.concatenate((count_da, count_fading_da, count_no_da))
 
@@ -98,11 +114,43 @@ def varying_params_plot_performance_analysis(
 		bbox_to_anchor = (1, 1), 
 		ncol = 3)
 
+	plt.axhline(y = no_da_hline, color = 'lightcoral', linestyle = '--')
+	plt.axhline(y = fading_da_hline, color = 'lightblue', linestyle = '--')
+	plt.axhline(y = da_hline, color = 'deepskyblue', linestyle = '--')
+
 	plt.xlabel('Parameters', size = s1, labelpad = 15)
-	plt.ylabel('Achieved percentage', size = s1, labelpad = 15)
+	plt.ylabel('Performance', size = s1, labelpad = 15)
+
+	plt.title('Parameter variability', size = s1, pad = 15) 
+
+	formated_x_labels = []
+
+	for x in varying_params:
+		if x == 'none':
+			formated_x_labels.append(r'$\star$')
+		elif x == 'wmax':
+			formated_x_labels.append(r'$\mathit{w_{max}}$')
+		elif x == 'c':
+			formated_x_labels.append(r'$\mathit{c}$')
+		elif x == 'tau_pre':
+			formated_x_labels.append(r'$\mathit{\tau_{pre}}$')
+		elif x == 'tau_post':
+			formated_x_labels.append(r'$\mathit{\tau_{post}}$')
+		elif x == 'rho_neg':
+			formated_x_labels.append(r'$\mathit{\rho_{neg}}$')
+		elif x == 'rho_neg2':
+			formated_x_labels.append(r'$\mathit{\rho_{neg2}}$')
+		elif x == 'thr_post':
+			formated_x_labels.append(r'$\mathit{\theta_{post}}$')
+		elif x == 'thr_pre':
+			formated_x_labels.append(r'$\mathit{\theta_{pre}}$')
+		elif x == 'all':
+			formated_x_labels.append(r'$\infty$')
+		else:
+			formated_x_labels.append(x)
 
 	plt.yticks(size = s1)
-	plt.xticks([r + bar_width for r in range(len(varying_params))], [str(x) for x in varying_params], size = s1)
+	plt.xticks([r + bar_width for r in range(len(varying_params))], formated_x_labels, size = s1)
 
 	plt.ylim(-max(all_counts_concatenated)/10, max(all_counts_concatenated)*1.1) # settings for find_wmax plot
 
