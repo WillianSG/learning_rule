@@ -111,16 +111,6 @@ def varying_params_attractor_analysis_plot(
 			varying_params = varying_params,
 			delay_activities = delay_activities)
 
-	# Storing data
-
-	# file = os.path.join(path_sim_folder_superior, sim_folders_list[i], sim_id + '_' + exp_type + '_learning_performance_data.pickle')
-
-	# with open(file, 'wb') as f:  
-	# 	pickle.dump((
-	# 		delay_activities,
-	# 		simulation_flags_params,
-	# 		counts), f)
-
 
 
 
