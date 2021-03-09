@@ -36,12 +36,22 @@ from varying_params_attractor_analysis_plot import *
 # 1 - Simulation results folder
 
 exp_name = '_param_variation'
-varying_params = ['wmax', 'c', 'tau_pre', 'tau_post', 'rho_neg', 'rho_neg2', 'thr_post', 'thr_pre']
+
+# varying_params = ['wmax', 'c', 'tau_pre', 'tau_post', 'rho_neg', 'rho_neg2', 'thr_post', 'thr_pre']
+
+varying_params = ['wmax']
 
 simulation_folder = os.path.join(parent_dir, 'network_results')
 
 if not(os.path.isdir(simulation_folder)):
 	os.mkdir(simulation_folder)
+
+results_path = os.path.join(
+	simulation_folder,
+	'param_variation')
+
+if not(os.path.isdir(results_path)):
+	os.mkdir(results_path)
 
 idt = localtime()  
 
@@ -49,17 +59,17 @@ simulation_id = str(idt.tm_year) + '{:02}'.format(idt.tm_mon) + \
 	'{:02}'.format(idt.tm_mday) + '_'+ '{:02}'.format(idt.tm_hour) + '_' + \
 	'{:02}'.format(idt.tm_min) + '_' + '{:02}'.format(idt.tm_sec)
 
-sim_results_folder = os.path.join(simulation_folder, simulation_id + exp_name)
+sim_results_folder = os.path.join(results_path, simulation_id + exp_name)
 
 if not(os.path.isdir(sim_results_folder)):
 	os.mkdir(sim_results_folder)
 
 # 2 - Simulation settings
 
-num_networks = 10
+num_networks = 1
 
-sim_duration = 8*second			# Duration of each simulation
-pulse_duration = 2*second			# Stimulus pulse duration
+sim_duration = 3*second			# Duration of each simulation
+pulse_duration = 2*second		# Stimulus pulse duration
 
 # 3 - Net initialization
 for i in np.arange(0, num_networks, 1):
@@ -122,7 +132,9 @@ for i in np.arange(0, num_networks, 1):
 	n.init_network_modules() # creates/initializes all objects/parameters/mons
 	  
 	# Store initial network state
-	n.net.store(name = 'network_' + simulation_id + '_initial_state', filename = os.path.join(sim_results_folder, 'network_' + simulation_id + '_initial_state'))
+	n.net.store(
+		name = 'network_' + simulation_id + '_initial_state', 
+		filename = os.path.join(sim_results_folder, 'network_' + simulation_id + '_initial_state'))
 
 	# 3.1 - Parameter variation loop
 
@@ -211,22 +223,22 @@ for i in np.arange(0, num_networks, 1):
 			stim_type_i,
 			stim_size_i,
 			stim_freq_i,
-			stim_pulse_duration,#
+			stim_pulse_duration,
 			varying_params,
 			N_input_e, 
 			N_input_i, 
 			N_e, 
 			N_i,
-			len_stim_inds_original_E,#
+			len_stim_inds_original_E,
 			w_e_e_max, 
 			path_w, 
 			path_xpre,
 			path_xpost,
-			s_tpoints_input_e, #
-			s_tpoints_e, #
-			n_inds_input_e, #
+			s_tpoints_input_e,
+			s_tpoints_e,
+			n_inds_input_e,
 			n_inds_e,
-			simulation_flag), f) #
+			simulation_flag), f)
 
 		print('\nSimulation data pickled to ', fn)
 
