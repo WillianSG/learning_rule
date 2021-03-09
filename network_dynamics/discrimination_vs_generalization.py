@@ -146,7 +146,6 @@ print('\n> forming attractor for cue stimulus\n')
 n.save_monitors() 			# monitors for current sim
 
 n.run_network(period = 2) 	# Running simulation
-
 total_simulated_time += n.t_run
 
 # 3.1 saving net trained on cue state =====================================
@@ -241,7 +240,7 @@ for stimulus in range(0, 1):
 			)
 	)
 
-	n.stim_offset_e = 60
+	n.stim_offset_e = 64
 
 	t_run_count_aux += 1
 
@@ -256,7 +255,6 @@ for stimulus in range(0, 1):
 	n.silence_activity()			# silencing current E activity
 
 	n.run_network(report = None)	# simulate
-
 	total_simulated_time += n.t_run # accounting for simulated time
 
 	n.resume_silencing_activity()	# resuming silencing population
@@ -272,9 +270,9 @@ for stimulus in range(0, 1):
 
 	n.change_stimulus_e(stimulus = n.stim_type_e, offset = n.stim_offset_e)
 
-	total_simulated_time += n.t_run
+	# total_simulated_time += n.t_run
 
-	n.total_elapsed_time = total_simulated_time
+	n.total_elapsed_time = total_simulated_time + n.t_run
 
 	n.exp_type = exp_name + '_learning_' + n.stim_type_e
 
@@ -282,9 +280,11 @@ for stimulus in range(0, 1):
 
 	n.save_monitors(opt = 'skewed_' + str(n.stim_offset_e))
 
-	print('\ntotal simulated time: ', n.total_elapsed_time)
-
 	n.run_network(period = 2)
+	# total_simulated_time += n.t_run
+
+	print('\n\ntotal simulated time: ', total_simulated_time)
+	print(spk_mons[0].t[:])
 
 	# 4.3 saving net trained on cue state =================================
 	# n.net.store(
