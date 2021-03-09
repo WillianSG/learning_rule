@@ -42,6 +42,10 @@ class AttractorNetwork:
 
 		self.monitors_dict = dict()
 
+		self.take_synaptic_matrix = False
+
+		self.total_elapsed_time = 0
+
 		# 1 ========== Simulation settings ==========
 
 		self.path_sim_id = ''
@@ -999,14 +1003,18 @@ class AttractorNetwork:
 		if self.stimulus_pulse:
 			@network_operation(clock = self.stimulus_pulse_clock)
 			def stimulus_pulse():
-				if defaultclock.t >= self.stimulus_pulse_duration:
+				if defaultclock.t >= (self.total_elapsed_time - 1*second):
 					self.stim_freq_e = 0*Hz
 					self.set_stimulus_e()
+				# if defaultclock.t >= self.stimulus_pulse_duration:
+				# 	self.stim_freq_e = 0*Hz
+				# 	self.set_stimulus_e()
 		else:
 			@network_operation(clock = self.synaptic_matrix_snap_clock)
 			def stimulus_pulse():
-				self.take_synaptic_matrix_snapshot(
-					time = defaultclock.t/ms)
+				if self.take_synaptic_matrix:
+					self.take_synaptic_matrix_snapshot(
+						time = defaultclock.t/ms)
 
 		# ========== Network object
 		defaultclock.dt = self.dt
