@@ -28,9 +28,7 @@ from varying_params_plot_performance_analysis import *
 from learning_check_for_delay_activity import *
 
 def varying_params_attractor_analysis_plot(
-	path_sim_folder_superior, 
-	sim_id, 
-	exp_type,
+	path_sim_folder_superior,
 	spiketrains_and_histograms = False, 
 	w_matrix_snapshots = False):
 
@@ -47,7 +45,7 @@ def varying_params_attractor_analysis_plot(
 
 	# [?] - y leaving the last file out?
 	for i in np.arange(0, len(sim_folders_list[0:-1]), 1):
-		sim_data = os.path.join(path_sim_folder_superior, sim_folders_list[i], sim_folders_list[i] + '.pickle')
+		sim_data = os.path.join(path_sim_folder_superior, sim_folders_list[i])
 
 		with open(sim_data,'rb') as f:(
 			path_sim, 
@@ -115,13 +113,13 @@ def varying_params_attractor_analysis_plot(
 
 	# Storing data
 
-	file = os.path.join(path_sim_folder_superior, sim_folders_list[i], sim_id + '_' + exp_type + '_learning_performance_data.pickle')
+	# file = os.path.join(path_sim_folder_superior, sim_folders_list[i], sim_id + '_' + exp_type + '_learning_performance_data.pickle')
 
-	with open(file, 'wb') as f:  
-		pickle.dump((
-			delay_activities,
-			simulation_flags_params,
-			counts), f)
+	# with open(file, 'wb') as f:  
+	# 	pickle.dump((
+	# 		delay_activities,
+	# 		simulation_flags_params,
+	# 		counts), f)
 
 
 

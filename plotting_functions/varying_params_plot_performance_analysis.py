@@ -60,21 +60,9 @@ def varying_params_plot_performance_analysis(
 		if dataset_temp.count(True) == 2:
 			count_da[flag_pos] += 1
 
-		param = sim_folders_list[i].split('_')[-1]
-
-		if param == 'none':
-			no_da_hline += count_no_da[flag_pos]
-			fading_da_hline += count_fading_da[flag_pos]
-			da_hline += count_da[flag_pos]
-
 	count_no_da = count_no_da/num_networks
 	count_fading_da = count_fading_da/num_networks
 	count_da = count_da/num_networks
-
-	no_da_hline = no_da_hline/num_networks
-	fading_da_hline = fading_da_hline/num_networks
-	da_hline = da_hline/num_networks
-
 
 	all_counts_concatenated = np.concatenate((count_da, count_fading_da, count_no_da))
 
@@ -114,9 +102,18 @@ def varying_params_plot_performance_analysis(
 		bbox_to_anchor = (1, 1), 
 		ncol = 3)
 
-	plt.axhline(y = no_da_hline, color = 'lightcoral', linestyle = '--')
-	plt.axhline(y = fading_da_hline, color = 'lightblue', linestyle = '--')
-	plt.axhline(y = da_hline, color = 'deepskyblue', linestyle = '--')
+	no_da_hline = count_no_da[0]
+	fading_da_hline = count_fading_da[0]
+	da_hline = count_da[0]
+
+	if no_da_hline > 0:
+		plt.axhline(y = no_da_hline, color = 'lightcoral', linestyle = '--')
+
+	if fading_da_hline > 0:
+		plt.axhline(y = fading_da_hline, color = 'lightblue', linestyle = '--')
+
+	if da_hline > 0:
+		plt.axhline(y = da_hline, color = 'deepskyblue', linestyle = '--')
 
 	plt.xlabel('Parameters', size = s1, labelpad = 15)
 	plt.ylabel('Performance', size = s1, labelpad = 15)
