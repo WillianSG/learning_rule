@@ -65,8 +65,8 @@ if not(os.path.isdir(sim_results_folder)):
 
 # 2 - Simulation settings
 
-num_networks = 30				# Total independ. runs for each param varying
-sim_duration = 6*second			# Duration of each simulation
+num_networks = 50				# Total independ. runs for each param varying
+sim_duration = 5*second			# Duration of each simulation
 pulse_duration = 3*second		# Stimulus pulse duration
 
 # 3 - Net initialization
