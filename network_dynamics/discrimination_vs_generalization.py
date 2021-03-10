@@ -67,7 +67,7 @@ print('\n> initializing network')
 
 total_simulated_time = 0*second
 
-t_run = 2*second
+t_run = 4*second
 stimulus_pulse_clock_dt = 1*second
 
 t_run_silencing = 1*second
@@ -145,7 +145,7 @@ print('\n> forming attractor for cue stimulus\n')
 
 n.save_monitors() 			# monitors for current sim
 
-n.run_network(period = 2) 	# Running simulation
+n.run_network(period = 4) 	# Running simulation
 total_simulated_time += n.t_run
 
 # 3.1 saving net trained on cue state =====================================
@@ -216,7 +216,6 @@ control_plot_learned_attractor(
 
 
 # getting active ids after learning stimulus
-
 [cue_e_ids, cue_e_tpoints] = extract_trial_data(
 	t_start = total_simulated_time - 0.5*second, 
 	t_end = total_simulated_time, 
@@ -240,7 +239,8 @@ for stimulus in range(0, 1):
 			)
 	)
 
-	n.stim_offset_e = 64
+	# n.stim_offset_e = stim_offset
+	n.stim_offset_e = 80
 
 	t_run_count_aux += 1
 
@@ -270,8 +270,6 @@ for stimulus in range(0, 1):
 
 	n.change_stimulus_e(stimulus = n.stim_type_e, offset = n.stim_offset_e)
 
-	# total_simulated_time += n.t_run
-
 	n.total_elapsed_time = total_simulated_time + n.t_run
 
 	n.exp_type = exp_name + '_learning_' + n.stim_type_e
@@ -280,20 +278,7 @@ for stimulus in range(0, 1):
 
 	n.save_monitors(opt = 'skewed_' + str(n.stim_offset_e))
 
-	n.run_network(period = 2)
-	# total_simulated_time += n.t_run
-
-	print('\n\ntotal simulated time: ', total_simulated_time)
-	print(spk_mons[0].t[:])
-
-	# 4.3 saving net trained on cue state =================================
-	# n.net.store(
-	# 	name = 'trained_' + n.stim_type_e + '_' + str(n.stim_offset_e) + '_net_' + simulation_id, 
-	# 	filename = os.path.join(
-	# 		simulation_results_path,
-	# 		'trained_' + n.stim_type_e + '_' + str(n.stim_offset_e) + '_net_' + simulation_id
-	# 		)
-	# )
+	n.run_network(period = 4)
 
 	# 4.4 - pickling and plotting =========================================
 
@@ -358,20 +343,25 @@ for stimulus in range(0, 1):
 		name = '_trained.pickle',
 		opt = str(n.stim_offset_e))
 
-	# [followup_stim_e_ids, followup_stim_e_tpoints] = extract_trial_data(
-	# 	t_start = total_simulated_time - 0.5*second, 
-	# 	t_end = total_simulated_time, 
-	# 	inds = n_inds_e, 
-	# 	tpoints = s_tpoints_e)
+	s_tpoints_e = spk_mons[2].t[:]
+	[followup_stim_e_ids, followup_stim_e_tpoints] = extract_trial_data(
+		t_start = total_simulated_time - 0.5*second, 
+		t_end = total_simulated_time, 
+		inds = n_inds_e, 
+		tpoints = s_tpoints_e)
 
-	# followup_stim_e_ids_no_duplicates = set(followup_stim_e_ids)
+	followup_stim_e_ids_no_duplicates = set(followup_stim_e_ids)
 
-	# ids_overlap = cue_e_ids_no_duplicates.intersection(followup_stim_e_ids_no_duplicates)
+	ids_overlap = cue_e_ids_no_duplicates.intersection(followup_stim_e_ids_no_duplicates)
 
 
-	# overlapping = list(ids_overlap)
+	overlapping_as_list = list(ids_overlap)
 
-	# print('overlapping ids: ', overlapping)
+	print('\n=========================================')
+	print('cue: ', list(cue_e_ids_no_duplicates))
+	print('next: ', list(followup_stim_e_ids_no_duplicates))
+
+	print('\noverlapping ids: ', overlapping_as_list)
 
 	stim_offset -= 1
 

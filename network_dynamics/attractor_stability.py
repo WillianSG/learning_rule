@@ -75,8 +75,8 @@ print('\n> initializing network')
 
 total_simulated_time = 0*second
 
-t_run = 4*second
-stimulus_pulse_clock_dt = 4*second
+t_run = 5*second
+stimulus_pulse_clock_dt = 1*second
 
 t_run_silencing = 1*second
 stimulus_pulse_clock_dt_silencing = 1*second
@@ -91,7 +91,7 @@ n.t_run = t_run 		# simulation time
 n.id = simulation_id
 
 # variables for @network_operation function for stimulus change
-n.stimulus_pulse = False
+n.stimulus_pulse = True
 n.stimulus_pulse_clock_dt = stimulus_pulse_clock_dt # zero seconds not possible
 n.stimulus_pulse_duration = n.stimulus_pulse_clock_dt # Set pulse duration
 
@@ -151,7 +151,9 @@ print('\n> forming attractor for cue stimulus\n')
 
 n.save_monitors() 			# monitors for current sim
 
-n.run_network(period = 2) 	# Running simulation
+
+n.total_elapsed_time += n.t_run
+n.run_network(period = 4) 	# Running simulation
 
 total_simulated_time += n.t_run
 
@@ -223,11 +225,19 @@ control_plot_learned_attractor(
 
 # 4 ====================== learning followup stimuli ======================
 # stimuli = ['square', 'circle', 'triangle', 'cross']
-stimuli = ['flat_to_E_fixed_size', 'flat_to_E_fixed_size', 'flat_to_E_fixed_size', 'flat_to_E_fixed_size', 'flat_to_E_fixed_size']
+stimuli = ['flat_to_E_fixed_size']
 
 t_run_count_aux = 0
 
 for stimulus in stimuli:
+	n.net.restore(
+		name = 'trained_cue_net_' + simulation_id, 
+		filename = os.path.join(
+			simulation_results_path,
+			'trained_cue_net_' + simulation_id
+			)
+	)
+
 	t_run_count_aux += 1
 	# 4.1 silencing current E activity ====================================
 	print('\n -> silencing activity\n')
@@ -238,9 +248,11 @@ for stimulus in stimuli:
 	n.stimulus_pulse_duration = n.stimulus_pulse_clock_dt
 
 	n.silence_activity()			# silencing current E activity
+
 	n.run_network(report = None)	# simulate
 
 	total_simulated_time += n.t_run # accounting for simulated time
+	n.total_elapsed_time = total_simulated_time
 
 	n.resume_silencing_activity()	# resuming silencing population
 
@@ -251,7 +263,7 @@ for stimulus in stimuli:
 	n.stimulus_pulse_clock_dt = stimulus_pulse_clock_dt
 	n.stimulus_pulse_duration = n.stimulus_pulse_clock_dt
 
-	n.change_stimulus_e(stimulus = stimulus, offset = n.stim_offset_e + 40)
+	n.change_stimulus_e(stimulus = stimulus, offset = n.stim_offset_e + 45)
 	# n.change_stimulus_e(stimulus = stimulus)
 
 	n.exp_type = exp_name + '_learning_' + n.stim_type_e
@@ -261,16 +273,17 @@ for stimulus in stimuli:
 	n.save_monitors(opt = 'skewed_' + str(n.stim_offset_e))
 	# n.save_monitors()
 
-	n.run_network(period = 2)
+	n.total_elapsed_time = total_simulated_time + n.t_run
+	n.run_network(period = 4)
 
 	# 4.3 saving net trained on cue state =================================
-	n.net.store(
-		name = 'trained_' + n.stim_type_e + '_' + str(n.stim_offset_e) + '_net_' + simulation_id, 
-		filename = os.path.join(
-			simulation_results_path,
-			'trained_' + n.stim_type_e + '_' + str(n.stim_offset_e) + '_net_' + simulation_id
-			)
-	)
+	# n.net.store(
+	# 	name = 'trained_' + n.stim_type_e + '_' + str(n.stim_offset_e) + '_net_' + simulation_id, 
+	# 	filename = os.path.join(
+	# 		simulation_results_path,
+	# 		'trained_' + n.stim_type_e + '_' + str(n.stim_offset_e) + '_net_' + simulation_id
+	# 		)
+	# )
 
 	# 4.4 - pickling and plotting =========================================
 
