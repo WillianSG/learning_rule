@@ -72,8 +72,8 @@ int_meth_syn = 'euler' # Synaptic integration method
 
 # 1.1 ========== Rule's parameters
 
-plasticity_rule = 'LR1' # 'none', 'LR1', 'LR2'
-parameter_set = '1.1' # '2.1'
+plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2', 'LR3'
+parameter_set = '2.1' # '2.1'
 bistability = False
 
 [tau_xpre,
@@ -85,7 +85,9 @@ bistability = False
 	rho_init,
 	tau_rho,
 	thr_post,
+	thr_post_h,
 	thr_pre,
+	thr_pre_h,
 	thr_b_rho,
 	rho_min,
 	rho_max,
@@ -117,8 +119,8 @@ else:
 
 # 3 ========== Brian2's neuron objects
 
-input_pre = np.array([10, 60, 165, 255])/1000
-input_post = np.array([25, 65, 140, 250])/1000
+input_pre = np.array([10, 60, 165, 252])/1000
+input_post = np.array([25, 62, 140, 250])/1000
 
 Pre, Post = load_neurons(
 	N_Pre, N_Post, neuron_type,
@@ -222,6 +224,21 @@ if plasticity_rule == 'LR2':
 		bbox_to_anchor = (1, 1.3), 
 		ncol = 3)
 
+if plasticity_rule == 'LR3':
+	ax3.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, 
+		y = thr_pre, 
+		label = '$\\theta_{pre}^{l}$')
+
+	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
+		ncol = 3)
+
+	ax3.axhline(linestyle = 'dotted', color = 'black', lw = lwdth/2, 
+		y = thr_pre_h, 
+		label = '$\\theta_{pre}^{h}$')
+
+	plt.legend(loc = 'upper left', prop = {'size':s1-10}, 
+		ncol = 3)
+
 plt.ylabel('$x_{Pre}$ \n(a.u.)', size = s1, color = 'black',
 	horizontalalignment = 'center', 
 	labelpad = 20)
@@ -245,13 +262,28 @@ plt.yticks(size = s1)
 
 ax4 = fig.add_subplot(gs[5, 0])
 ax4.plot(StateMon.t/ms, StateMon.xpost[0], color = 'red', linewidth = lwdth) 
-ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_post,
-	label = '$\\theta_{post}$')
 ax4.set_xticklabels([])
 
-plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
-	bbox_to_anchor = (1, 1.3), 
-	ncol = 3)
+if plasticity_rule == 'LR1' or plasticity_rule == 'LR2':
+	ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_post,
+	label = '$\\theta_{post}$')
+
+	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
+		bbox_to_anchor = (1, 1.3), 
+		ncol = 3)
+
+elif plasticity_rule == 'LR3':
+	ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_post,
+	label = '$\\theta_{post}^{l}$')
+
+	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
+		ncol = 3)
+
+	ax4.axhline(linestyle = 'dotted', color = 'black', lw = lwdth/2, y = thr_post_h,
+	label = '$\\theta_{post}^{h}$')
+
+	plt.legend(loc = 'upper left', prop = {'size':s1-10}, 
+		ncol = 3)
 
 plt.ylabel('$x_{Post}$ \n(a.u.) ', size = s1, color = 'black', 
 	horizontalalignment = 'center', 
