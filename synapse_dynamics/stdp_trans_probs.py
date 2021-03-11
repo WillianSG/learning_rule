@@ -38,13 +38,13 @@ from run_single_synap import *
 sim_rep = 10
 
 dt_resolution = 0.0001		# 0.1ms | step of simulation time step resolution
-t_run = 1					# simulation time (seconds)
+t_run = 0.6					# simulation time (seconds)
 
 N_Pre = 1
 N_Post = 1
 
-plasticity_rule = 'LR2'			# 'none', 'LR1', 'LR2'
-parameter_set = '2.2'			# '2.1', '2.2', '2.4'
+plasticity_rule = 'LR3'			# 'none', 'LR1', 'LR2'
+parameter_set = '2.1'			# '2.1', '2.2', '2.4'
 bistability = True
 
 w_init = float(sys.argv[1])		# '0.0' to test LTP, '1.0' to test LTD
@@ -56,9 +56,9 @@ exp_type = 'stdp_trans_probabi_'
 
 # Range of pre- and postsynaptic frequencies (Hz)
 min_freq = 0
-max_freq = 100
+max_freq = 180
 
-step = 5
+step = 10
 
 # == 1.1 - neurons' firing rates
 
@@ -83,7 +83,9 @@ start_scope()
 	rho_init,
 	tau_rho,
 	thr_post,
+	thr_post_h,
 	thr_pre,
+	thr_pre_h,
 	thr_b_rho,
 	rho_min,
 	rho_max,
@@ -132,7 +134,9 @@ for x in range(0, len(f_pre)):
 						rho_init = rho_init,
 						tau_rho = tau_rho,
 						thr_post = thr_post,
+						thr_post_h = thr_post_h,
 						thr_pre = thr_pre,
+						thr_pre_h = thr_pre_h,
 						thr_b_rho = thr_b_rho,
 						rho_min = rho_min,
 						rho_max = rho_max,
@@ -158,7 +162,7 @@ fn = exp_type + '_' + \
 	str(w_init) + '_' + \
 	parameter_set + '_' + \
 	str(bistability) + '_' + \
-	'_last_rho.pickle'
+	'_2_last_rho.pickle'
 
 fnopen = os.path.join(os.getcwd(), fn)
 
