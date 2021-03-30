@@ -30,7 +30,8 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 		model_E_E_plastic = ''' 
 		w : volt
 		dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
-		dxpost/dt = -xpost / tau_xpost : 1 (clock-driven) 
+		dxpost/dt = -xpost / tau_xpost : 1 (clock-driven)
+		dxstop/dt = -xstop / tau_xstop : 1 (clock-driven) 
 		drho/dt = (int(rho > thr_b_rho)*int(rho < rho_max)  * alpha -
 		int(rho <= thr_b_rho) * beta * int(rho > rho_min)) / tau_rho 
 			: 1  (clock-driven)'''
@@ -71,6 +72,7 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 	rho_dep2: rho_neg2
 	"""
 	post_E_E_LR3 = '''xpost = xpost + xpost_jump
+		xstop = xstop + xstop_jump
 		rho = clip((rho + xpre * xpre_factor + rho_neg2 *int(xpre < thr_pre) * int(xpre > 0))*int(xstop > thr_up_l)*int(xstop < thr_up_h), rho_min, rho_max)
 		w = rho*w_max'''
 
