@@ -331,7 +331,7 @@ ax5.axhline(linestyle = 'dashed', color = 'dimgrey', lw = lwdth/2,
 ax5.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, 
 	y = rho_max,
 	label = 'UP state')
-ax5.axhline(linestyle = 'solid', color = 'black', lw = lwdth/2, 
+ax5.axhline(linestyle = 'dashed', color = 'black', lw = lwdth/2, 
 	y = rho_min, 
 	label = 'DOWN state')
 ax5.plot(StateMon.t/ms, StateMon.rho[0], color = 'k', linewidth = lwdth)

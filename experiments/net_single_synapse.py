@@ -72,8 +72,8 @@ int_meth_syn = 'euler' # Synaptic integration method
 
 # 1.1 ========== Rule's parameters
 
-plasticity_rule = 'LR1' # 'none', 'LR1', 'LR2'
-parameter_set = '1.1' # '2.1'
+plasticity_rule = 'LR2' # 'none', 'LR1', 'LR2'
+parameter_set = '2.4' # '2.1'
 bistability = False
 
 [tau_xpre,
@@ -92,7 +92,13 @@ bistability = False
 	alpha,
 	beta,
 	xpre_factor,
-	w_max] = load_rule_params(plasticity_rule, parameter_set)
+	w_max,
+	tau_xstop,
+	xstop_jump,
+	thr_up_h,
+	thr_up_l,
+	thr_down_h,
+	thr_down_l] = load_rule_params(plasticity_rule, parameter_set)
 
 w_init = w_max*rho_init
 
