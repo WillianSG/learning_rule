@@ -87,6 +87,7 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			thr_pre = 0.5
 			rho_neg = -0.008
 			rho_neg2 = rho_neg*10
+			tau_stop = 66*ms
 			xstop_jump = 1
 			thr_up_h = 1.0
 			thr_up_l = 0.4
