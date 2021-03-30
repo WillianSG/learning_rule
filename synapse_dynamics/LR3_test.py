@@ -93,7 +93,7 @@ bistability = True
 	beta,
 	xpre_factor,
 	w_max,
-	tau_stop,
+	tau_xstop,
 	xstop_jump,
 	thr_up_h,
 	thr_up_l,
@@ -174,8 +174,10 @@ s1 = 30
 
 mpl.rcParams['axes.linewidth'] = 1.5
 
-fig = plt.figure(figsize = (15, 22))
-gs = gridspec.GridSpec(11, 1, height_ratios = [2, 2, 1, 4, 1,4, 1 , 4, 1, 4, 1])
+# Width, height in inches.
+fig = plt.figure(figsize = (15, 26))
+
+gs = gridspec.GridSpec(12, 1, height_ratios = [2, 2, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4])
 
 # 5.1 ==== Pre neuron spike activity
 
@@ -401,4 +403,4 @@ plt.savefig(os.path.join(results_path, plot_name),
 
 # END.
 
-print('\nnet_single_synapse.py - END.\n')
+print('\nLR3_test.py - END.\n')
