@@ -84,7 +84,7 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 	"""
 	rho_update_pre_lr3 = {'rho_update_pre':'''rho = clip((rho + rho_neg *int(xpost > thr_post))*int(xstop > thr_down_l)*int(xstop < thr_down_h), rho_min, rho_max)'''}
 
-	# - On pre spike (both LR1/LR2) 
+	# - On pre spike (both LR1/LR2)
 	"""
 	xpre_jump: A_pre
 	rho_dep: rho_neg
