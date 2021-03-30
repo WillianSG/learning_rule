@@ -40,7 +40,8 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 		w : volt
 		rho : 1
 		dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
-		dxpost/dt = -xpost / tau_xpost : 1 (clock-driven) '''
+		dxpost/dt = -xpost / tau_xpost : 1 (clock-driven)
+		dxstop/dt = -xstop / tau_xstop : 1 (clock-driven) '''
 	else:
 		print ('Bistabilty setting unclear')
 
