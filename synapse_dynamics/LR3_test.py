@@ -74,7 +74,7 @@ int_meth_syn = 'euler' # Synaptic integration method
 
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
 parameter_set = '2.4' # '2.1'
-bistability = True
+bistability = False
 
 [tau_xpre,
 	tau_xpost,
@@ -221,7 +221,7 @@ ax3 = fig.add_subplot(gs[3, 0])
 ax3.plot(StateMon.t/ms, StateMon.xpre[0], color = 'blue', linewidth = lwdth)
 
 # Adapted learning rule has threshold on pre- trace as well
-if plasticity_rule == 'LR2':
+if plasticity_rule == 'LR2' or plasticity_rule == 'LR3':
 	ax3.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, 
 		y = thr_pre, 
 		label = '$\\theta_{pre}$')
@@ -283,25 +283,25 @@ plt.yticks(size = s1)
 # 5.5* ==== Stop-learning calcium trace
 
 ax4 = fig.add_subplot(gs[7, 0])
-ax4.plot(StateMon.t/ms, StateMon.xstop[0], color = 'red', linewidth = lwdth) 
+ax4.plot(StateMon.t/ms, StateMon.xstop[0], color = 'tab:blue', linewidth = lwdth) 
 
-ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_up_h,
+ax4.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, y = thr_up_h,
 	label = '$\\theta_{up}^{h}$')
 
-ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_up_l,
+ax4.axhline(linestyle = 'dotted', color = 'grey', lw = lwdth/2, y = thr_up_l,
 	label = '$\\theta_{up}^{l}$')
 
 ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_down_h,
 	label = '$\\theta_{down}^{h}$')
 
-ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_down_l,
+ax4.axhline(linestyle = 'dashdot', color = 'grey', lw = lwdth/2, y = thr_down_l,
 	label = '$\\theta_{down}^{l}$')
 
 ax4.set_xticklabels([])
 
 plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
-	bbox_to_anchor = (1, 1.3), 
-	ncol = 3)
+	bbox_to_anchor = (1, 1.4), 
+	ncol = 4)
 
 plt.ylabel('$x_{stop}$ \n(a.u.) ', size = s1, color = 'black', 
 	horizontalalignment = 'center', 
