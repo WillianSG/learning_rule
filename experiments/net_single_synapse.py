@@ -61,10 +61,10 @@ from load_neurons import *
 
 # 1 ========== Execution parameters ==========
 
-exp_type = 'showcase' # 'showcase', 'rates'
+exp_type = 'rates' # 'showcase', 'rates'
 
 # Simulation run variables
-dt_resolution = 0.1/1000 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
+dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 
 t_run = 0.3 # simulation time (seconds)
 
@@ -72,7 +72,7 @@ int_meth_syn = 'euler' # Synaptic integration method
 
 # 1.1 ========== Rule's parameters
 
-plasticity_rule = 'LR2' # 'none', 'LR1', 'LR2'
+plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
 parameter_set = '2.4' # '2.1'
 bistability = False
 
@@ -108,7 +108,7 @@ N_Pre = 1
 N_Post = 1
 
 pre_rate = 80
-post_rate = 20 
+post_rate = 80 
 
 if exp_type == 'showcase':
 	neuron_type = 'spikegenerator'
@@ -150,7 +150,7 @@ Pre_Post.w = w_init
 
 # 3.2 ========== Setting simulation monitors
 
-StateMon = StateMonitor(Pre_Post, ['xpre', 'xpost', 'w', 'rho'], record = True)
+StateMon = StateMonitor(Pre_Post, ['xpre', 'xpost', 'xstop', 'w', 'rho'], record = True)
 
 Pre_spk_mon = SpikeMonitor( 
 	source = Pre,
@@ -175,7 +175,7 @@ s1 = 30
 mpl.rcParams['axes.linewidth'] = 1.5
 
 fig = plt.figure(figsize = (15, 22))
-gs = gridspec.GridSpec(10, 1, height_ratios = [2, 2, 1, 4, 1,4, 1 , 4, 1, 4])
+gs = gridspec.GridSpec(12, 1, height_ratios = [2, 2, 1, 4, 1,4, 1 , 4, 1, 4, 1, 4])
 
 # 5.1 ==== Pre neuron spike activity
 
@@ -219,7 +219,7 @@ ax3 = fig.add_subplot(gs[3, 0])
 ax3.plot(StateMon.t/ms, StateMon.xpre[0], color = 'blue', linewidth = lwdth)
 
 # Adapted learning rule has threshold on pre- trace as well
-if plasticity_rule == 'LR2':
+if plasticity_rule == 'LR2' or plasticity_rule == 'LR3':
 	ax3.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, 
 		y = thr_pre, 
 		label = '$\\theta_{pre}$')
@@ -278,9 +278,51 @@ plt.xlim(0, t_run*1000)
 plt.xticks(size = s1)
 plt.yticks(size = s1)
 
+# 5.4 ==== Stop-learning calcium trace
+
+ax4 = fig.add_subplot(gs[7, 0])
+ax4.plot(StateMon.t/ms, StateMon.xstop[0], color = 'lightsteelblue', linewidth = lwdth)
+
+ax4.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, y = thr_up_h,
+	label = '$\\theta_{up}^{h}$')
+
+ax4.axhline(linestyle = 'dotted', color = 'grey', lw = lwdth/2, y = thr_up_l,
+	label = '$\\theta_{up}^{l}$')
+
+ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_down_h,
+	label = '$\\theta_{down}^{h}$')
+
+ax4.axhline(linestyle = 'dashdot', color = 'grey', lw = lwdth/2, y = thr_down_l,
+	label = '$\\theta_{down}^{l}$')
+
+ax4.set_xticklabels([])
+
+plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
+	bbox_to_anchor = (1, 1.35), 
+	ncol = 4)
+
+plt.ylabel('$x_{stop}$ \n(a.u.) ', size = s1, color = 'black', 
+	horizontalalignment = 'center', 
+	labelpad = 20)
+
+ax4.yaxis.set_label_coords(-0.15, 0.3)
+ax4.set_xticklabels([])
+
+plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
+plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+
+major_yticks = np.linspace(0, max(StateMon.xpost[0])*1.1, 4)
+
+ax4.set_yticks(np.around(major_yticks, 1))
+
+plt.ylim(0, np.around(max(StateMon.xpost[0]), 1)*1.1)
+plt.xlim(0, t_run*1000)
+plt.xticks(size = s1)
+plt.yticks(size = s1)
+
 # 5.5 ==== Rho state variable
 
-ax5 = fig.add_subplot(gs[7, 0])
+ax5 = fig.add_subplot(gs[9, 0])
 ax5.axhline(linestyle = 'dashed', color = 'dimgrey', lw = lwdth/2, 
 	y = thr_b_rho, label = '$\\theta_{\\rho}$')
 
@@ -316,7 +358,7 @@ plt.yticks(size = s1)
 
 # 5.6 ==== Weight
 
-ax6 = fig.add_subplot(gs[9, 0])
+ax6 = fig.add_subplot(gs[11, 0])
 ax6.plot(StateMon.t/ms, StateMon.w[0]/mV, label = 'w', color = 'k',
 	linewidth = lwdth) 
 ax6.axhline(color = 'grey', lw = lwdth, y = w_max/mV)

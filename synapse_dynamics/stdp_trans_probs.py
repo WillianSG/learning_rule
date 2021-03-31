@@ -35,7 +35,7 @@ from run_single_synap import *
 
 # == 1 - Simulation run variables ==========
 
-sim_rep = 10
+sim_rep = 5
 
 dt_resolution = 0.001		# 0.1ms | step of simulation time step resolution
 t_run = 1					# simulation time (seconds)
@@ -43,9 +43,9 @@ t_run = 1					# simulation time (seconds)
 N_Pre = 1
 N_Post = 1
 
-plasticity_rule = 'LR3'			# 'none', 'LR1', 'LR2'
+plasticity_rule = 'LR3'			# 'none', 'LR1', 'LR2', 'LR3'
 parameter_set = '2.4'			# '2.1', '2.2', '2.4'
-bistability = True
+bistability = False
 
 w_init = float(sys.argv[1])		# '0.0' to test LTP, '1.0' to test LTD
 
@@ -56,7 +56,7 @@ exp_type = 'stdp_trans_probabi_'
 
 # Range of pre- and postsynaptic frequencies (Hz)
 min_freq = 0
-max_freq = 180
+max_freq = 100
 
 step = 10
 

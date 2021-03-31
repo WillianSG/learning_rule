@@ -56,7 +56,7 @@ from load_neurons import *
 experiment_type = 'single_synapse'
 
 # Simulation
-dt_resolution = 0.00001 # = 0.00001 sconds (0.01ms) | simu. time resolution
+dt_resolution = 0.0001 # = 0.00001 sconds (0.01ms) | simu. time resolution
 exp_type = 'stdp_curve_'
 
 tmax = 100*ms # maximal difference between spike timing
@@ -71,8 +71,8 @@ N_Pre = 50 # neurons
 N_Post = 50
 N_t = 50
 
-plasticity_rule = 'LR1'
-parameter_set = '1.1'
+plasticity_rule = 'LR2'
+parameter_set = '2.2'
 
 int_meth_syn = 'euler' # Synaptic integration method
 
@@ -98,7 +98,13 @@ defaultclock.dt = dt_resolution*second # time step of the simu. as a float
 	alpha,
 	beta,
 	xpre_factor,
-	w_max] = load_rule_params(plasticity_rule, parameter_set)
+	w_max,
+	tau_xstop,
+	xstop_jump,
+	thr_up_h,
+	thr_up_l,
+	thr_down_h,
+	thr_down_l] = load_rule_params(plasticity_rule, parameter_set)
 
 # Loading model equations
 [model_E_E,
