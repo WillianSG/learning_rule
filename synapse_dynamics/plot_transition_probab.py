@@ -30,7 +30,7 @@ from numpy import *
 import matplotlib.pyplot as plt
 
 exp_data = pickle.load(
-	open('stdp_trans_probabi__0.0_2.2_True__last_rho.pickle', "rb" ))
+	open('stdp_trans_probabi__0.0_2.4_True__last_rho.pickle', "rb" ))
 
 fig = plt.figure()
 ax = plt.subplot(111)
@@ -38,7 +38,7 @@ ax = plt.subplot(111)
 for x in range(0, len(exp_data[2])):
 	ax.plot(
 		exp_data[4], exp_data[2][x], 
-		label = str((x+1)*5) + 'Hz',
+		label = str((x+1)*10) + 'Hz',
 		linestyle = '--', 
 		marker = '.')
 

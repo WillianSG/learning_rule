@@ -39,7 +39,13 @@ def run_single_synap(
 	alpha, 
 	beta, 
 	xpre_factor, 
-	w_max, 
+	w_max,
+	tau_xstop,
+	xstop_jump,
+	thr_up_h,
+	thr_up_l,
+	thr_down_h,
+	thr_down_l, 
 	model_E_E, 
 	pre_E_E, 
 	post_E_E, 
@@ -72,7 +78,7 @@ def run_single_synap(
 	# - Monitors
 	synaptic_mon = StateMonitor(
 		Pre_Post, 
-		['xpre', 'xpost', 'rho', 'w'], 
+		['xpre', 'xpost', 'xstop', 'rho', 'w'], 
 		record = True)
 
 	Pre_mon = SpikeMonitor(

@@ -37,14 +37,14 @@ from run_single_synap import *
 
 sim_rep = 10
 
-dt_resolution = 0.0001		# 0.1ms | step of simulation time step resolution
+dt_resolution = 0.001		# 0.1ms | step of simulation time step resolution
 t_run = 1					# simulation time (seconds)
 
 N_Pre = 1
 N_Post = 1
 
-plasticity_rule = 'LR2'			# 'none', 'LR1', 'LR2'
-parameter_set = '2.2'			# '2.1', '2.2', '2.4'
+plasticity_rule = 'LR3'			# 'none', 'LR1', 'LR2'
+parameter_set = '2.4'			# '2.1', '2.2', '2.4'
 bistability = True
 
 w_init = float(sys.argv[1])		# '0.0' to test LTP, '1.0' to test LTD
@@ -56,9 +56,9 @@ exp_type = 'stdp_trans_probabi_'
 
 # Range of pre- and postsynaptic frequencies (Hz)
 min_freq = 0
-max_freq = 100
+max_freq = 180
 
-step = 5
+step = 10
 
 # == 1.1 - neurons' firing rates
 
@@ -90,7 +90,13 @@ start_scope()
 	alpha,
 	beta,
 	xpre_factor,
-	w_max] = load_rule_params(
+	w_max,
+	tau_xstop,
+	xstop_jump,
+	thr_up_h,
+	thr_up_l,
+	thr_down_h,
+	thr_down_l] = load_rule_params(
 		plasticity_rule = plasticity_rule, 
 		parameter_set = parameter_set,
 		efficacy_init = w_init)
@@ -140,6 +146,12 @@ for x in range(0, len(f_pre)):
 						beta = beta,
 						xpre_factor = xpre_factor,
 						w_max = w_max,
+						tau_xstop = tau_xstop,
+						xstop_jump = xstop_jump,
+						thr_up_h = thr_up_h,
+						thr_up_l = thr_up_l,
+						thr_down_h = thr_down_h,
+						thr_down_l = thr_down_l,
 						model_E_E = model_E_E,
 						pre_E_E = pre_E_E,
 						post_E_E = post_E_E,
