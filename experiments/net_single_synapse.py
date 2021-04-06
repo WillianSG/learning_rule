@@ -107,8 +107,8 @@ w_init = w_max*rho_init
 N_Pre = 1
 N_Post = 1
 
-pre_rate = 80
-post_rate = 80 
+pre_rate = 130
+post_rate = 130
 
 if exp_type == 'showcase':
 	neuron_type = 'spikegenerator'

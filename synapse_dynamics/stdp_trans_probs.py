@@ -35,7 +35,7 @@ from run_single_synap import *
 
 # == 1 - Simulation run variables ==========
 
-sim_rep = 5
+sim_rep = 10
 
 dt_resolution = 0.001		# 0.1ms | step of simulation time step resolution
 t_run = 1					# simulation time (seconds)
@@ -56,7 +56,7 @@ exp_type = 'stdp_trans_probabi_'
 
 # Range of pre- and postsynaptic frequencies (Hz)
 min_freq = 0
-max_freq = 100
+max_freq = 150
 
 step = 10
 

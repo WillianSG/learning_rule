@@ -88,17 +88,17 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 	elif plasticity_rule == 'LR3':
 		if parameter_set =='2.4':
 			tau_xpre = 13*ms 
-			tau_xpost = 33*ms 
-			xpre_factor = 0.21
+			tau_xpost = 33*ms
+			tau_xstop = 55*ms
+			xpre_factor = 0.1
 			thr_post = 0.4
 			thr_pre = 0.5
 			rho_neg = -0.008
 			rho_neg2 = rho_neg*10
-			tau_xstop = 43*ms
-			xstop_jump = 0.1
+			xstop_jump = 0.25
 			thr_up_h = 0.9
-			thr_up_l = 0.4
-			thr_down_h = 0.4
+			thr_up_l = 0.5
+			thr_down_h = 0.5
 			thr_down_l = 0.1
 	elif plasticity_rule == 'LR1':
 		if parameter_set == '1.1':
