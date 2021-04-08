@@ -66,7 +66,7 @@ exp_type = 'rates' # 'showcase', 'rates'
 # Simulation run variables
 dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 
-t_run = 0.3 # simulation time (seconds)
+t_run = 1 # simulation time (seconds)
 
 int_meth_syn = 'euler' # Synaptic integration method
 

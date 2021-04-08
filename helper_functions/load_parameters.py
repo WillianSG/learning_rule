@@ -71,7 +71,7 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			tau_xpre = 13*ms # time constant x_pre 
 			tau_xpost = 33*ms # time constant x_post
 			xpre_factor = 0.017 # scaling factor positive efficacy change
-			thr_post = 0.4 #0.4# threshold for x_post
+			thr_post = 0.4 # threshold for x_post
 			thr_pre = 0.5 # threshold for x_pre
 			rho_neg = -0.00055 # negative efficacy change
 			rho_neg2 = rho_neg*10 # additional negative efficacy change 
@@ -91,11 +91,11 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			xpre_factor = 0.1
 			thr_post = 0.4
 			thr_pre = 0.5
-			rho_neg = -0.008
+			rho_neg = -0.1
 			rho_neg2 = rho_neg*10
-			xstop_jump = 0.25
+			xstop_jump = 0.2
 			thr_stop_h = 0.9
-			thr_stop_l = 0.2
+			thr_stop_l = 0.9
 	elif plasticity_rule == 'LR1':
 		if parameter_set == '1.1':
 			tau_xpre = 22*ms
