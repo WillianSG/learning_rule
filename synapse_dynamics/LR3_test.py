@@ -61,7 +61,7 @@ from load_neurons import *
 
 # 1 ========== Execution parameters ==========
 
-exp_type = 'showcase' # 'showcase', 'rates'
+exp_type = 'rates' # 'showcase', 'rates'
 
 # Simulation run variables
 dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
@@ -95,10 +95,8 @@ bistability = False
 	w_max,
 	tau_xstop,
 	xstop_jump,
-	thr_up_h,
-	thr_up_l,
-	thr_down_h,
-	thr_down_l] = load_rule_params(plasticity_rule, parameter_set)
+	thr_stop_h,
+	thr_stop_l] = load_rule_params(plasticity_rule, parameter_set)
 
 w_init = w_max*rho_init
 
@@ -285,22 +283,16 @@ plt.yticks(size = s1)
 ax4 = fig.add_subplot(gs[7, 0])
 ax4.plot(StateMon.t/ms, StateMon.xstop[0], color = 'tab:blue', linewidth = lwdth) 
 
-ax4.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, y = thr_up_h,
-	label = '$\\theta_{up}^{h}$')
+ax4.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, y = thr_stop_h,
+	label = '$\\theta_{stop}^{h}$')
 
-ax4.axhline(linestyle = 'dotted', color = 'grey', lw = lwdth/2, y = thr_up_l,
-	label = '$\\theta_{up}^{l}$')
-
-ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_down_h,
-	label = '$\\theta_{down}^{h}$')
-
-ax4.axhline(linestyle = 'dashdot', color = 'grey', lw = lwdth/2, y = thr_down_l,
-	label = '$\\theta_{down}^{l}$')
+ax4.axhline(linestyle = 'dotted', color = 'grey', lw = lwdth/2, y = thr_stop_l,
+	label = '$\\theta_{stop}^{l}$')
 
 ax4.set_xticklabels([])
 
 plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
-	bbox_to_anchor = (1, 1.4), 
+	bbox_to_anchor = (1, 1.3), 
 	ncol = 4)
 
 plt.ylabel('$x_{stop}$ \n(a.u.) ', size = s1, color = 'black', 
