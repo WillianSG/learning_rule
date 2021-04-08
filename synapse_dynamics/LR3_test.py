@@ -10,7 +10,7 @@ from brian2 import *
 from scipy import *
 from numpy import *
 from joblib import Parallel, delayed
-from time import localtime
+from time import localtime, strftime
 import multiprocessing
 prefs.codegen.target = 'numpy'
 
@@ -45,11 +45,7 @@ if not(is_dir):
 
 # Creating simulation ID
 idt = localtime()
-sim_id = str(idt.tm_year) \
-	+ '{:02}'.format(idt.tm_mon) \
-	+ '{:02}'.format(idt.tm_mday) + '_' \
-	+ '{:02}'.format(idt.tm_hour) + '_' \
-	+ '{:02}'.format(idt.tm_min)
+sim_id = strftime("%d%b%Y_%H-%M-%S_", localtime())
 
 # Starts a new scope for magic functions
 start_scope()
@@ -73,7 +69,7 @@ int_meth_syn = 'euler' # Synaptic integration method
 # 1.1 ========== Rule's parameters
 
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
-parameter_set = '2.4' # '2.1'
+parameter_set = '2.0' # '2.1'
 bistability = False
 
 [tau_xpre,
@@ -106,7 +102,7 @@ N_Pre = 1
 N_Post = 1
 
 pre_rate = 80
-post_rate = 20 
+post_rate = 20
 
 if exp_type == 'showcase':
 	neuron_type = 'spikegenerator'

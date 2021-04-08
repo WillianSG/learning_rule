@@ -54,7 +54,7 @@ from run_frequencies import *
 # 1 ========== Execution parameters ==========
 
 # Simulation run variables
-dt_resolution = 0.0001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
+dt_resolution = 0.1/1000 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 t_run = 5 # 5 | simulation time (seconds)
 noise = 0.75 # used to introduce difference between spike times betweem pre- and post-
 
@@ -127,7 +127,7 @@ drho_all = np.zeros((len(pre_freq),len(post_freq)))
 def run_net_parallel(p, q):
 	print('pre @ ', pre_freq[p], 'Hz, post @ ', post_freq[q], 'Hz')
 
-	ans = run_frequencies(pre_freq[p], post_freq[q], t_run, dt_resolution, plasticity_rule, neuron_type, noise, bistability, plot_single_trial, N_Pre, N_Post, tau_xpre, tau_xpost, xpre_jump, xpost_jump, rho_neg, rho_neg2, rho_init, tau_rho, thr_post, thr_pre, thr_b_rho, rho_min, rho_max, alpha, beta, xpre_factor, w_max, tau_xstop, xstop_jump,thr_stop_h, thr_stop_l, model_E_E, pre_E_E, post_E_E, int_meth_syn, isi_correlation, drho_all_metric, job_seed)
+	ans = run_frequencies(pre_freq[p], post_freq[q], t_run, dt_resolution, plasticity_rule, neuron_type, noise, bistability, plot_single_trial, N_Pre, N_Post, tau_xpre, tau_xpost, xpre_jump, xpost_jump, rho_neg, rho_neg2, rho_init, tau_rho, thr_post, thr_pre, thr_b_rho, rho_min, rho_max, alpha, beta, xpre_factor, w_max, model_E_E, pre_E_E, post_E_E,tau_xstop, xstop_jump, thr_stop_h, thr_stop_l, int_meth_syn, isi_correlation, drho_all_metric, job_seed)
 
 	return p, q, ans
 
@@ -141,8 +141,6 @@ else:
 
 
 print("Running network...\n")
-
-num_cores = 2
 
 # Running network for each pair of frequency
 results = Parallel(n_jobs=num_cores)(delayed(run_net_parallel)(p,q) for p,q in simulationsset)
