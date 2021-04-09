@@ -68,8 +68,8 @@ int_meth_syn = 'euler' # Synaptic integration method
 
 # 1.1 ========== Rule's parameters
 
-plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
-parameter_set = '2.0' # '2.1'
+plasticity_rule = 'LR3_2' # 'none', 'LR1', 'LR2'
+parameter_set = '3.0'
 bistability = False
 
 [tau_xpre,
@@ -92,7 +92,9 @@ bistability = False
 	tau_xstop,
 	xstop_jump,
 	thr_stop_h,
-	thr_stop_l] = load_rule_params(plasticity_rule, parameter_set)
+	thr_stop_l,
+	xpost_max,
+	xpre_max] = load_rule_params(plasticity_rule, parameter_set)
 
 w_init = w_max*rho_init
 
@@ -101,8 +103,8 @@ w_init = w_max*rho_init
 N_Pre = 1
 N_Post = 1
 
-pre_rate = 80
-post_rate = 20
+pre_rate = 150
+post_rate = 150
 
 if exp_type == 'showcase':
 	neuron_type = 'spikegenerator'
@@ -137,7 +139,7 @@ Pre_Post = Synapses(
 	method = int_meth_syn, 
 	name = 'Pre_Post')
 
-Pre_Post.connect(j = 'i')  
+Pre_Post.connect(j = 'i')
 
 Pre_Post.rho = rho_init
 Pre_Post.w = w_init
@@ -215,7 +217,7 @@ ax3 = fig.add_subplot(gs[3, 0])
 ax3.plot(StateMon.t/ms, StateMon.xpre[0], color = 'blue', linewidth = lwdth)
 
 # Adapted learning rule has threshold on pre- trace as well
-if plasticity_rule == 'LR2' or plasticity_rule == 'LR3':
+if plasticity_rule == 'LR2' or plasticity_rule == 'LR3_1' or plasticity_rule == 'LR3_2':
 	ax3.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, 
 		y = thr_pre, 
 		label = '$\\theta_{pre}$')
@@ -276,39 +278,75 @@ plt.yticks(size = s1)
 
 # 5.5* ==== Stop-learning calcium trace
 
-ax4 = fig.add_subplot(gs[7, 0])
-ax4.plot(StateMon.t/ms, StateMon.xstop[0], color = 'tab:blue', linewidth = lwdth) 
+if plasticity_rule == 'LR3_1':
+	ax4 = fig.add_subplot(gs[7, 0])
+	ax4.plot(StateMon.t/ms, StateMon.xstop[0], color = 'tab:blue', linewidth = lwdth) 
 
-ax4.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, y = thr_stop_h,
-	label = '$\\theta_{stop}^{h}$')
+	ax4.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, y = thr_stop_h,
+		label = '$\\theta_{stop}^{h}$')
 
-ax4.axhline(linestyle = 'dotted', color = 'grey', lw = lwdth/2, y = thr_stop_l,
-	label = '$\\theta_{stop}^{l}$')
+	ax4.axhline(linestyle = 'dotted', color = 'grey', lw = lwdth/2, y = thr_stop_l,
+		label = '$\\theta_{stop}^{l}$')
 
-ax4.set_xticklabels([])
+	ax4.set_xticklabels([])
 
-plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
-	bbox_to_anchor = (1, 1.3), 
-	ncol = 4)
+	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
+		bbox_to_anchor = (1, 1.3), 
+		ncol = 4)
 
-plt.ylabel('$x_{stop}$ \n(a.u.) ', size = s1, color = 'black', 
-	horizontalalignment = 'center', 
-	labelpad = 20)
+	plt.ylabel('$x_{stop}$ \n(a.u.) ', size = s1, color = 'black', 
+		horizontalalignment = 'center', 
+		labelpad = 20)
 
-ax4.yaxis.set_label_coords(-0.15, 0.3)
-ax4.set_xticklabels([])
+	ax4.yaxis.set_label_coords(-0.15, 0.3)
+	ax4.set_xticklabels([])
 
-plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
-plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+	plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
+	plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
 
-major_yticks = np.linspace(0, max(StateMon.xpost[0])*1.1, 4)
+	major_yticks = np.linspace(0, max(StateMon.xpost[0])*1.1, 4)
 
-ax4.set_yticks(np.around(major_yticks, 1))
+	ax4.set_yticks(np.around(major_yticks, 1))
 
-plt.ylim(0, np.around(max(StateMon.xpost[0]), 1)*1.1)
-plt.xlim(0, t_run*1000)
-plt.xticks(size = s1)
-plt.yticks(size = s1)
+	plt.ylim(0, np.around(max(StateMon.xpost[0]), 1)*1.1)
+	plt.xlim(0, t_run*1000)
+	plt.xticks(size = s1)
+	plt.yticks(size = s1)
+
+if plasticity_rule == 'LR3_2':
+	ax4 = fig.add_subplot(gs[7, 0])
+	ax4.plot(StateMon.t/ms, StateMon.xpost[0], color = 'tab:blue', linewidth = lwdth) 
+
+	ax4.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, y = thr_stop_h,
+		label = '$\\theta_{stop}^{h}$')
+
+	ax4.axhline(linestyle = 'dotted', color = 'grey', lw = lwdth/2, y = thr_stop_l,
+		label = '$\\theta_{stop}^{l}$')
+
+	ax4.set_xticklabels([])
+
+	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
+		bbox_to_anchor = (1, 1.3), 
+		ncol = 4)
+
+	plt.ylabel('$x_{post_s}$ \n(a.u.) ', size = s1, color = 'black', 
+		horizontalalignment = 'center', 
+		labelpad = 20)
+
+	ax4.yaxis.set_label_coords(-0.15, 0.3)
+	ax4.set_xticklabels([])
+
+	plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
+	plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+
+	major_yticks = np.linspace(0, max(StateMon.xpost[0])*1.1, 4)
+
+	ax4.set_yticks(np.around(major_yticks, 1))
+
+	plt.ylim(0, np.around(max(StateMon.xpost[0]), 1)*1.1)
+	plt.xlim(0, t_run*1000)
+	plt.xticks(size = s1)
+	plt.yticks(size = s1)
 
 # 5.6 ==== Rho state variable
 
