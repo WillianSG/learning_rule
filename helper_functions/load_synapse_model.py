@@ -91,8 +91,8 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 	rho_dep2: rho_neg2
 	"""
 	post_E_E_LR3_2 = '''xpost = xpost + xpost_jump * (xpost_max - xpost)
-		xstop = xstop + xstop_jump
-		rho = clip((rho + xpre * xpre_factor *int(xpost > thr_stop_l) *int(xpost < thr_stop_h))* int(xpre > 0), rho_min, rho_max)
+		xstop = xstop + xstop_jump * (xstop_max - xstop)
+		rho = clip((rho + xpre * xpre_factor *int(xpre > thr_pre) *int(xstop > thr_stop_l) *int(xstop < thr_stop_h))* int(xpre > 0), rho_min, rho_max)
 		w = rho*w_max'''
 
 	# - On pre spike (LR3 #2)
@@ -100,9 +100,9 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 	xpre_jump: A_pre
 	rho_dep: rho_neg
 	"""
-	rho_update_pre_lr3_2 = {'rho_update_pre':'''rho = clip(rho + rho_neg *int(xpost > thr_post) *int(xpost > thr_stop_l) *int(xpost < thr_stop_h), rho_min, rho_max)'''}
+	rho_update_pre_lr3_2 = {'rho_update_pre':'''rho = clip(rho + rho_neg *int(xpost > thr_post) *int(xstop > thr_stop_l) *int(xstop < thr_stop_h), rho_min, rho_max)'''}
 
-	# - On pre spike (both LR1/LR2)
+	# - On pre spike (both LR1/LR2/LR3)
 	"""
 	xpre_jump: A_pre
 	rho_dep: rho_neg
@@ -181,6 +181,7 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 		pre_E_E = dict(rho_update_pre_lr3_1, **pre_E_E)
 		pre_E_E = dict(w_update, **pre_E_E)
 		post_E_E = post_E_E_LR3_1
+
 	# - LIF neuron with plastic synapse ruled by LR2 (membrane changes for incoming spikes)
 	elif plasticity_rule == 'LR3_2' and neuron_type == 'LIF':
 		model_E_E = model_E_E_plastic

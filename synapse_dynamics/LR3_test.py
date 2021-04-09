@@ -94,7 +94,8 @@ bistability = False
 	thr_stop_h,
 	thr_stop_l,
 	xpost_max,
-	xpre_max] = load_rule_params(plasticity_rule, parameter_set)
+	xpre_max,
+	xstop_max] = load_rule_params(plasticity_rule, parameter_set)
 
 w_init = w_max*rho_init
 
@@ -103,14 +104,13 @@ w_init = w_max*rho_init
 N_Pre = 1
 N_Post = 1
 
-pre_rate = 150
-post_rate = 150
+pre_rate = 10
+post_rate = 10
 
 if exp_type == 'showcase':
 	neuron_type = 'spikegenerator'
 else:
 	neuron_type = 'poisson'
-
 
 # 2 ========== Learning rule as Brian2's synaptic model ==========
 [model_E_E,
@@ -278,7 +278,7 @@ plt.yticks(size = s1)
 
 # 5.5* ==== Stop-learning calcium trace
 
-if plasticity_rule == 'LR3_1':
+if plasticity_rule == 'LR3_1' or plasticity_rule == 'LR3_2':
 	ax4 = fig.add_subplot(gs[7, 0])
 	ax4.plot(StateMon.t/ms, StateMon.xstop[0], color = 'tab:blue', linewidth = lwdth) 
 
@@ -295,41 +295,6 @@ if plasticity_rule == 'LR3_1':
 		ncol = 4)
 
 	plt.ylabel('$x_{stop}$ \n(a.u.) ', size = s1, color = 'black', 
-		horizontalalignment = 'center', 
-		labelpad = 20)
-
-	ax4.yaxis.set_label_coords(-0.15, 0.3)
-	ax4.set_xticklabels([])
-
-	plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
-	plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
-
-	major_yticks = np.linspace(0, max(StateMon.xpost[0])*1.1, 4)
-
-	ax4.set_yticks(np.around(major_yticks, 1))
-
-	plt.ylim(0, np.around(max(StateMon.xpost[0]), 1)*1.1)
-	plt.xlim(0, t_run*1000)
-	plt.xticks(size = s1)
-	plt.yticks(size = s1)
-
-if plasticity_rule == 'LR3_2':
-	ax4 = fig.add_subplot(gs[7, 0])
-	ax4.plot(StateMon.t/ms, StateMon.xpost[0], color = 'tab:blue', linewidth = lwdth) 
-
-	ax4.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, y = thr_stop_h,
-		label = '$\\theta_{stop}^{h}$')
-
-	ax4.axhline(linestyle = 'dotted', color = 'grey', lw = lwdth/2, y = thr_stop_l,
-		label = '$\\theta_{stop}^{l}$')
-
-	ax4.set_xticklabels([])
-
-	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
-		bbox_to_anchor = (1, 1.3), 
-		ncol = 4)
-
-	plt.ylabel('$x_{post_s}$ \n(a.u.) ', size = s1, color = 'black', 
 		horizontalalignment = 'center', 
 		labelpad = 20)
 
@@ -426,6 +391,8 @@ else:
 plt.savefig(os.path.join(results_path, plot_name), 
 	bbox_inches = 'tight', 
 	dpi = 200)
+
+# plt.show()
 
 # END.
 
