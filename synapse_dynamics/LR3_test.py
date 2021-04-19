@@ -69,7 +69,7 @@ int_meth_syn = 'euler' # Synaptic integration method
 # 1.1 ========== Rule's parameters
 
 plasticity_rule = 'LR3_2' # 'none', 'LR1', 'LR2'
-parameter_set = '3.0'
+parameter_set = '3.3'
 bistability = False
 
 [tau_xpre,
@@ -104,8 +104,8 @@ w_init = w_max*rho_init
 N_Pre = 1
 N_Post = 1
 
-pre_rate = 10
-post_rate = 10
+pre_rate = 70
+post_rate = 70
 
 if exp_type == 'showcase':
 	neuron_type = 'spikegenerator'
@@ -119,8 +119,8 @@ else:
 
 # 3 ========== Brian2's neuron objects
 
-input_pre = np.array([10, 60, 165, 255])/1000
-input_post = np.array([25, 65, 140, 250])/1000
+input_pre = np.array([10, 15, 18, 25, 27, 29, 31, 32])/1000
+input_post = np.array([25, 65, 105, 250])/1000
 
 Pre, Post = load_neurons(
 	N_Pre, N_Post, neuron_type,
