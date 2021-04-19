@@ -107,13 +107,13 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			thr_stop_h = 0.9
 			thr_stop_l = 0.3
 	elif plasticity_rule == 'LR3_2':
-		if parameter_set =='3.0':
+		if parameter_set =='3.0': # potent for high equal activity
 			tau_xpre = 30*ms 
 			tau_xpost = 30*ms
 			xpre_factor = 0.1
 			rho_neg = -0.01
-			xpre_jump = 0.12 				# jump of x_pre
-			xpost_jump = 0.12 				# jump of x_post
+			xpre_jump = 0.12
+			xpost_jump = 0.12
 			thr_post = 0.1
 			thr_pre = 0.1
 			thr_stop_h = 0.4
@@ -123,13 +123,13 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			xstop_jump = 0.12
 			xstop_max = 1.0
 			tau_xstop = 60*ms
-		elif parameter_set =='3.1':
+		elif parameter_set =='3.1': # depression for different activity
 			tau_xpre = 30*ms 
 			tau_xpost = 30*ms
 			xpre_factor = 0.1
 			rho_neg = -0.01
-			xpre_jump = 0.12 				# jump of x_pre
-			xpost_jump = 0.15 				# jump of x_post
+			xpre_jump = 0.12
+			xpost_jump = 0.15
 			thr_post = 0.1
 			thr_pre = 0.3
 			thr_stop_h = 0.4
@@ -139,15 +139,15 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			xstop_jump = 0.08
 			xstop_max = 1.0
 			tau_xstop = 100*ms
-		elif parameter_set =='3.2':
+		elif parameter_set =='3.2': # potent. for equal / depres. for diff.
 			tau_xpre = 30*ms 
 			tau_xpost = 30*ms
-			xpre_factor = 0.1
+			xpre_factor = 0.05
 			rho_neg = -0.01
-			xpre_jump = 0.12 				# jump of x_pre
-			xpost_jump = 0.15 				# jump of x_post
+			xpre_jump = 0.2
+			xpost_jump = 0.2
 			thr_post = 0.1
-			thr_pre = 0.3
+			thr_pre = 0.1
 			thr_stop_h = 0.4
 			thr_stop_l = 0.1
 			xpost_max = 1.0
