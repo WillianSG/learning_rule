@@ -69,7 +69,7 @@ int_meth_syn = 'euler' # Synaptic integration method
 # 1.1 ========== Rule's parameters
 
 plasticity_rule = 'LR3_2' # 'none', 'LR1', 'LR2'
-parameter_set = '4.1'
+parameter_set = '4.0'
 bistability = False
 
 [tau_xpre,
@@ -104,8 +104,8 @@ w_init = w_max*rho_init
 N_Pre = 1
 N_Post = 1
 
-pre_rate = 70
-post_rate = 70
+pre_rate = 15
+post_rate = 60
 
 if exp_type == 'showcase':
 	neuron_type = 'spikegenerator'
