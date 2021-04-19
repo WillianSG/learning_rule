@@ -92,7 +92,7 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 	"""
 	post_E_E_LR3_2 = '''xpost = xpost + xpost_jump * (xpost_max - xpost)
 		xstop = xstop + xstop_jump * (xstop_max - xstop)
-		rho = clip((rho + xpre * xpre_factor *int(xpre > thr_pre) *int(xstop > thr_stop_l) *int(xstop < thr_stop_h))* int(xpre > 0), rho_min, rho_max)
+		rho = clip((rho + xpre * xpre_factor *int(xpre > thr_pre) *int(xstop > thr_stop_l) *int(xstop < thr_stop_h) * int(xpre > 0)), rho_min, rho_max)
 		w = rho*w_max'''
 
 	# - On pre spike (LR3 #2)
