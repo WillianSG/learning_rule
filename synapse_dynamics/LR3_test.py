@@ -68,8 +68,8 @@ int_meth_syn = 'euler' # Synaptic integration method
 
 # 1.1 ========== Rule's parameters
 
-plasticity_rule = 'LR3_2' # 'none', 'LR1', 'LR2'
-parameter_set = '4.1'
+plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
+parameter_set = '4.2'
 bistability = False
 
 [tau_xpre,
