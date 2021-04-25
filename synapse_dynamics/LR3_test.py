@@ -69,7 +69,7 @@ int_meth_syn = 'euler' # Synaptic integration method
 # 1.1 ========== Rule's parameters
 
 plasticity_rule = 'LR3_2' # 'none', 'LR1', 'LR2'
-parameter_set = '4.0'
+parameter_set = '4.1'
 bistability = False
 
 [tau_xpre,
@@ -95,7 +95,10 @@ bistability = False
 	thr_stop_l,
 	xpost_max,
 	xpre_max,
-	xstop_max] = load_rule_params(plasticity_rule, parameter_set)
+	xstop_max,
+	xpre_min,
+	xpost_min,
+	xstop_min] = load_rule_params(plasticity_rule, parameter_set)
 
 w_init = w_max*rho_init
 
@@ -104,8 +107,8 @@ w_init = w_max*rho_init
 N_Pre = 1
 N_Post = 1
 
-pre_rate = 15
-post_rate = 60
+pre_rate = int(sys.argv[1])
+post_rate = int(sys.argv[2])
 
 if exp_type == 'showcase':
 	neuron_type = 'spikegenerator'
@@ -218,9 +221,9 @@ ax3.plot(StateMon.t/ms, StateMon.xpre[0], color = 'blue', linewidth = lwdth)
 
 # Adapted learning rule has threshold on pre- trace as well
 if plasticity_rule == 'LR2' or plasticity_rule == 'LR3_1' or plasticity_rule == 'LR3_2':
-	ax3.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, 
-		y = thr_pre, 
-		label = '$\\theta_{pre}$')
+	# ax3.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, 
+	# 	y = thr_pre, 
+		# label = '$\\theta_{pre}$')
 
 	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
 		bbox_to_anchor = (1, 1.3), 

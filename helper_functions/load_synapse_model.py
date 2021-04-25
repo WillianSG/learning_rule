@@ -84,30 +84,26 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 	"""
 	rho_update_pre_lr3_1 = {'rho_update_pre':'''rho = clip(rho + rho_neg *int(xpost > thr_post) *int(xstop > thr_stop_l) *int(xstop < thr_stop_h), rho_min, rho_max)'''}
 
-	# - On post spike (LR3 #2)
+	# - On post spike (LR3)
 	"""
 	xpost_jump: A_post
 	xpre_factor: c
 	rho_dep2: rho_neg2
 	"""
-	post_E_E_LR3_2 = '''xpost = xpost + xpost_jump * (xpost_max - xpost)
-		xstop = xstop + xstop_jump * (xstop_max - xstop)
-		rho = clip((rho + xpre * xpre_factor *int(xpre > thr_pre) *int(xstop > thr_stop_l) *int(xstop < thr_stop_h) * int(xpre > 0)), rho_min, rho_max)
+	post_E_E_LR3 = '''xpost = xpost + xpost_jump * (xpost_max - xpost)
+		rho = clip((rho + xpre * xpre_factor * int(xpre > 0)), rho_min, rho_max)
 		w = rho*w_max'''
 
-	# - On pre spike (LR3 #2)
-	"""
-	xpre_jump: A_pre
-	rho_dep: rho_neg
-	"""
-	rho_update_pre_lr3_2 = {'rho_update_pre':'''rho = clip(rho + rho_neg *int(xpost > thr_post) *int(xstop > thr_stop_l) *int(xstop < thr_stop_h), rho_min, rho_max)'''}
+
+	# - On pre spike (LR3)
+	xpre_update_LR3 = {'xpre_update': '''xpre = xpre + xpre_jump * (xpre_max - xpre)'''}
 
 	# - On pre spike (both LR1/LR2/LR3)
 	"""
 	xpre_jump: A_pre
 	rho_dep: rho_neg
 	"""
-	xpre_update = {'xpre_update': '''xpre = xpre + xpre_jump * (xpre_max - xpre)'''}
+	xpre_update = {'xpre_update': '''xpre = xpre + xpre_jump'''}
 	w_update = {'w_update' : ''' w = rho * w_max'''}
 	rho_update_pre = {'rho_update_pre':'''rho = clip(rho + rho_neg *int(xpost > thr_post), rho_min, rho_max)'''}
 
@@ -192,12 +188,12 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 		post_E_E = post_E_E_LR3_2
 
 	# - LIF neuron with plastic synapse ruled by LR2 (membrane does not change for incoming spikes)
-	elif plasticity_rule == 'LR3_2' and (neuron_type == 'spikegenerator' or neuron_type == 'poisson'):
+	elif plasticity_rule == 'LR3' and (neuron_type == 'spikegenerator' or neuron_type == 'poisson'):
 		model_E_E = model_E_E_plastic
-		pre_E_E = dict(xpre_update)
-		pre_E_E = dict(rho_update_pre_lr3_2, **pre_E_E)
+		pre_E_E = dict(xpre_update_LR3)
+		pre_E_E = dict(rho_update_pre, **pre_E_E)
 		pre_E_E = dict(w_update, **pre_E_E)
-		post_E_E = post_E_E_LR3_2
+		post_E_E = post_E_E_LR3
 	else:
 		raise ValueError("invalid compination of learning rule and neuron type")
 

@@ -43,11 +43,23 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 	alpha = 1 						# slope of bistability
 	beta = alpha
 	rho_neg = 0
+	thr_pre = 0.0
 
 	tau_xstop = 0*ms
 	xstop_jump = 0
 	thr_stop_h = 0
 	thr_stop_l = 0
+	xpre_min = 0.0
+	xpost_min = 0.0
+	xstop_min = 0.0
+
+	xpost_max = 1.0
+	xpre_max = 1.0
+	xstop_max = 1.0
+	tau_xstop = 180*ms			
+	xstop_jump = 1.0			
+	thr_stop_h = 1.5
+	thr_stop_l = 0.2
 
 	if plasticity_rule == 'LR1':
 		if parameter_set == '1.1':
@@ -156,38 +168,25 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			xstop_jump = 0.08
 			xstop_max = 1.0
 			tau_xstop = 100*ms
-		elif parameter_set =='4.0': # potent. for equal / depres. for diff.
-			tau_xpre = 30*ms
-			tau_xpost = 30*ms
-			tau_xstop = 180*ms
-			xpre_factor = 0.01
-			rho_neg = -0.01
-			xpre_jump = 0.2
-			xpost_jump = 0.2
-			xstop_jump = 0.09
-			thr_post = 0.1
-			thr_pre = 0.1
-			thr_stop_h = 0.6
-			thr_stop_l = 0.2
-			xpost_max = 1.0
-			xpre_max = 1.0
-			xstop_max = 1.0
-		elif parameter_set =='4.1': # rasing thr_post
-			tau_xpre = 30*ms
-			tau_xpost = 30*ms
-			tau_xstop = 180*ms
-			xpre_factor = 0.01
-			rho_neg = -0.01
-			xpre_jump = 0.2
-			xpost_jump = 0.2
-			xstop_jump = 0.09
-			thr_post = 0.2
-			thr_pre = 0.1
-			thr_stop_h = 0.6
-			thr_stop_l = 0.2
-			xpost_max = 1.0
-			xpre_max = 1.0
-			xstop_max = 1.0
+		elif parameter_set =='4.1': # original '1.1'
+			tau_xpre = 22*ms
+			tau_xpost = 22*ms
+			tau_rho = 1000*ms
+			xpre_jump = 1.0
+			xpost_jump = 1.0
+			xpre_factor = 0.1
+			thr_post = 0.5
+			rho_neg = -0.05
+		elif parameter_set =='4.2': # original '1.2'
+			tau_xpre = 8*ms
+			tau_xpost = 50*ms
+			tau_rho = 1000*ms
+			xpre_jump = 1.0
+			xpost_jump = 1.0
+			xpre_factor = 0.1
+			thr_post = 0.5
+			rho_neg = -0.05
+			
 	else: # default '2.1'
 		tau_xpre = 13*ms
 		tau_xpost = 33*ms
@@ -223,4 +222,7 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 	thr_stop_l,\
 	xpost_max,\
 	xpre_max,\
-	xstop_max
+	xstop_max,\
+	xpre_min,\
+	xpost_min,\
+	xstop_min
