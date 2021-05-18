@@ -69,7 +69,7 @@ int_meth_syn = 'euler' # Synaptic integration method
 # 1.1 ========== Rule's parameters
 
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
-parameter_set = '4.2'
+parameter_set = '0.0'
 bistability = False
 
 [tau_xpre,
@@ -89,16 +89,10 @@ bistability = False
 	beta,
 	xpre_factor,
 	w_max,
-	tau_xstop,
-	xstop_jump,
-	thr_stop_h,
-	thr_stop_l,
-	xpost_max,
-	xpre_max,
-	xstop_max,
 	xpre_min,
 	xpost_min,
-	xstop_min] = load_rule_params(plasticity_rule, parameter_set)
+	xpost_max,
+	xpre_max] = load_rule_params(plasticity_rule, parameter_set)
 
 w_init = w_max*rho_init
 
@@ -149,7 +143,7 @@ Pre_Post.w = w_init
 
 # 3.2 ========== Setting simulation monitors
 
-StateMon = StateMonitor(Pre_Post, ['xpre', 'xpost', 'xstop', 'w', 'rho'], record = True)
+StateMon = StateMonitor(Pre_Post, ['xpre', 'xpost', 'w', 'rho'], record = True)
 
 Pre_spk_mon = SpikeMonitor( 
 	source = Pre,
@@ -220,10 +214,10 @@ ax3 = fig.add_subplot(gs[3, 0])
 ax3.plot(StateMon.t/ms, StateMon.xpre[0], color = 'blue', linewidth = lwdth)
 
 # Adapted learning rule has threshold on pre- trace as well
-if plasticity_rule == 'LR2' or plasticity_rule == 'LR3_1' or plasticity_rule == 'LR3_2':
-	# ax3.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, 
-	# 	y = thr_pre, 
-		# label = '$\\theta_{pre}$')
+if plasticity_rule == 'LR2' or plasticity_rule == 'LR3' or plasticity_rule == 'LR3_2':
+	ax3.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, 
+		y = thr_pre, 
+		label = '$\\theta_{pre}$')
 
 	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
 		bbox_to_anchor = (1, 1.3), 

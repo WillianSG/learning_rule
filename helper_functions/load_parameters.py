@@ -103,7 +103,7 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			rho_neg2 = rho_neg
 			tau_rho = 1000*ms
 	elif plasticity_rule == 'LR3':
-		if parameter_set =='0':
+		if parameter_set =='0.0':
 			tau_xpre = 50*ms
 			tau_xpost = 50*ms
 			tau_rho = 1000*ms
