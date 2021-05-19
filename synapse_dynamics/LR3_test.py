@@ -57,12 +57,14 @@ from load_neurons import *
 
 # 1 ========== Execution parameters ==========
 
+num_sim = 3
+
 exp_type = 'rates' # 'showcase', 'rates'
 
 # Simulation run variables
 dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 
-t_run = 1 # simulation time (seconds)
+t_run = 0.5 # simulation time (seconds)
 
 int_meth_syn = 'euler' # Synaptic integration method
 
@@ -116,8 +118,11 @@ else:
 
 # 3 ========== Brian2's neuron objects
 
-input_pre = np.array([10, 15, 18, 25, 27, 29, 31, 32])/1000
-input_post = np.array([25, 65, 105, 250])/1000
+# input_pre = np.array([10, 15, 18, 25, 27, 29, 31, 32])/1000
+# input_post = np.array([25, 65, 105, 250])/1000
+
+input_pre = np.array([25, 65, 105, 250])
+input_post = np.array([25, 65, 105, 250])
 
 Pre, Post = load_neurons(
 	N_Pre, N_Post, neuron_type,
@@ -157,239 +162,292 @@ Post_spk_mon = SpikeMonitor(
 
 # 4. ========== Running network ==========
 
-run(t_run*second)
+store()
+
+rho_all = []
+
+for x in range(0, num_sim):
+	restore()
+	run(t_run*second)
+	rho_all.append(StateMon.rho[0])
+
+# ================== avg rho
+
+n_pot = 0
+
+rho_all = np.array(rho_all)
+
+avg_rho = np.zeros(len(rho_all[0]))
+
+for row in rho_all:
+	avg_rho += row
+	if row[-1] > row[0]:
+		n_pot += 1
+
+avg_rho = avg_rho/num_sim
 
 # 5. ========== Plots ==========
 
-lwdth = 3
+fig0 = plt.figure(constrained_layout=True)
+spec2 = gridspec.GridSpec(ncols=2, nrows=1, figure=fig0)
 
-s1 = 30
 
-mpl.rcParams['axes.linewidth'] = 1.5
+# avg rho
+f2_ax1 = fig0.add_subplot(spec2[0, 0])
 
-# Width, height in inches.
-fig = plt.figure(figsize = (15, 26))
+plt.plot(StateMon.t, avg_rho, color = 'k', linestyle = '-', label = '$\\rho_{avg}$')
 
-gs = gridspec.GridSpec(12, 1, height_ratios = [2, 2, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4])
+for row in rho_all:
+	plt.plot(StateMon.t, row, color = 'lightgrey', linestyle = '--')
 
-# 5.1 ==== Pre neuron spike activity
+plt.hlines(rho_all[0][0], 0, StateMon.t[-1], color = 'k', linestyle = '--', label = '$\\rho_{init}$')
 
-ax1 = fig.add_subplot(gs[0, 0])
-ax1.vlines(Pre_spk_mon.t/ms, 0.5, 1.75, color = 'blue', linewidth = lwdth)
+plt.ylabel('rho (a.u.)')
+plt.xlabel('time (sec)')
+plt.title('$\\rho$ evolution')
 
-ax1.axhline(linewidth = lwdth, color = 'blue', y = 0.5)
-ax1.set_yticks([])
-ax1.set_xticklabels([])
-plt.ylabel('Pre ${i}$', fontsize = s1, color = 'black', rotation = 0)
-ax1.yaxis.set_label_coords(-0.15, 0.3)
-plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
-plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
-plt.ylim(0, 2)
-plt.xlim(0, t_run*1000)
-plt.xticks(size = s1)
-plt.yticks(size = s1)
+# pot/dep %
+f2_ax2 = fig0.add_subplot(spec2[0, 1])
 
-# 5.2 ==== Post neuron spike activity
+f2_ax2.pie([(n_pot/num_sim)*100, (1-(n_pot/num_sim))*100], labels=['pot', 'dep'], autopct='%1.1f%%', shadow=True, startangle=90)
 
-ax2 = fig.add_subplot(gs[1, 0])
-ax2.vlines(Post_spk_mon.t/ms, 0.5, 1.75, color = 'red', linewidth = lwdth)
-ax2.axhline(linewidth = lwdth, color = 'red', y = 0.5)
-ax2.set_yticks([])
-ax2.set_xticklabels([])
+f2_ax2.axis('equal')
 
-plt.ylabel('Post ${j}$', fontsize = s1, color = 'black', rotation = 0)
+plt.title('Pot. vs Dep.')
 
-ax2.yaxis.set_label_coords(-0.15, 0.3)
+# add by how much on avg dep/pot change rho @ the end
 
-plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
-plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
-plt.ylim(0, 2)
-plt.xlim(0, t_run*1000)
-plt.xticks(size = s1)
-plt.yticks(size = s1)
 
-# 5.3 ==== Presynaptic calcium trace
 
-ax3 = fig.add_subplot(gs[3, 0])
-ax3.plot(StateMon.t/ms, StateMon.xpre[0], color = 'blue', linewidth = lwdth)
+plt.show()
 
-# Adapted learning rule has threshold on pre- trace as well
-if plasticity_rule == 'LR2' or plasticity_rule == 'LR3' or plasticity_rule == 'LR3_2':
-	ax3.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, 
-		y = thr_pre, 
-		label = '$\\theta_{pre}$')
+# lwdth = 3
 
-	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
-		bbox_to_anchor = (1, 1.3), 
-		ncol = 3)
+# s1 = 30
 
-plt.ylabel('$x_{Pre}$ \n(a.u.)', size = s1, color = 'black',
-	horizontalalignment = 'center', 
-	labelpad = 20)
+# mpl.rcParams['axes.linewidth'] = 1.5
 
-ax3.yaxis.set_label_coords(-0.15, 0.3)
-ax3.set_xticklabels([])
+# # Width, height in inches.
+# fig = plt.figure(figsize = (15, 26))
 
-plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
-plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+# gs = gridspec.GridSpec(12, 1, height_ratios = [2, 2, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4])
 
-major_yticks = np.linspace(0, max(StateMon.xpre[0])*1.1, 4)
+# # 5.1 ==== Pre neuron spike activity
 
-ax3.set_yticks(np.around(major_yticks, 1))
+# ax1 = fig.add_subplot(gs[0, 0])
+# ax1.vlines(Pre_spk_mon.t/ms, 0.5, 1.75, color = 'blue', linewidth = lwdth)
 
-plt.ylim(0, max(StateMon.xpre[0])*1.1)
-plt.xlim(0, t_run*1000)
-plt.xticks(size = s1)
-plt.yticks(size = s1)
+# ax1.axhline(linewidth = lwdth, color = 'blue', y = 0.5)
+# ax1.set_yticks([])
+# ax1.set_xticklabels([])
+# plt.ylabel('Pre ${i}$', fontsize = s1, color = 'black', rotation = 0)
+# ax1.yaxis.set_label_coords(-0.15, 0.3)
+# plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
+# plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+# plt.ylim(0, 2)
+# plt.xlim(0, t_run*1000)
+# plt.xticks(size = s1)
+# plt.yticks(size = s1)
 
-# 5.4 ==== Postsynaptic calcium trace
+# # 5.2 ==== Post neuron spike activity
 
-ax4 = fig.add_subplot(gs[5, 0])
-ax4.plot(StateMon.t/ms, StateMon.xpost[0], color = 'red', linewidth = lwdth) 
-ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_post,
-	label = '$\\theta_{post}$')
-ax4.set_xticklabels([])
+# ax2 = fig.add_subplot(gs[1, 0])
+# ax2.vlines(Post_spk_mon.t/ms, 0.5, 1.75, color = 'red', linewidth = lwdth)
+# ax2.axhline(linewidth = lwdth, color = 'red', y = 0.5)
+# ax2.set_yticks([])
+# ax2.set_xticklabels([])
 
-plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
-	bbox_to_anchor = (1, 1.3), 
-	ncol = 3)
+# plt.ylabel('Post ${j}$', fontsize = s1, color = 'black', rotation = 0)
 
-plt.ylabel('$x_{Post}$ \n(a.u.) ', size = s1, color = 'black', 
-	horizontalalignment = 'center', 
-	labelpad = 20)
+# ax2.yaxis.set_label_coords(-0.15, 0.3)
 
-ax4.yaxis.set_label_coords(-0.15, 0.3)
-ax4.set_xticklabels([])
+# plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
+# plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+# plt.ylim(0, 2)
+# plt.xlim(0, t_run*1000)
+# plt.xticks(size = s1)
+# plt.yticks(size = s1)
 
-plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
-plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+# # 5.3 ==== Presynaptic calcium trace
 
-major_yticks = np.linspace(0, max(StateMon.xpost[0])*1.1, 4)
+# ax3 = fig.add_subplot(gs[3, 0])
+# ax3.plot(StateMon.t/ms, StateMon.xpre[0], color = 'blue', linewidth = lwdth)
 
-ax4.set_yticks(np.around(major_yticks, 1))
+# # Adapted learning rule has threshold on pre- trace as well
+# if plasticity_rule == 'LR2' or plasticity_rule == 'LR3' or plasticity_rule == 'LR3_2':
+# 	ax3.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, 
+# 		y = thr_pre, 
+# 		label = '$\\theta_{pre}$')
 
-plt.ylim(0, np.around(max(StateMon.xpost[0]), 1)*1.1)
-plt.xlim(0, t_run*1000)
-plt.xticks(size = s1)
-plt.yticks(size = s1)
+# 	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
+# 		bbox_to_anchor = (1, 1.3), 
+# 		ncol = 3)
 
-# 5.5* ==== Stop-learning calcium trace
+# plt.ylabel('$x_{Pre}$ \n(a.u.)', size = s1, color = 'black',
+# 	horizontalalignment = 'center', 
+# 	labelpad = 20)
 
-if plasticity_rule == 'LR3_1' or plasticity_rule == 'LR3_2':
-	ax4 = fig.add_subplot(gs[7, 0])
-	ax4.plot(StateMon.t/ms, StateMon.xstop[0], color = 'tab:blue', linewidth = lwdth) 
+# ax3.yaxis.set_label_coords(-0.15, 0.3)
+# ax3.set_xticklabels([])
 
-	ax4.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, y = thr_stop_h,
-		label = '$\\theta_{stop}^{h}$')
+# plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
+# plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
 
-	ax4.axhline(linestyle = 'dotted', color = 'grey', lw = lwdth/2, y = thr_stop_l,
-		label = '$\\theta_{stop}^{l}$')
+# major_yticks = np.linspace(0, max(StateMon.xpre[0])*1.1, 4)
 
-	ax4.set_xticklabels([])
+# ax3.set_yticks(np.around(major_yticks, 1))
 
-	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
-		bbox_to_anchor = (1, 1.3), 
-		ncol = 4)
+# plt.ylim(0, max(StateMon.xpre[0])*1.1)
+# plt.xlim(0, t_run*1000)
+# plt.xticks(size = s1)
+# plt.yticks(size = s1)
 
-	plt.ylabel('$x_{stop}$ \n(a.u.) ', size = s1, color = 'black', 
-		horizontalalignment = 'center', 
-		labelpad = 20)
+# # 5.4 ==== Postsynaptic calcium trace
 
-	ax4.yaxis.set_label_coords(-0.15, 0.3)
-	ax4.set_xticklabels([])
+# ax4 = fig.add_subplot(gs[5, 0])
+# ax4.plot(StateMon.t/ms, StateMon.xpost[0], color = 'red', linewidth = lwdth) 
+# ax4.axhline(linestyle = 'dashed', color = 'grey', lw = lwdth/2, y = thr_post,
+# 	label = '$\\theta_{post}$')
+# ax4.set_xticklabels([])
 
-	plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
-	plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+# plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
+# 	bbox_to_anchor = (1, 1.3), 
+# 	ncol = 3)
 
-	major_yticks = np.linspace(0, max(StateMon.xpost[0])*1.1, 4)
+# plt.ylabel('$x_{Post}$ \n(a.u.) ', size = s1, color = 'black', 
+# 	horizontalalignment = 'center', 
+# 	labelpad = 20)
 
-	ax4.set_yticks(np.around(major_yticks, 1))
+# ax4.yaxis.set_label_coords(-0.15, 0.3)
+# ax4.set_xticklabels([])
 
-	plt.ylim(0, np.around(max(StateMon.xpost[0]), 1)*1.1)
-	plt.xlim(0, t_run*1000)
-	plt.xticks(size = s1)
-	plt.yticks(size = s1)
+# plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
+# plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
 
-# 5.6 ==== Rho state variable
+# major_yticks = np.linspace(0, max(StateMon.xpost[0])*1.1, 4)
 
-ax5 = fig.add_subplot(gs[9, 0])
-ax5.axhline(linestyle = 'dashed', color = 'dimgrey', lw = lwdth/2, 
-	y = thr_b_rho, label = '$\\theta_{\\rho}$')
+# ax4.set_yticks(np.around(major_yticks, 1))
 
-ax5.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, 
-	y = rho_max,
-	label = 'UP state')
-ax5.axhline(linestyle = 'dashed', color = 'black', lw = lwdth/2, 
-	y = rho_min, 
-	label = 'DOWN state')
-ax5.plot(StateMon.t/ms, StateMon.rho[0], color = 'k', linewidth = lwdth)
+# plt.ylim(0, np.around(max(StateMon.xpost[0]), 1)*1.1)
+# plt.xlim(0, t_run*1000)
+# plt.xticks(size = s1)
+# plt.yticks(size = s1)
 
-plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
-	bbox_to_anchor = (1, 1.3),
-	ncol = 3)
-plt.ylabel('Efficacy $\\rho$ \n(a.u.)', size = s1, 
-	horizontalalignment = 'center', 
-	labelpad = 20)
+# # 5.5* ==== Stop-learning calcium trace
 
-ax5.set_xticklabels([])
-ax5.yaxis.set_label_coords(-0.15, 0.3)
+# if plasticity_rule == 'LR3_1' or plasticity_rule == 'LR3_2':
+# 	ax4 = fig.add_subplot(gs[7, 0])
+# 	ax4.plot(StateMon.t/ms, StateMon.xstop[0], color = 'tab:blue', linewidth = lwdth) 
 
-plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
-plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+# 	ax4.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, y = thr_stop_h,
+# 		label = '$\\theta_{stop}^{h}$')
 
-major_yticks = [rho_min, rho_max/2, rho_max]
+# 	ax4.axhline(linestyle = 'dotted', color = 'grey', lw = lwdth/2, y = thr_stop_l,
+# 		label = '$\\theta_{stop}^{l}$')
 
-ax5.set_yticks(major_yticks)
+# 	ax4.set_xticklabels([])
 
-plt.ylim(-0.25, 1.25)
-plt.xlim(0, t_run*1000)
-plt.xticks(size = s1)
-plt.yticks(size = s1)
+# 	plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
+# 		bbox_to_anchor = (1, 1.3), 
+# 		ncol = 4)
 
-# 5.7 ==== Weight
+# 	plt.ylabel('$x_{stop}$ \n(a.u.) ', size = s1, color = 'black', 
+# 		horizontalalignment = 'center', 
+# 		labelpad = 20)
 
-ax6 = fig.add_subplot(gs[11, 0])
-ax6.plot(StateMon.t/ms, StateMon.w[0]/mV, label = 'w', color = 'k',
-	linewidth = lwdth) 
-ax6.axhline(color = 'grey', lw = lwdth, y = w_max/mV)
+# 	ax4.yaxis.set_label_coords(-0.15, 0.3)
+# 	ax4.set_xticklabels([])
 
-plt.ylabel('Weight $w$\n(mV)', size = s1, horizontalalignment = 'center',
-	labelpad = 20)
+# 	plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
+# 	plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
 
-ax6.yaxis.set_label_coords(-0.15, 0.3)
+# 	major_yticks = np.linspace(0, max(StateMon.xpost[0])*1.1, 4)
 
-plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
-plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+# 	ax4.set_yticks(np.around(major_yticks, 1))
 
-major_yticks = [0, w_max/mV/2, w_max/mV]
+# 	plt.ylim(0, np.around(max(StateMon.xpost[0]), 1)*1.1)
+# 	plt.xlim(0, t_run*1000)
+# 	plt.xticks(size = s1)
+# 	plt.yticks(size = s1)
 
-ax6.set_yticks(major_yticks) 
+# # 5.6 ==== Rho state variable
 
-plt.ylim(-0.25, w_max/mV)
-plt.xlim(0, t_run*1000)
-plt.xticks(size = s1)
-plt.yticks(size = s1)
-plt.xlabel('Time (ms)', size = s1)
+# ax5 = fig.add_subplot(gs[9, 0])
+# ax5.axhline(linestyle = 'dashed', color = 'dimgrey', lw = lwdth/2, 
+# 	y = thr_b_rho, label = '$\\theta_{\\rho}$')
 
-# 5.8 ==== Exporting plot to file
+# ax5.axhline(linestyle = 'solid', color = 'grey', lw = lwdth/2, 
+# 	y = rho_max,
+# 	label = 'UP state')
+# ax5.axhline(linestyle = 'dashed', color = 'black', lw = lwdth/2, 
+# 	y = rho_min, 
+# 	label = 'DOWN state')
+# ax5.plot(StateMon.t/ms, StateMon.rho[0], color = 'k', linewidth = lwdth)
 
-results_path = os.path.join(parent_dir, 'plots_results')
-is_dir = os.path.isdir(results_path)
+# plt.legend(loc = 'upper right', prop = {'size':s1-10}, 
+# 	bbox_to_anchor = (1, 1.3),
+# 	ncol = 3)
+# plt.ylabel('Efficacy $\\rho$ \n(a.u.)', size = s1, 
+# 	horizontalalignment = 'center', 
+# 	labelpad = 20)
 
-if not(is_dir):
-	os.mkdir(results_path)
+# ax5.set_xticklabels([])
+# ax5.yaxis.set_label_coords(-0.15, 0.3)
 
-if exp_type == 'showcase':
-	plot_name = sim_id + '_' + str(job_seed) + '_' + exp_type + '_' + plasticity_rule + '_' + parameter_set + str(bistability) + '.png'
-else:
-	plot_name = sim_id + '_' + str(job_seed) + '_' + exp_type + '_' + plasticity_rule + '_' + parameter_set + str(bistability) + '_' + str(pre_rate) + '_' + str(post_rate) + '.png'
+# plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
+# plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
 
+# major_yticks = [rho_min, rho_max/2, rho_max]
 
-plt.savefig(os.path.join(results_path, plot_name), 
-	bbox_inches = 'tight', 
-	dpi = 200)
+# ax5.set_yticks(major_yticks)
 
-# plt.show()
+# plt.ylim(-0.25, 1.25)
+# plt.xlim(0, t_run*1000)
+# plt.xticks(size = s1)
+# plt.yticks(size = s1)
+
+# # 5.7 ==== Weight
+
+# ax6 = fig.add_subplot(gs[11, 0])
+# ax6.plot(StateMon.t/ms, StateMon.w[0]/mV, label = 'w', color = 'k',
+# 	linewidth = lwdth) 
+# ax6.axhline(color = 'grey', lw = lwdth, y = w_max/mV)
+
+# plt.ylabel('Weight $w$\n(mV)', size = s1, horizontalalignment = 'center',
+# 	labelpad = 20)
+
+# ax6.yaxis.set_label_coords(-0.15, 0.3)
+
+# plt.tick_params(axis = 'x', which = 'major', width = lwdth, length = 5)
+# plt.tick_params(axis = 'y', which = 'major', width = lwdth, length = 0)
+
+# major_yticks = [0, w_max/mV/2, w_max/mV]
+
+# ax6.set_yticks(major_yticks) 
+
+# plt.ylim(-0.25, w_max/mV)
+# plt.xlim(0, t_run*1000)
+# plt.xticks(size = s1)
+# plt.yticks(size = s1)
+# plt.xlabel('Time (ms)', size = s1)
+
+# # 5.8 ==== Exporting plot to file
+
+# results_path = os.path.join(parent_dir, 'plots_results')
+# is_dir = os.path.isdir(results_path)
+
+# if not(is_dir):
+# 	os.mkdir(results_path)
+
+# if exp_type == 'showcase':
+# 	plot_name = sim_id + '_' + str(job_seed) + '_' + exp_type + '_' + plasticity_rule + '_' + parameter_set + str(bistability) + '.png'
+# else:
+# 	plot_name = sim_id + '_' + str(job_seed) + '_' + exp_type + '_' + plasticity_rule + '_' + parameter_set + str(bistability) + '_' + str(pre_rate) + '_' + str(post_rate) + '.png'
+
+
+# plt.savefig(os.path.join(results_path, plot_name), 
+# 	bbox_inches = 'tight', 
+# 	dpi = 200)
 
 # END.
 
