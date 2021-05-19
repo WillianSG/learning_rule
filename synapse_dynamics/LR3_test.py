@@ -57,7 +57,7 @@ from load_neurons import *
 
 # 1 ========== Execution parameters ==========
 
-num_sim = 3
+num_sim = 4
 
 exp_type = 'rates' # 'showcase', 'rates'
 
@@ -174,6 +174,10 @@ for x in range(0, num_sim):
 # ================== avg rho
 
 n_pot = 0
+n_dep = 0
+
+avg_pot_mag = 0 # avg potentiation magnitude
+avg_dep_mag = 0 # avg depression magnitude
 
 rho_all = np.array(rho_all)
 
@@ -183,24 +187,48 @@ for row in rho_all:
 	avg_rho += row
 	if row[-1] > row[0]:
 		n_pot += 1
+		avg_pot_mag += row[-1] - row[0]
+	elif row[-1] < row[0]:
+		n_dep += 1
+		avg_dep_mag += row[0] - row[-1]
+	else:
+		pass
+
+if n_dep == 0:
+	n_dep = 1
+
+if n_pot == 0:
+	n_pot = 1
+
+avg_pot_mag = avg_pot_mag/n_pot
+avg_dep_mag = avg_dep_mag/n_dep
 
 avg_rho = avg_rho/num_sim
 
+pot_perc = int((n_pot/num_sim)*100)
+dep_perc = int((1-(n_pot/num_sim))*100)
+
+pot_avg_perc_change = np.round((avg_pot_mag*100)/rho_all[0][0], 1)
+dep_avg_perc_change = np.round((avg_dep_mag*100)/rho_all[0][0], 1)
+
 # 5. ========== Plots ==========
 
-fig0 = plt.figure(constrained_layout=True)
-spec2 = gridspec.GridSpec(ncols=2, nrows=1, figure=fig0)
-
+fig0 = plt.figure(constrained_layout = True)
+spec2 = gridspec.GridSpec(ncols = 2, nrows = 1, figure = fig0)
 
 # avg rho
 f2_ax1 = fig0.add_subplot(spec2[0, 0])
 
-plt.plot(StateMon.t, avg_rho, color = 'k', linestyle = '-', label = '$\\rho_{avg}$')
-
 for row in rho_all:
 	plt.plot(StateMon.t, row, color = 'lightgrey', linestyle = '--')
 
+plt.plot(StateMon.t, avg_rho, color = 'k', linestyle = '-', label = '$\\rho_{avg}$')
+
 plt.hlines(rho_all[0][0], 0, StateMon.t[-1], color = 'k', linestyle = '--', label = '$\\rho_{init}$')
+
+f2_ax1.legend()
+
+f2_ax1.set_ylim([0.0, 1.0])
 
 plt.ylabel('rho (a.u.)')
 plt.xlabel('time (sec)')
@@ -209,15 +237,13 @@ plt.title('$\\rho$ evolution')
 # pot/dep %
 f2_ax2 = fig0.add_subplot(spec2[0, 1])
 
-f2_ax2.pie([(n_pot/num_sim)*100, (1-(n_pot/num_sim))*100], labels=['pot', 'dep'], autopct='%1.1f%%', shadow=True, startangle=90)
+f2_ax2.pie([pot_perc, dep_perc], labels = ['+ (' + str(pot_avg_perc_change) + '%)', '- (' + str(dep_avg_perc_change) + '%)'], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['lightblue', 'tomato'])
 
 f2_ax2.axis('equal')
 
 plt.title('Pot. vs Dep.')
 
 # add by how much on avg dep/pot change rho @ the end
-
-
 
 plt.show()
 
