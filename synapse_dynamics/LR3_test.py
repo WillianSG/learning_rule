@@ -165,11 +165,17 @@ Post_spk_mon = SpikeMonitor(
 store()
 
 rho_all = []
+xpost_all = []
+xpre_all = []
 
 for x in range(0, num_sim):
 	restore()
+
 	run(t_run*second)
+
 	rho_all.append(StateMon.rho[0])
+	xpost_all.append(StateMon.xpost[0])
+	xpre_all.append(StateMon.xpre[0])
 
 # ================== avg rho
 
@@ -211,16 +217,29 @@ dep_perc = int((1-(n_pot/num_sim))*100)
 pot_avg_perc_change = np.round((avg_pot_mag*100)/rho_all[0][0], 1)
 dep_avg_perc_change = np.round((avg_dep_mag*100)/rho_all[0][0], 1)
 
+xpre_all = np.array(xpre_all)
+xpost_all = np.array(xpost_all)
+
+avg_xpre = np.zeros(len(xpre_all[0]))
+avg_xpost = np.zeros(len(xpost_all[0]))
+
+for x in range(0, num_sim):
+	avg_xpre += xpre_all[x]
+	avg_xpost += xpost_all[x]
+
+avg_xpre = avg_xpre/num_sim
+avg_xpost = avg_xpost/num_sim
+
 # 5. ========== Plots ==========
 
 fig0 = plt.figure(constrained_layout = True)
-spec2 = gridspec.GridSpec(ncols = 2, nrows = 1, figure = fig0)
+spec2 = gridspec.GridSpec(ncols = 2, nrows = 2, figure = fig0)
 
 # avg rho
 f2_ax1 = fig0.add_subplot(spec2[0, 0])
 
 for row in rho_all:
-	plt.plot(StateMon.t, row, color = 'lightgrey', linestyle = '--')
+	plt.plot(StateMon.t, row, color = 'lightgrey', linestyle = '--', linewidth = 0.5)
 
 plt.plot(StateMon.t, avg_rho, color = 'k', linestyle = '-', label = '$\\rho_{avg}$')
 
@@ -243,7 +262,39 @@ f2_ax2.axis('equal')
 
 plt.title('Pot. vs Dep.')
 
-# add by how much on avg dep/pot change rho @ the end
+# avg Ca pre
+f2_ax3 = fig0.add_subplot(spec2[1, 0])
+
+for row in xpre_all:
+	plt.plot(StateMon.t, row, color = 'lightgrey', linestyle = '--', linewidth = 0.5)
+
+plt.hlines(thr_pre, 0, StateMon.t[-1], color = 'lightcoral', linestyle = '--', label = '$\\theta_{pre}$')
+
+plt.plot(StateMon.t, avg_xpre, color = 'lightcoral', linestyle = '-', label = '$Ca^{2+}_{avg}$')
+
+plt.ylabel('$Ca^{2+}_{pre}$')
+plt.xlabel('time (sec)')
+plt.title('$Ca^{2+}_{pre}$ evolution')
+
+f2_ax3.set_ylim([0.0, 1.0])
+f2_ax3.legend()
+
+# avg Ca post
+f2_ax4 = fig0.add_subplot(spec2[1, 1])
+
+for row in xpost_all:
+	plt.plot(StateMon.t, row, color = 'lightgrey', linestyle = '--', linewidth = 0.5)
+
+plt.hlines(thr_post, 0, StateMon.t[-1], color = 'lightblue', linestyle = '--', label = '$\\theta_{post}$')
+
+plt.plot(StateMon.t, avg_xpost, color = 'lightblue', linestyle = '-', label = '$Ca^{2+}_{avg}$')
+
+plt.ylabel('$Ca^{2+}_{post}$')
+plt.xlabel('time (sec)')
+plt.title('$Ca^{2+}_{post}$ evolution')
+
+f2_ax4.set_ylim([0.0, 1.0])
+f2_ax4.legend()
 
 plt.show()
 
