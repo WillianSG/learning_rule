@@ -103,17 +103,105 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			rho_neg2 = rho_neg
 			tau_rho = 1000*ms
 	elif plasticity_rule == 'LR3':
-		if parameter_set =='0.0':
+		if parameter_set == '0.0':
 			tau_xpre = 50*ms
 			tau_xpost = 50*ms
 			tau_rho = 1000*ms
 			xpre_jump = 0.5
-			xpost_jump = 1.0
+			xpost_jump = 0.5
 			thr_post = 0.5
-			thr_pre = 0.3
+			thr_pre = 0.5
 			rho_neg = -0.05
 			rho_neg2 = -0.05
 			xpre_factor = 0.1
+		elif parameter_set == '0.1': # from 0.0
+			tau_xpre = 50*ms
+			tau_xpost = 40*ms #
+			tau_rho = 1000*ms
+			xpre_jump = 0.5
+			xpost_jump = 0.5
+			thr_post = 0.5
+			thr_pre = 0.3 #
+			rho_neg = -0.05
+			rho_neg2 = -0.05
+			xpre_factor = 0.1
+		elif parameter_set == '0.2': # from 0.1
+			tau_xpre = 50*ms
+			tau_xpost = 40*ms
+			tau_rho = 1000*ms
+			xpre_jump = 0.4 #
+			xpost_jump = 0.5
+			thr_post = 0.4 #
+			thr_pre = 0.3
+			rho_neg = -0.06 #
+			rho_neg2 = -0.05
+			xpre_factor = 0.1
+		elif parameter_set == '0.3': # from none
+			tau_xpre = 48*ms
+			tau_xpost = 40*ms
+			tau_rho = 1000*ms
+			xpre_jump = 0.5
+			xpost_jump = 0.5
+			thr_post = 0.4
+			thr_pre = 0.3
+			rho_neg = -0.05
+			rho_neg2 = -0.005
+			xpre_factor = 0.05
+		elif parameter_set == '0.31': # from 0.3
+			tau_xpre = 48*ms
+			tau_xpost = 38*ms #
+			tau_rho = 1000*ms
+			xpre_jump = 0.5
+			xpost_jump = 0.5
+			thr_post = 0.4
+			thr_pre = 0.3
+			rho_neg = -0.05
+			rho_neg2 = -0.005
+			xpre_factor = 0.05
+		elif parameter_set == '0.32': # from 0.31
+			tau_xpre = 48*ms
+			tau_xpost = 35*ms #
+			tau_rho = 1000*ms
+			xpre_jump = 0.5
+			xpost_jump = 0.5
+			thr_post = 0.4
+			thr_pre = 0.3
+			rho_neg = -0.05
+			rho_neg2 = -0.005
+			xpre_factor = 0.05
+		elif parameter_set == '0.33': # from 0.31
+			tau_xpre = 50*ms #
+			tau_xpost = 36*ms #
+			tau_rho = 1000*ms
+			xpre_jump = 0.5
+			xpost_jump = 0.5
+			thr_post = 0.4
+			thr_pre = 0.3
+			rho_neg = -0.05
+			rho_neg2 = -0.005
+			xpre_factor = 0.05
+		elif parameter_set == '0.34': # from 0.33
+			tau_xpre = 50*ms #
+			tau_xpost = 35*ms #
+			tau_rho = 1000*ms
+			xpre_jump = 0.5
+			xpost_jump = 0.5
+			thr_post = 0.4
+			thr_pre = 0.3
+			rho_neg = -0.05
+			rho_neg2 = -0.005
+			xpre_factor = 0.05
+		elif parameter_set == '0.4': # from 0.3
+			tau_xpre = 48*ms
+			tau_xpost = 40*ms
+			tau_rho = 1000*ms
+			xpre_jump = 0.5
+			xpost_jump = 0.5
+			thr_post = 0.4
+			thr_pre = 0.3
+			rho_neg = -0.03
+			rho_neg2 = -0.005
+			xpre_factor = 0.05
 	else: # default '2.1'
 		tau_xpre = 13*ms
 		tau_xpost = 33*ms

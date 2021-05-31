@@ -57,21 +57,21 @@ from load_neurons import *
 
 # 1 ========== Execution parameters ==========
 
-num_sim = int(sys.argv[3])
-
 exp_type = 'rates' # 'showcase', 'rates'
+
+sim_runs = 1
 
 # Simulation run variables
 dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 
-t_run = 1 # simulation time (seconds)
+t_run = 0.1 # simulation time (seconds)
 
 int_meth_syn = 'euler' # Synaptic integration method
 
 # 1.1 ========== Rule's parameters
 
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
-parameter_set = str(sys.argv[4])
+parameter_set = '0.0'
 bistability = False
 
 [tau_xpre,
@@ -118,11 +118,8 @@ else:
 
 # 3 ========== Brian2's neuron objects
 
-# input_pre = np.array([10, 15, 18, 25, 27, 29, 31, 32])/1000
-# input_post = np.array([25, 65, 105, 250])/1000
-
-input_pre = np.array([25, 65, 105, 250])
-input_post = np.array([25, 65, 105, 250])
+input_pre = np.array([10, 15, 18, 25, 27, 29, 31, 32])/1000
+input_post = np.array([25, 65, 105, 250])/1000
 
 Pre, Post = load_neurons(
 	N_Pre, N_Post, neuron_type,
@@ -164,166 +161,13 @@ Post_spk_mon = SpikeMonitor(
 
 store()
 
-rho_all = []
-xpost_all = []
-xpre_all = []
-
-for x in range(0, num_sim):
-	print('> running sim #', x)
+for x in range(0, sim_runs):
 	restore()
-
 	run(t_run*second)
 
-	rho_all.append(StateMon.rho[0])
-	xpost_all.append(StateMon.xpost[0])
-	xpre_all.append(StateMon.xpre[0])
-
-# ================== avg rho
-
-n_pot = 0
-n_dep = 0
-
-avg_pot_mag = 0 # avg potentiation magnitude
-avg_dep_mag = 0 # avg depression magnitude
-
-rho_all = np.array(rho_all)
-
-avg_rho = np.zeros(len(rho_all[0]))
-
-for row in rho_all:
-	avg_rho += row
-	if row[-1] > row[0]:
-		n_pot += 1
-		avg_pot_mag += row[-1] - row[0]
-	elif row[-1] < row[0]:
-		n_dep += 1
-		avg_dep_mag += row[0] - row[-1]
-	else:
-		pass
-
-if n_dep == 0:
-	n_dep = 1
-
-if n_pot == 0:
-	n_pot = 1
-
-avg_pot_mag = avg_pot_mag/n_pot
-avg_dep_mag = avg_dep_mag/n_dep
-
-avg_rho = avg_rho/num_sim
-
-pot_perc = int((n_pot/num_sim)*100)
-dep_perc = int((1-(n_pot/num_sim))*100)
-
-pot_avg_perc_change = np.round((avg_pot_mag*100)/rho_all[0][0], 2)
-dep_avg_perc_change = np.round((avg_dep_mag*100)/rho_all[0][0], 2)
-
-xpre_all = np.array(xpre_all)
-xpost_all = np.array(xpost_all)
-
-avg_xpre = np.zeros(len(xpre_all[0]))
-avg_xpost = np.zeros(len(xpost_all[0]))
-
-for x in range(0, num_sim):
-	avg_xpre += xpre_all[x]
-	avg_xpost += xpost_all[x]
-
-avg_xpre = avg_xpre/num_sim
-avg_xpost = avg_xpost/num_sim
+	print(StateMon.rho[0])
 
 # 5. ========== Plots ==========
-
-fig0 = plt.figure(constrained_layout = True)
-spec2 = gridspec.GridSpec(ncols = 2, nrows = 2, figure = fig0)
-
-# avg rho
-f2_ax1 = fig0.add_subplot(spec2[0, 0])
-
-for row in rho_all:
-	plt.plot(StateMon.t, row, color = 'lightgrey', linestyle = '--', linewidth = 0.5)
-
-plt.plot(StateMon.t, avg_rho, color = 'k', linestyle = '-', label = '$\\rho_{avg}$')
-
-plt.hlines(rho_all[0][0], 0, StateMon.t[-1], color = 'k', linestyle = '--', label = '$\\rho_{init}$')
-
-f2_ax1.legend(prop = {'size': 5})
-
-f2_ax1.set_ylim([0.0, 1.0])
-
-plt.ylabel('rho (a.u.)', size = 6)
-plt.xlabel('time (sec)', size = 6)
-plt.title('$\\rho$ evolution', size = 8)
-
-# pot/dep %
-f2_ax2 = fig0.add_subplot(spec2[0, 1])
-
-f2_ax2.pie([pot_perc, dep_perc], labels = ['+ (' + str(pot_avg_perc_change) + '%)', '- (' + str(dep_avg_perc_change) + '%)'], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['lightblue', 'tomato'])
-
-f2_ax2.axis('equal')
-
-plt.title('Pot. vs Dep.', size = 8)
-
-# avg Ca pre
-f2_ax3 = fig0.add_subplot(spec2[1, 0])
-
-for row in xpre_all:
-	plt.plot(StateMon.t, row, color = 'lightgrey', linestyle = '--', linewidth = 0.5)
-
-plt.plot(StateMon.t, avg_xpre, color = 'lightcoral', linestyle = '-', label = '$Ca^{2+}_{avg}$')
-
-plt.hlines(thr_pre, 0, StateMon.t[-1], color = 'lightcoral', linestyle = '--', label = '$\\theta_{pre}$')
-
-plt.ylabel('$Ca^{2+}_{pre}$', size = 6)
-plt.xlabel('time (sec)', size = 6)
-plt.title('$Ca^{2+}_{pre}$ evolution (' + str(pre_rate) + 'Hz)', size = 8)
-
-f2_ax3.set_ylim([0.0, 1.0])
-f2_ax3.legend(prop = {'size': 5})
-
-# avg Ca post
-f2_ax4 = fig0.add_subplot(spec2[1, 1])
-
-for row in xpost_all:
-	plt.plot(StateMon.t, row, color = 'lightgrey', linestyle = '--', linewidth = 0.5)
-
-plt.plot(StateMon.t, avg_xpost, color = 'lightblue', linestyle = '-', label = '$Ca^{2+}_{avg}$')
-
-plt.hlines(thr_post, 0, StateMon.t[-1], color = 'lightblue', linestyle = '--', label = '$\\theta_{post}$')
-
-plt.ylabel('$Ca^{2+}_{post}$', size = 6)
-plt.xlabel('time (sec)', size = 6)
-plt.title('$Ca^{2+}_{post}$ evolution (' + str(post_rate) + 'Hz)', size = 8)
-
-f2_ax4.set_ylim([0.0, 1.0])
-f2_ax4.legend(prop = {'size': 5})
-
-# plt.show()
-
-# parameter table
-# f2_ax5 = fig0.add_subplot(spec2[2, 0])
-
-# paramers = [['tau_xpre', tau_xpre],
-# 	['tau_xpost', tau_xpost],
-# 	['tau_rho', tau_rho],
-# 	['xpre_jump', xpre_jump],
-# 	['xpost_jump', xpost_jump],
-# 	['thr_post', thr_post],
-# 	['thr_pre', thr_pre],
-# 	['rho_neg', rho_neg],
-# 	['rho_neg2', rho_neg2],
-# 	['xpre_factor', xpre_factor]]
-
-# column_labels = ['parameter', 'value']
-
-# f2_ax5.axis('tight')
-# f2_ax5.axis('off')
-# f2_ax5.table(cellText = paramers, colLabels = column_labels, loc = "center")
-
-plot_name = sim_id + '_statistics_' + str(num_sim) + '_' + plasticity_rule + '_' + parameter_set.replace('.', '-') + '_' + str(bistability) + '_pre' + str(pre_rate) + '_post' + str(post_rate)
-
-plt.savefig(os.path.join(results_path, plot_name), 
-	bbox_inches = 'tight', 
-	dpi = 200)
 
 # lwdth = 3
 
