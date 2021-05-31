@@ -136,6 +136,17 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			rho_neg = -0.06 #
 			rho_neg2 = -0.05
 			xpre_factor = 0.1
+		elif parameter_set == '0.21': # from 0.2
+			tau_xpre = 50*ms
+			tau_xpost = 40*ms
+			tau_rho = 1000*ms
+			xpre_jump = 0.4
+			xpost_jump = 0.5
+			thr_post = 0.4
+			thr_pre = 0.3
+			rho_neg = -0.06
+			rho_neg2 = -0.01 #
+			xpre_factor = 0.1
 		elif parameter_set == '0.3': # from none
 			tau_xpre = 48*ms
 			tau_xpost = 40*ms

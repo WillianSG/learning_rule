@@ -62,7 +62,7 @@ num_sim = int(sys.argv[3])
 exp_type = 'rates' # 'showcase', 'rates'
 
 # Simulation run variables
-dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
+dt_resolution = 0.01 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 
 t_run = 1 # simulation time (seconds)
 
@@ -235,6 +235,8 @@ avg_xpost = avg_xpost/num_sim
 
 fig0 = plt.figure(constrained_layout = True)
 spec2 = gridspec.GridSpec(ncols = 2, nrows = 2, figure = fig0)
+
+fig0.suptitle('Param. set ' + parameter_set, fontsize = 8)
 
 # avg rho
 f2_ax1 = fig0.add_subplot(spec2[0, 0])
