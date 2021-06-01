@@ -32,8 +32,7 @@ def main():
 		'timestamp': timestamp
 	}
 
-	class_0 = []
-	class_1 = []
+	full_dataset = []
 
 	print('\n- generating patterns (coding lvl: ' + str(coding_lvl) + ')')
 	for loop_c in range(0, dataset_size):
@@ -56,14 +55,10 @@ def main():
 			pattern[position[0]] = 1
 
 		# separatting patterns into two equal size classes
-		if (loop_c+1) % 2 == 0:
-			class_0.append(pattern)
-		else:
-			class_1.append(pattern)
+		full_dataset.append(pattern)
 
 	# making np array
-	class_0 = np.array(class_0)
-	class_1 = np.array(class_1)
+	full_dataset = np.array(full_dataset)
 
 	# pickling dataset
 
@@ -75,13 +70,12 @@ def main():
 	if not(os.path.isdir(dataset_dir)):
 		os.mkdir(dataset_dir)
 
-	fn = os.path.join(dataset_dir, timestamp + '_dataset_Fusi.pickle')
+	fn = os.path.join(dataset_dir, timestamp + '_dataset_Fusi-size_' + str(dataset_size) + '.pickle')
 
 	with open(fn, 'wb') as f:
 		pickle.dump((
 			meta_data,
-			class_0,
-			class_1
+			full_dataset
 			), f)
 
 if __name__ == "__main__":
