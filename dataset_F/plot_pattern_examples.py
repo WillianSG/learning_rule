@@ -11,7 +11,7 @@ import os, sys, pickle, shutil
 
 # dataset = os.path.join(,) # loading data
 
-with open('01Jun2021_11-49-38_dataset_Fusi.pickle','rb') as f:(
+with open('01Jun2021_12-02-01_dataset_Fusi.pickle','rb') as f:(
 	meta_data,
 	class_0,
 	class_1) = pickle.load(f)
@@ -26,4 +26,4 @@ plt.imshow(class_0_ex, cmap = 'Greys', interpolation = 'none')
 plt.xticks([])
 plt.yticks([])
 
-plt.savefig('example_pattern.png')
+plt.savefig(meta_data['timestamp'] + '_example_pattern.png')
