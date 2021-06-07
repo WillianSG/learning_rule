@@ -147,7 +147,18 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			rho_neg = -0.06
 			rho_neg2 = -0.01 #
 			xpre_factor = 0.1
-		elif parameter_set == '0.22': # from 0.21
+		elif parameter_set == '0.211': # from 0.21
+			tau_xpre = 50*ms
+			tau_xpost = 40*ms
+			tau_rho = 1000*ms
+			xpre_jump = 0.4
+			xpost_jump = 0.5
+			thr_post = 0.4
+			thr_pre = 0.3
+			rho_neg = -0.06
+			rho_neg2 = -0.01
+			xpre_factor = 0.08
+		elif parameter_set == '0.212': # from 0.21
 			tau_xpre = 50*ms
 			tau_xpost = 40*ms
 			tau_rho = 1000*ms
@@ -158,16 +169,27 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			rho_neg = -0.06
 			rho_neg2 = -0.03 #
 			xpre_factor = 0.1
-		elif parameter_set == '0.23': # from 0.21
-			tau_xpre = 55*ms
-			tau_xpost = 30*ms # reduced
+		elif parameter_set == '0.213': # from 0.212
+			tau_xpre = 50*ms
+			tau_xpost = 40*ms
 			tau_rho = 1000*ms
-			xpre_jump = 0.6 # incresed
+			xpre_jump = 0.4
 			xpost_jump = 0.5
 			thr_post = 0.4
 			thr_pre = 0.3
-			rho_neg = -0.07 # reduced
-			rho_neg2 = -0.1
+			rho_neg = -0.05
+			rho_neg2 = -0.03
+			xpre_factor = 0.1
+		elif parameter_set == '0.22': # from 0.21
+			tau_xpre = 50*ms
+			tau_xpost = 40*ms
+			tau_rho = 1000*ms
+			xpre_jump = 0.4
+			xpost_jump = 0.5
+			thr_post = 0.4
+			thr_pre = 0.3
+			rho_neg = -0.06
+			rho_neg2 = -0.03 #
 			xpre_factor = 0.1
 		elif parameter_set == '0.3': # from none
 			tau_xpre = 48*ms
