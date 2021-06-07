@@ -53,19 +53,21 @@ from run_frequencies import *
 
 # 1 ========== Execution parameters ==========
 
+num_sim = int(sys.argv[3])
+
 # Simulation run variables
 dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
-t_run = 5 # 5 | simulation time (seconds)
+t_run = 1 # 5 | simulation time (seconds)
 noise = 0.75 # used to introduce difference between spike times betweem pre- and post-
 
 N_Pre = 1
 N_Post = 1
 
 isi_correlation = 'random' # "random", "positive", "negative"
-plasticity_rule = 'LR1' # 'none', 'LR1', 'LR2'
-parameter_set = '1.1' # '2.1'
+plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
+parameter_set = '0.213' # '2.1'
 neuron_type = 'spikegenerator' # 'poisson', 'LIF' , 'spikegenerator'
-bistability = True
+bistability = False
 drho_all_metric = 'original' # 'original', 'mean'
 
 exp_type = 'firing_freq_parallel_'+isi_correlation
@@ -76,8 +78,8 @@ int_meth_syn = 'euler' # Synaptic integration method
 plot_single_trial = False  # True = plot single simulations
 
 # Range of pre- and postsynaptic frequencies (Hz)
-min_freq = 0
-max_freq = 100
+min_freq = int(sys.argv[1])
+max_freq = int(sys.argv[2])
 step = 5
 
 # Frequency activity ranges (for pre and post neurons)
@@ -113,27 +115,28 @@ drho_all = np.zeros((len(pre_freq),len(post_freq)))
 	beta,
 	xpre_factor,
 	w_max,
-	tau_xstop,
-	xstop_jump,
-	thr_stop_h,
-	thr_stop_l,
-	xpost_max,
-	xpre_max,
-	xstop_max,
 	xpre_min,
 	xpost_min,
-	xstop_min] = load_rule_params(plasticity_rule, parameter_set)
+	xpost_max,
+	xpre_max] = load_rule_params(plasticity_rule, parameter_set)
 
 # 2.1 ========== Learning rule as Brian2's synaptic model
 [model_E_E,
 	pre_E_E,
 	post_E_E] = load_synapse_model(plasticity_rule, neuron_type, bistability)
 
+tau_xstop = 0
+xstop_jump = 0
+thr_stop_h = 0
+thr_stop_l = 0
+xstop_max = 0
+xstop_min = 0
+
 # 2 ========== Running network in parallel ==========
 def run_net_parallel(p, q):
 	print('pre @ ', pre_freq[p], 'Hz, post @ ', post_freq[q], 'Hz')
 
-	ans = run_frequencies(pre_freq[p], post_freq[q], t_run, dt_resolution, plasticity_rule, neuron_type, noise, bistability, plot_single_trial, N_Pre, N_Post, tau_xpre, tau_xpost, xpre_jump, xpost_jump, rho_neg, rho_neg2, rho_init, tau_rho, thr_post, thr_pre, thr_b_rho, rho_min, rho_max, alpha, beta, xpre_factor, w_max, model_E_E, pre_E_E, post_E_E,tau_xstop, xstop_jump, thr_stop_h, thr_stop_l, xpost_max, xpre_max, xstop_max, xpre_min, xpost_min, xstop_min, int_meth_syn, isi_correlation, drho_all_metric, job_seed)
+	ans = run_frequencies(pre_freq[p], post_freq[q], t_run, dt_resolution, plasticity_rule, neuron_type, noise, bistability, plot_single_trial, N_Pre, N_Post, tau_xpre, tau_xpost, xpre_jump, xpost_jump, rho_neg, rho_neg2, rho_init, tau_rho, thr_post, thr_pre, thr_b_rho, rho_min, rho_max, alpha, beta, xpre_factor, w_max, model_E_E, pre_E_E, post_E_E,tau_xstop, xstop_jump, thr_stop_h, thr_stop_l, xpost_max, xpre_max, xstop_max, xpre_min, xpost_min, xstop_min, int_meth_syn, isi_correlation, drho_all_metric, job_seed, num_sim)
 
 	return p, q, ans
 

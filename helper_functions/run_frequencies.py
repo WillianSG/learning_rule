@@ -39,33 +39,33 @@ from poisson_spiking_gen import *
 from load_neurons import *
 from numpy import mean
 
-def run_frequencies(pre_rate, post_rate, t_run, dt_resolution, plasticity_rule, neuron_type, noise, bistability, plot_single_trial, N_Pre, N_Post, tau_xpre, tau_xpost, xpre_jump, xpost_jump, rho_neg, rho_neg2, rho_init, tau_rho, thr_post, thr_pre, thr_b_rho, rho_min, rho_max, alpha, beta, xpre_factor, w_max, model_E_E, pre_E_E, post_E_E, tau_xstop, xstop_jump, thr_stop_h, thr_stop_l, xpost_max, xpre_max, xstop_max, xpre_min, xpost_min, xstop_min, int_meth_syn = 'euler', isi_correlation='random', drho_all_metric='original', job_seed = 0):
+def run_frequencies(pre_rate, post_rate, t_run, dt_resolution, plasticity_rule, neuron_type, noise, bistability, plot_single_trial, N_Pre, N_Post, tau_xpre, tau_xpost, xpre_jump, xpost_jump, rho_neg, rho_neg2, rho_init, tau_rho, thr_post, thr_pre, thr_b_rho, rho_min, rho_max, alpha, beta, xpre_factor, w_max, model_E_E, pre_E_E, post_E_E, tau_xstop, xstop_jump, thr_stop_h, thr_stop_l, xpost_max, xpre_max, xstop_max, xpre_min, xpost_min, xstop_min, int_meth_syn = 'euler', isi_correlation='random', drho_all_metric='original', job_seed = 0, num_sim = 1):
 
 	# Spike time arrays
-	pre_spikes_t, post_spikes_t = poisson_spiking_gen(
-		rate_pre = pre_rate, 
-		rate_post = post_rate, 
-		t_run = t_run, 
-		dt = dt_resolution, 
-		noise = noise,
-		job_seed = job_seed,
-		correlation = isi_correlation)
+	# pre_spikes_t, post_spikes_t = poisson_spiking_gen(
+	# 	rate_pre = pre_rate, 
+	# 	rate_post = post_rate, 
+	# 	t_run = t_run, 
+	# 	dt = dt_resolution, 
+	# 	noise = noise,
+	# 	job_seed = job_seed,
+	# 	correlation = isi_correlation)
 
 	# Brian2's NeuronGroup
-	Pre, Post = load_neurons(
-		N_Pre, N_Post, neuron_type,
-		spikes_t_Pre = pre_spikes_t,
-		spikes_t_Post = post_spikes_t,
-		pre_rate = pre_rate,
-		post_rate =  post_rate)
+	# Pre, Post = load_neurons(
+	# 	N_Pre, N_Post, neuron_type,
+	# 	spikes_t_Pre = pre_spikes_t,
+	# 	spikes_t_Post = post_spikes_t,
+	# 	pre_rate = pre_rate,
+	# 	post_rate =  post_rate)
 
-	# Pre = PoissonGroup(
-	# 	N = N_Pre,
-	# 	rates = pre_rate*Hz)
+	Pre = PoissonGroup(
+		N = N_Pre,
+		rates = pre_rate*Hz)
 
-	# Post = PoissonGroup(
-	# 	N = N_Post,
-	# 	rates = post_rate*Hz)
+	Post = PoissonGroup(
+		N = N_Post,
+		rates = post_rate*Hz)
 
 	# Synapse connection
 	int_meth_neur = None
@@ -88,7 +88,7 @@ def run_frequencies(pre_rate, post_rate, t_run, dt_resolution, plasticity_rule, 
 	# - Monitors
 	synaptic_mon = StateMonitor(
 		Pre_Post, 
-		['xpre', 'xpost', 'xstop', 'rho', 'w'], 
+		['xpre', 'xpost', 'rho', 'w'], 
 		record = True)
 
 	Pre_mon = SpikeMonitor(
@@ -112,31 +112,38 @@ def run_frequencies(pre_rate, post_rate, t_run, dt_resolution, plasticity_rule, 
 		synaptic_mon, 
 		name = 'net')
 
+	drho_all = 0
 
-	net.run(t_run*second) # simulating (running network)
+	net.store()
 
-	# Simulation data
-	"""
-	spike_trains() - dictionary with keys being the indices of the neurons and values being the array of spike times for that neuron
-	"""
-	# - neurons related
-	spiketrains_PRE = Pre_mon.spike_trains()[0]
-	spiketrains_POST = Post_mon.spike_trains()[0]
+	for sim_counter in range(0, num_sim):
+		net.restore()
+		net.run(t_run*second) # simulating (running network)
 
-	# - synapse related (all array lenths are equal)
-	efficacy_PRE_POST = synaptic_mon.rho[0][:] # Rho variable evolution
-	weight_PRE_POST = synaptic_mon.w[0][:] # Weight (w) variable evolution
-	rec_t_PRE_POST = synaptic_mon.t[:] # Simulations time steps
+		# Simulation data
+		"""
+		spike_trains() - dictionary with keys being the indices of the neurons and values being the array of spike times for that neuron
+		"""
+		# - neurons related
+		spiketrains_PRE = Pre_mon.spike_trains()[0]
+		spiketrains_POST = Post_mon.spike_trains()[0]
 
-	# - store final w value and calculate dw
-	final_rho_all = Pre_Post.rho[0] # last value of 'rho' at the end of the ex.
+		# - synapse related (all array lenths are equal)
+		efficacy_PRE_POST = synaptic_mon.rho[0][:] # Rho variable evolution
+		weight_PRE_POST = synaptic_mon.w[0][:] # Weight (w) variable evolution
+		rec_t_PRE_POST = synaptic_mon.t[:] # Simulations time steps
 
-	if drho_all_metric == 'original':
-		drho_all = Pre_Post.rho[0] / rho_init # synaptic weight change (last/init)
-	elif drho_all_metric == 'mean':
-		drho_all = mean(synaptic_mon.rho[0])
-	else:
-		drho_all = Pre_Post.rho[0] / rho_init
+		# - store final w value and calculate dw
+		final_rho_all = Pre_Post.rho[0] # last value of 'rho' at the end of the ex.
+
+		if drho_all_metric == 'original':
+			drho_all += Pre_Post.rho[0] / rho_init # (last/init)
+		elif drho_all_metric == 'mean':
+			drho_all += mean(synaptic_mon.rho[0])
+		else:
+			drho_all += Pre_Post.rho[0] / rho_init
+
+	drho_all = drho_all/num_sim
 
 	return final_rho_all, drho_all
 
