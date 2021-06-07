@@ -56,7 +56,7 @@ from run_frequencies import *
 num_sim = int(sys.argv[3])
 
 # Simulation run variables
-dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
+dt_resolution = 0.01 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 t_run = 1 # 5 | simulation time (seconds)
 noise = 0.75 # used to introduce difference between spike times betweem pre- and post-
 
@@ -65,7 +65,7 @@ N_Post = 1
 
 isi_correlation = 'random' # "random", "positive", "negative"
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
-parameter_set = '0.213' # '2.1'
+parameter_set = '1.1' #
 neuron_type = 'spikegenerator' # 'poisson', 'LIF' , 'spikegenerator'
 bistability = False
 drho_all_metric = 'original' # 'original', 'mean'
