@@ -30,7 +30,7 @@ from numpy import *
 import matplotlib.pyplot as plt
 
 exp_data = pickle.load(
-	open('stdp_trans_probabi__0.0_2.4_False__last_rho.pickle', "rb" ))
+	open('stdp_trans_probabi__0.0_1.3_True__last_rho.pickle', "rb" ))
 
 fig = plt.figure()
 ax = plt.subplot(111)

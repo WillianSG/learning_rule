@@ -56,7 +56,7 @@ from run_frequencies import *
 num_sim = int(sys.argv[3])
 
 # Simulation run variables
-dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
+dt_resolution = 0.01 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 t_run = 1 # 5 | simulation time (seconds)
 noise = 0.75 # used to introduce difference between spike times betweem pre- and post-
 

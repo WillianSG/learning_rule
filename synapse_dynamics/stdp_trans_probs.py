@@ -35,17 +35,17 @@ from run_single_synap import *
 
 # == 1 - Simulation run variables ==========
 
-sim_rep = 10
+sim_rep = 20
 
-dt_resolution = 0.001		# 0.1ms | step of simulation time step resolution
+dt_resolution = 0.001		# 1ms | step of simulation time step resolution
 t_run = 1					# simulation time (seconds)
 
 N_Pre = 1
 N_Post = 1
 
 plasticity_rule = 'LR3'			# 'none', 'LR1', 'LR2', 'LR3'
-parameter_set = '2.4'			# '2.1', '2.2', '2.4'
-bistability = False
+parameter_set = '1.3'			# '2.1', '2.2', '2.4'
+bistability = True
 
 w_init = float(sys.argv[1])		# '0.0' to test LTP, '1.0' to test LTD
 
@@ -56,7 +56,7 @@ exp_type = 'stdp_trans_probabi_'
 
 # Range of pre- and postsynaptic frequencies (Hz)
 min_freq = 0
-max_freq = 150
+max_freq = 100
 
 step = 10
 
@@ -91,15 +91,25 @@ start_scope()
 	beta,
 	xpre_factor,
 	w_max,
-	tau_xstop,
-	xstop_jump,
-	thr_up_h,
-	thr_up_l,
-	thr_down_h,
-	thr_down_l] = load_rule_params(
+	xpre_min,
+	xpost_min,
+	xpost_max,
+	xpre_max] = load_rule_params(
 		plasticity_rule = plasticity_rule, 
 		parameter_set = parameter_set,
 		efficacy_init = w_init)
+
+tau_xstop = 0
+xstop_jump = 0
+thr_stop_h = 0
+thr_stop_l = 0
+xstop_max = 0
+xstop_min = 0
+
+thr_up_h = 0
+thr_up_l = 0
+thr_down_h = 0
+thr_down_l = 0
 
 # loading synaptic rule equations
 [model_E_E,
@@ -156,7 +166,8 @@ for x in range(0, len(f_pre)):
 						pre_E_E = pre_E_E,
 						post_E_E = post_E_E,
 						int_meth_syn = int_meth_syn,
-						w_init = w_init)
+						w_init = w_init,
+						xpre_max = xpre_max)
 
 				# transition prob for post- @ yHz
 				transition_probabilities.append(transition_event_count/sim_rep)

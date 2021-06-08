@@ -50,7 +50,8 @@ def run_single_synap(
 	pre_E_E, 
 	post_E_E, 
 	int_meth_syn = 'euler',
-	w_init = 0.5):
+	w_init = 0.5,
+	xpre_max = 1.0):
 
 	Pre = PoissonGroup(
 		N = N_Pre,
@@ -78,7 +79,7 @@ def run_single_synap(
 	# - Monitors
 	synaptic_mon = StateMonitor(
 		Pre_Post, 
-		['xpre', 'xpost', 'xstop', 'rho', 'w'], 
+		['xpre', 'xpost', 'rho', 'w'], 
 		record = True)
 
 	Pre_mon = SpikeMonitor(
