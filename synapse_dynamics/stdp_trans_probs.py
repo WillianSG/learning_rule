@@ -37,7 +37,7 @@ from run_single_synap import *
 
 sim_rep = 20
 
-dt_resolution = 0.001		# 1ms | step of simulation time step resolution
+dt_resolution = 0.01		# 1ms | step of simulation time step resolution
 t_run = 1					# simulation time (seconds)
 
 N_Pre = 1
@@ -45,7 +45,9 @@ N_Post = 1
 
 plasticity_rule = 'LR3'			# 'none', 'LR1', 'LR2', 'LR3'
 parameter_set = '1.3'			# '2.1', '2.2', '2.4'
+
 bistability = True
+stoplearning = True
 
 w_init = float(sys.argv[1])		# '0.0' to test LTP, '1.0' to test LTD
 
@@ -56,7 +58,7 @@ exp_type = 'stdp_trans_probabi_'
 
 # Range of pre- and postsynaptic frequencies (Hz)
 min_freq = 0
-max_freq = 100
+max_freq = 140
 
 step = 10
 
@@ -72,6 +74,25 @@ transition_probabilities = []
 
 # Starts a new scope for magic functions
 start_scope()
+
+tau_xstop = 0
+xstop_jump = 0
+thr_stop_h = 0
+thr_stop_l = 0
+xstop_max = 0
+xstop_min = 0
+
+thr_up_h = 0
+thr_up_l = 0
+thr_down_h = 0
+thr_down_l = 0
+
+tau_xstop = 400*ms
+xstop_jump = 0.1
+xstop_max = 1
+xstop_min = 0
+thr_stop_h = 0.7
+thr_stop_l = 0.5
 
 # loading learning rule parameters
 [tau_xpre,
@@ -99,22 +120,10 @@ start_scope()
 		parameter_set = parameter_set,
 		efficacy_init = w_init)
 
-tau_xstop = 0
-xstop_jump = 0
-thr_stop_h = 0
-thr_stop_l = 0
-xstop_max = 0
-xstop_min = 0
-
-thr_up_h = 0
-thr_up_l = 0
-thr_down_h = 0
-thr_down_l = 0
-
 # loading synaptic rule equations
 [model_E_E,
 	pre_E_E,
-	post_E_E] = load_synapse_model(plasticity_rule, neuron_type, bistability)
+	post_E_E] = load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning = stoplearning)
 
 # [REFACTOR] - use multithreading for frequencies loop.
 for x in range(0, len(f_pre)):

@@ -53,6 +53,13 @@ def run_single_synap(
 	w_init = 0.5,
 	xpre_max = 1.0):
 
+	tau_xstop = 400*ms
+	xstop_jump = 0.1
+	xstop_max = 1
+	xstop_min = 0
+	thr_stop_h = 0.7
+	thr_stop_l = 0.5
+
 	Pre = PoissonGroup(
 		N = N_Pre,
 		rates = pre_rate*Hz)

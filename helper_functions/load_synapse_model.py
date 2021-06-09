@@ -19,25 +19,43 @@ Comments:
 """
 from brian2 import *
 
-def load_synapse_model(plasticity_rule, neuron_type, bistability):
+def load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning = False):
 	# Non-plastic synapse
 	model_E_E_non_plastic = '''w : volt'''
 
 	# Plastic synapse (STDP)
 	if bistability == True:
-		model_E_E_plastic = ''' 
-		w : volt
-		dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
-		dxpost/dt = -xpost / tau_xpost : 1 (clock-driven) 
-		drho/dt = (int(rho > thr_b_rho)*int(rho < rho_max)  * alpha -
-		int(rho <= thr_b_rho) * beta * int(rho > rho_min)) / tau_rho 
-			: 1  (clock-driven)'''
+		if stoplearning:
+			model_E_E_plastic = ''' 
+			w : volt
+			dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
+			dxpost/dt = -xpost / tau_xpost : 1 (clock-driven)
+			dxstop/dt = -xstop / tau_xstop : 1 (clock-driven) 
+			drho/dt = (int(rho > thr_b_rho)*int(rho < rho_max)  * alpha -
+			int(rho <= thr_b_rho) * beta * int(rho > rho_min)) / tau_rho 
+				: 1  (clock-driven)'''
+		else:
+			model_E_E_plastic = ''' 
+			w : volt
+			dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
+			dxpost/dt = -xpost / tau_xpost : 1 (clock-driven)
+			drho/dt = (int(rho > thr_b_rho)*int(rho < rho_max)  * alpha -
+			int(rho <= thr_b_rho) * beta * int(rho > rho_min)) / tau_rho 
+				: 1  (clock-driven)'''
 	elif bistability == False:
-		model_E_E_plastic = ''' 
-		w : volt
-		rho : 1
-		dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
-		dxpost/dt = -xpost / tau_xpost : 1 (clock-driven) '''
+		if stoplearning:
+			model_E_E_plastic = ''' 
+			w : volt
+			rho : 1
+			dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
+			dxpost/dt = -xpost / tau_xpost : 1 (clock-driven)
+			dxstop/dt = -xstop / tau_xstop : 1 (clock-driven) '''
+		else:
+			model_E_E_plastic = ''' 
+			w : volt
+			rho : 1
+			dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
+			dxpost/dt = -xpost / tau_xpost : 1 (clock-driven) '''
 	else:
 		print ('Bistabilty setting unclear')
 
@@ -68,9 +86,15 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 	xpre_factor: c
 	rho_dep2: rho_neg2
 	"""
-	post_E_E_LR3 = '''xpost = clip((xpost + xpost_jump), 0.0, 1.0)
-		rho = clip((rho + xpre * xpre_factor + rho_neg2 *int(xpre < thr_pre) * int(xpre > 0)), rho_min, rho_max)
+	if stoplearning:
+		post_E_E_LR3 = ''' xstop = xstop + xstop_jump * (xstop_max - xstop)
+		xpost = clip((xpost + xpost_jump), 0.0, 1.0)
+		rho = clip((rho + (xpre * xpre_factor + rho_neg2 *int(xpre < thr_pre) * int(xpre > 0))*int(xstop < thr_stop_h)*int(xstop > thr_stop_l)), rho_min, rho_max)
 		w = rho*w_max'''
+	else:
+		post_E_E_LR3 = '''xpost = clip((xpost + xpost_jump), 0.0, 1.0)
+			rho = clip((rho + xpre * xpre_factor + rho_neg2 *int(xpre < thr_pre) * int(xpre > 0)), rho_min, rho_max)
+			w = rho*w_max'''
 
 	# - On pre spike (LR3)
 	xpre_update_LR3 = {'xpre_update': '''xpre = xpre + xpre_jump * (xpre_max - xpre)'''}
@@ -82,7 +106,11 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability):
 	"""
 	xpre_update = {'xpre_update': '''xpre = xpre + xpre_jump'''}
 	w_update = {'w_update' : ''' w = rho * w_max'''}
-	rho_update_pre = {'rho_update_pre':'''rho = clip(rho + rho_neg *int(xpost > thr_post), rho_min, rho_max)'''}
+
+	if stoplearning:
+		rho_update_pre = {'rho_update_pre':'''rho = clip(rho + rho_neg *int(xpost > thr_post)*int(xstop < thr_stop_h)*int(xstop > thr_stop_l), rho_min, rho_max)'''}
+	else:
+		rho_update_pre = {'rho_update_pre':'''rho = clip(rho + rho_neg *int(xpost > thr_post), rho_min, rho_max)'''}
 
 	# Defines the argument 'on_pre' for Brian2 - same as on_pre='v_post += w'
 	"""

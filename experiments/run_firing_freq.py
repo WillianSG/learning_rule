@@ -16,6 +16,8 @@ prefs.codegen.target = 'numpy'
 
 helper_dir = 'helper_functions'
 
+# python run_fi.py [min freq] [max freq] [sim reps] [param set]
+
 # get run id as seed for random gens
 try:
 	job_seed = int(sys.argv[1])
@@ -67,7 +69,7 @@ isi_correlation = 'random' # "random", "positive", "negative"
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
 parameter_set = str(sys.argv[4]) #
 neuron_type = 'spikegenerator' # 'poisson', 'LIF' , 'spikegenerator'
-bistability = False
+bistability = True
 drho_all_metric = 'original' # 'original', 'mean'
 
 exp_type = 'firing_freq_parallel_'+isi_correlation
@@ -123,14 +125,14 @@ drho_all = np.zeros((len(pre_freq),len(post_freq)))
 # 2.1 ========== Learning rule as Brian2's synaptic model
 [model_E_E,
 	pre_E_E,
-	post_E_E] = load_synapse_model(plasticity_rule, neuron_type, bistability)
+	post_E_E] = load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning = False)
 
-tau_xstop = 0
-xstop_jump = 0
-thr_stop_h = 0
-thr_stop_l = 0
-xstop_max = 0
+tau_xstop = 400*ms
+xstop_jump = 0.1
+xstop_max = 1
 xstop_min = 0
+thr_stop_h = 0.7
+thr_stop_l = 0.5
 
 # 2 ========== Running network in parallel ==========
 def run_net_parallel(p, q):

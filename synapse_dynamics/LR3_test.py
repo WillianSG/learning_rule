@@ -62,7 +62,7 @@ num_sim = int(sys.argv[3])
 exp_type = 'rates' # 'showcase', 'rates'
 
 # Simulation run variables
-dt_resolution = 0.01 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
+dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 
 t_run = 1 # simulation time (seconds)
 
@@ -72,7 +72,10 @@ int_meth_syn = 'euler' # Synaptic integration method
 
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
 parameter_set = str(sys.argv[4])
+
 bistability = False
+
+stoplearning = True
 
 [tau_xpre,
 	tau_xpost,
@@ -96,6 +99,37 @@ bistability = False
 	xpost_max,
 	xpre_max] = load_rule_params(plasticity_rule, parameter_set)
 
+tau_xstop = 400*ms
+xstop_jump = 0.1
+xstop_max = 1
+xstop_min = 0
+thr_stop_h = 0.7
+thr_stop_l = 0.5
+
+# ==== stop-learning parameter A
+# tau_xstop = 260*ms
+# xstop_jump = 0.1
+# xstop_max = 1
+# xstop_min = 0
+# thr_stop_h = 0.7
+# thr_stop_l = 0.5
+
+# ==== stop-learning parameter B
+# tau_xstop = 350*ms
+# xstop_jump = 0.1
+# xstop_max = 1
+# xstop_min = 0
+# thr_stop_h = 0.75
+# thr_stop_l = 0.5
+
+# ==== stop-learning parameter C
+# tau_xstop = 400*ms
+# xstop_jump = 0.1
+# xstop_max = 1
+# xstop_min = 0
+# thr_stop_h = 0.7
+# thr_stop_l = 0.5
+
 w_init = w_max*rho_init
 
 # 1.2 ========== net parameters
@@ -114,7 +148,7 @@ else:
 # 2 ========== Learning rule as Brian2's synaptic model ==========
 [model_E_E,
 	pre_E_E,
-	post_E_E] = load_synapse_model(plasticity_rule, neuron_type, bistability)
+	post_E_E] = load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning = stoplearning)
 
 # 3 ========== Brian2's neuron objects
 
@@ -148,7 +182,10 @@ Pre_Post.w = w_init
 
 # 3.2 ========== Setting simulation monitors
 
-StateMon = StateMonitor(Pre_Post, ['xpre', 'xpost', 'w', 'rho'], record = True)
+if stoplearning:
+	StateMon = StateMonitor(Pre_Post, ['xpre', 'xstop','xpost', 'w', 'rho'], record = True)
+else:
+	StateMon = StateMonitor(Pre_Post, ['xpre', 'xpost', 'w', 'rho'], record = True)
 
 Pre_spk_mon = SpikeMonitor( 
 	source = Pre,
@@ -167,6 +204,7 @@ store()
 rho_all = []
 xpost_all = []
 xpre_all = []
+xstop_all = []
 
 for x in range(0, num_sim):
 	print('> running sim #', x)
@@ -177,6 +215,9 @@ for x in range(0, num_sim):
 	rho_all.append(StateMon.rho[0])
 	xpost_all.append(StateMon.xpost[0])
 	xpre_all.append(StateMon.xpre[0])
+	
+	if stoplearning:
+		xstop_all.append(StateMon.xstop[0])
 
 # ================== avg rho
 
@@ -201,19 +242,39 @@ for row in rho_all:
 	else:
 		pass
 
-if n_dep == 0:
-	n_dep = 1
+# if n_dep == 0:
+# 	n_dep = 1
+
+# if n_pot == 0:
+# 	n_pot = 1
+
+# avg_pot_mag = avg_pot_mag/n_pot
+# avg_dep_mag = avg_dep_mag/n_dep
+
+if n_dep > 0:
+	avg_dep_mag = avg_dep_mag/n_dep
+else:
+	avg_dep_mag = 0.0
+
+if n_pot > 0:
+	avg_pot_mag = avg_pot_mag/n_pot
+else:
+	avg_pot_mag = 0.0
 
 if n_pot == 0:
-	n_pot = 1
+	pot_perc = 0.0
+else:
+	pot_perc = int((n_pot/num_sim)*100)
 
-avg_pot_mag = avg_pot_mag/n_pot
-avg_dep_mag = avg_dep_mag/n_dep
+if n_dep == 0:
+	dep_perc = 0.0
+else:
+	dep_perc = int((n_dep/num_sim)*100)
 
 avg_rho = avg_rho/num_sim
 
-pot_perc = int((n_pot/num_sim)*100)
-dep_perc = int((1-(n_pot/num_sim))*100)
+# pot_perc = int((n_pot/num_sim)*100)
+# dep_perc = int((1-(n_pot/num_sim))*100)
 
 pot_avg_perc_change = np.round((avg_pot_mag*100)/rho_all[0][0], 2)
 dep_avg_perc_change = np.round((avg_dep_mag*100)/rho_all[0][0], 2)
@@ -224,17 +285,31 @@ xpost_all = np.array(xpost_all)
 avg_xpre = np.zeros(len(xpre_all[0]))
 avg_xpost = np.zeros(len(xpost_all[0]))
 
+if stoplearning:
+	avg_xstop = np.zeros(len(xstop_all[0]))
+
 for x in range(0, num_sim):
 	avg_xpre += xpre_all[x]
 	avg_xpost += xpost_all[x]
 
+	if stoplearning:
+		avg_xstop += xstop_all[x]
+
 avg_xpre = avg_xpre/num_sim
 avg_xpost = avg_xpost/num_sim
 
+if stoplearning:
+	avg_xstop = avg_xstop/num_sim
+
 # 5. ========== Plots ==========
+
+# ============================ statistics ================================
 
 fig0 = plt.figure(constrained_layout = True)
 spec2 = gridspec.GridSpec(ncols = 2, nrows = 2, figure = fig0)
+
+if stoplearning:
+	spec2 = gridspec.GridSpec(ncols = 2, nrows = 3, figure = fig0)
 
 fig0.suptitle('Param. set ' + parameter_set, fontsize = 8)
 
@@ -259,7 +334,7 @@ plt.title('$\\rho$ evolution', size = 8)
 # pot/dep %
 f2_ax2 = fig0.add_subplot(spec2[0, 1])
 
-f2_ax2.pie([pot_perc, dep_perc], labels = ['+ (' + str(pot_avg_perc_change) + '%)', '- (' + str(dep_avg_perc_change) + '%)'], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['lightblue', 'tomato'])
+f2_ax2.pie([pot_perc, dep_perc], labels = ['+ (' + str(pot_avg_perc_change) + '%)', '- (' + str(dep_avg_perc_change) + '%)'], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['tomato', 'lightblue'])
 
 f2_ax2.axis('equal')
 
@@ -299,33 +374,40 @@ plt.title('$Ca^{2+}_{post}$ evolution (' + str(post_rate) + 'Hz)', size = 8)
 f2_ax4.set_ylim([0.0, 1.0])
 f2_ax4.legend(prop = {'size': 5})
 
-# plt.show()
+# plot_name = sim_id + '_statistics_' + str(num_sim) + '_' + plasticity_rule + '_' + parameter_set.replace('.', '-') + '_bist' + str(bistability) + '_stopl' + str(stoplearning) + '_pre' + str(pre_rate) + '_post' + str(post_rate)
 
-# parameter table
-# f2_ax5 = fig0.add_subplot(spec2[2, 0])
+# plt.savefig(os.path.join(results_path, plot_name), 
+# 	bbox_inches = 'tight', 
+# 	dpi = 200)
 
-# paramers = [['tau_xpre', tau_xpre],
-# 	['tau_xpost', tau_xpost],
-# 	['tau_rho', tau_rho],
-# 	['xpre_jump', xpre_jump],
-# 	['xpost_jump', xpost_jump],
-# 	['thr_post', thr_post],
-# 	['thr_pre', thr_pre],
-# 	['rho_neg', rho_neg],
-# 	['rho_neg2', rho_neg2],
-# 	['xpre_factor', xpre_factor]]
+# Stop learning
+if stoplearning:
+	f2_ax5 = fig0.add_subplot(spec2[2, 1])
 
-# column_labels = ['parameter', 'value']
+	for row in xstop_all:
+		plt.plot(StateMon.t, row, color = 'lightgrey', linestyle = '--', linewidth = 0.5)
 
-# f2_ax5.axis('tight')
-# f2_ax5.axis('off')
-# f2_ax5.table(cellText = paramers, colLabels = column_labels, loc = "center")
+	plt.plot(StateMon.t, avg_xstop, color = 'green', linestyle = '-', label = '$Ca^{stop}_{avg}$')
 
-plot_name = sim_id + '_statistics_' + str(num_sim) + '_' + plasticity_rule + '_' + parameter_set.replace('.', '-') + '_' + str(bistability) + '_pre' + str(pre_rate) + '_post' + str(post_rate)
+	plt.hlines(thr_stop_h, 0, StateMon.t[-1], color = 'green', linestyle = '-.', label = '$\\theta_{stop}^{h}$')
+
+	plt.hlines(thr_stop_l, 0, StateMon.t[-1], color = 'green', linestyle = '--', label = '$\\theta_{stop}^{l}$')
+
+	plt.ylabel('$Ca^{stop}$', size = 6)
+	plt.xlabel('time (sec)', size = 6)
+	plt.title('$Ca^{stop}$ evolution (' + str(post_rate) + 'Hz)', size = 8)
+
+	f2_ax5.set_ylim([0.0, 1.0])
+	f2_ax5.legend(prop = {'size': 5})
+
+
+plot_name = sim_id + '_statistics_' + str(num_sim) + '_' + plasticity_rule + '_' + parameter_set.replace('.', '-') + '_bist' + str(bistability) + '_stopl' + str(stoplearning) + '_pre' + str(pre_rate) + '_post' + str(post_rate)
 
 plt.savefig(os.path.join(results_path, plot_name), 
 	bbox_inches = 'tight', 
 	dpi = 200)
+
+# ============================================================
 
 # lwdth = 3
 
@@ -441,7 +523,7 @@ plt.savefig(os.path.join(results_path, plot_name),
 
 # # 5.5* ==== Stop-learning calcium trace
 
-# if plasticity_rule == 'LR3_1' or plasticity_rule == 'LR3_2':
+# if plasticity_rule == 'LR3':
 # 	ax4 = fig.add_subplot(gs[7, 0])
 # 	ax4.plot(StateMon.t/ms, StateMon.xstop[0], color = 'tab:blue', linewidth = lwdth) 
 
@@ -548,7 +630,7 @@ plt.savefig(os.path.join(results_path, plot_name),
 # if exp_type == 'showcase':
 # 	plot_name = sim_id + '_' + str(job_seed) + '_' + exp_type + '_' + plasticity_rule + '_' + parameter_set + str(bistability) + '.png'
 # else:
-# 	plot_name = sim_id + '_' + str(job_seed) + '_' + exp_type + '_' + plasticity_rule + '_' + parameter_set + str(bistability) + '_' + str(pre_rate) + '_' + str(post_rate) + '.png'
+# 	plot_name = sim_id + '_' + str(job_seed) + '_' + exp_type + '_' + plasticity_rule + '_' + parameter_set + str(bistability) + '_' + str(pre_rate) + '_' + str(post_rate) + '_stopl' + str(stoplearning) + '.png'
 
 
 # plt.savefig(os.path.join(results_path, plot_name), 
