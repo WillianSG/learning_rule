@@ -55,7 +55,11 @@ from run_frequencies import *
 
 # 1 ========== Execution parameters ==========
 
+# Range of pre- and postsynaptic frequencies (Hz)
+min_freq = int(sys.argv[1])
+max_freq = int(sys.argv[2])
 num_sim = int(sys.argv[3])
+parameter_set = str(sys.argv[4])
 
 # Simulation run variables
 dt_resolution = 0.01 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
@@ -65,11 +69,12 @@ noise = 0.75 # used to introduce difference between spike times betweem pre- and
 N_Pre = 1
 N_Post = 1
 
+bistability = False
+stoplearning = True
+
 isi_correlation = 'random' # "random", "positive", "negative"
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
-parameter_set = str(sys.argv[4]) #
 neuron_type = 'spikegenerator' # 'poisson', 'LIF' , 'spikegenerator'
-bistability = True
 drho_all_metric = 'original' # 'original', 'mean'
 
 exp_type = 'firing_freq_parallel_'+isi_correlation
@@ -79,9 +84,6 @@ int_meth_syn = 'euler' # Synaptic integration method
 # Plotting settings
 plot_single_trial = False  # True = plot single simulations
 
-# Range of pre- and postsynaptic frequencies (Hz)
-min_freq = int(sys.argv[1])
-max_freq = int(sys.argv[2])
 step = 5
 
 # Frequency activity ranges (for pre and post neurons)
@@ -125,14 +127,14 @@ drho_all = np.zeros((len(pre_freq),len(post_freq)))
 # 2.1 ========== Learning rule as Brian2's synaptic model
 [model_E_E,
 	pre_E_E,
-	post_E_E] = load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning = False)
+	post_E_E] = load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning = stoplearning)
 
-tau_xstop = 400*ms
-xstop_jump = 0.1
+tau_xstop = 300*ms
+xstop_jump = 0.09
 xstop_max = 1
 xstop_min = 0
-thr_stop_h = 0.7
-thr_stop_l = 0.5
+thr_stop_h = 0.6
+thr_stop_l = 0.55
 
 # 2 ========== Running network in parallel ==========
 def run_net_parallel(p, q):

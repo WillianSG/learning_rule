@@ -111,9 +111,9 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 			xpost_jump = 0.5
 			thr_post = 0.3
 			thr_pre = 0.3
-			rho_neg = -0.05
-			rho_neg2 = -0.05
-			xpre_factor = 0.1
+			rho_neg = -0.05 # -0.05
+			rho_neg2 = -0.05 # -0.05
+			xpre_factor = 0.1 # 0.1
 		elif parameter_set == '1.1':
 			tau_xpre = 30*ms 
 			tau_xpost = 45*ms 

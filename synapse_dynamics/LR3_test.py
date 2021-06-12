@@ -56,13 +56,15 @@ from load_synapse_model import *
 from load_neurons import *
 
 # 1 ========== Execution parameters ==========
-
+pre_rate = int(sys.argv[1])
+post_rate = int(sys.argv[2])
 num_sim = int(sys.argv[3])
+parameter_set = str(sys.argv[4])
 
 exp_type = 'rates' # 'showcase', 'rates'
 
 # Simulation run variables
-dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
+dt_resolution = 0.01 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 
 t_run = 1 # simulation time (seconds)
 
@@ -71,10 +73,8 @@ int_meth_syn = 'euler' # Synaptic integration method
 # 1.1 ========== Rule's parameters
 
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
-parameter_set = str(sys.argv[4])
 
 bistability = False
-
 stoplearning = True
 
 [tau_xpre,
@@ -99,12 +99,12 @@ stoplearning = True
 	xpost_max,
 	xpre_max] = load_rule_params(plasticity_rule, parameter_set)
 
-tau_xstop = 400*ms
-xstop_jump = 0.1
+tau_xstop = 300*ms
+xstop_jump = 0.09
 xstop_max = 1
 xstop_min = 0
-thr_stop_h = 0.7
-thr_stop_l = 0.5
+thr_stop_h = 0.6
+thr_stop_l = 0.55
 
 # ==== stop-learning parameter A
 # tau_xstop = 260*ms
@@ -136,9 +136,6 @@ w_init = w_max*rho_init
 
 N_Pre = 1
 N_Post = 1
-
-pre_rate = int(sys.argv[1])
-post_rate = int(sys.argv[2])
 
 if exp_type == 'showcase':
 	neuron_type = 'spikegenerator'
