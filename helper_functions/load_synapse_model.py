@@ -173,6 +173,14 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning =
 		pre_E_E = dict(w_update, **pre_E_E)
 		post_E_E = post_E_E_LR3
 
+	elif plasticity_rule == 'LR3' and neuron_type == 'LIF':
+		model_E_E = model_E_E_plastic
+		pre_E_E = dict(Vepsp_transmission)
+		pre_E_E = dict(xpre_update_LR3, **pre_E_E)
+		pre_E_E = dict(rho_update_pre, **pre_E_E)
+		pre_E_E = dict(w_update, **pre_E_E)
+		post_E_E = post_E_E_LR3
+
 	else:
 		raise ValueError("invalid compination of learning rule and neuron type")
 
