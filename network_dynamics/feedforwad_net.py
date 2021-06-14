@@ -23,12 +23,13 @@ sys.path.append(os.path.join(parent_dir, helper_dir))
 sys.path.append(os.path.join(parent_dir, plotting_funcs_dir))
 
 # Helper modules
-from fusi_feedforward_net import FeedforwardNetwork
+from feedforward_snn import FeedforwardNetwork
 from visualise_connectivity import visualise_connectivity
 from plot_feedforwad_net import *
 from feedforward_plot_activity import *
 
 def main():
+	make_dir = int(sys.argv[1])
 	# ----------- Network Initialization -----------
 
 	network = FeedforwardNetwork()
@@ -38,7 +39,7 @@ def main():
 	network.exp_date = strftime("%d%b%Y_%H-%M-%S_", localtime())
 
 	# Execution Parameters
-	network.t_run = 0.5*second
+	network.t_run = 0.3*second
 	network.int_meth_neur = 'linear'
 	network.int_meth_syn = 'euler'
 
@@ -52,9 +53,9 @@ def main():
 	network.N_c = 1
 
 	# Synapses
-	network.Einp_to_Eout_w = 300*mV
+	network.Einp_to_Eout_w = 100*mV
 	network.Input_to_I_w = 100*mV
-	network.Input_to_Einp_w = 300*mV # 300mV
+	network.Input_to_Einp_w = 1000*mV # 300mV
 	network.I_to_Eout_w = 0*mV
 	network.teacher_to_Eout_w = 0*mV # 300mV
 	network.spont_to_input_w = 100*mV # 100mV
@@ -63,7 +64,7 @@ def main():
 
 	# Neuron populations mean frequency
 	network.stim_freq_i = 100*Hz
-	network.stim_freq_Ninp = 100*Hz # 100Hz
+	network.stim_freq_Ninp = 5000*Hz # 100Hz
 	network.stim_freq_teach = 160*Hz # 160Hz
 	network.stim_freq_spont = 20*Hz # 20Hz
 
@@ -81,22 +82,24 @@ def main():
 	# ----------- Results Directories -----------
 
 	# Results Directories
-	results_dir = os.path.join(parent_dir, 'network_results')
-	if not(os.path.isdir(results_dir)):
-		os.mkdir(results_dir)
+	if make_dir == '1':
+		results_dir = os.path.join(parent_dir, 'network_results')
+		if not(os.path.isdir(results_dir)):
+			os.mkdir(results_dir)
 
-	sim_results = os.path.join(results_dir,	network.exp_type)
-	if not(os.path.isdir(sim_results)):
-		os.mkdir(sim_results)
+		sim_results = os.path.join(results_dir,	network.exp_type)
+		if not(os.path.isdir(sim_results)):
+			os.mkdir(sim_results)
 
-	sim_resul_final_path = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability))
-	if not(os.path.isdir(sim_resul_final_path)):
-		os.mkdir(sim_resul_final_path)
+		sim_resul_final_path = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability))
+		if not(os.path.isdir(sim_resul_final_path)):
+			os.mkdir(sim_resul_final_path)
 
-	network.simulation_path = sim_resul_final_path
+		network.simulation_path = sim_resul_final_path
 
 	# Storing network initial state
-	network.net.store(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
+	if make_dir == '1':
+		network.net.store(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
 
 	t_run = 0*second
 	t_start = 0*second
@@ -119,18 +122,18 @@ def main():
 		# Input_to_E_inp
 		s_tpoints_Input_to_Einp = network.Input_to_E_inp_spkmon.t[:]
 		n_inds_Input_to_Einp = network.Input_to_E_inp_spkmon.i[:]
-		# print('\ninput to 1st layer: ', len(s_tpoints_Input_to_Einp))
+		print('\n# spks from input to 1st layer: ', len(s_tpoints_Input_to_Einp))
 		# print(n_inds_Input_to_Einp)
 
 		# E_inp
 		s_tpoints_E_inp = network.E_inp_spkmon.t[:]
 		n_inds_E_inp = network.E_inp_spkmon.i[:]
-		# print('1st layer: ', len(s_tpoints_E_inp))
+		print('# spks from 1st layer: ', len(s_tpoints_E_inp))
 
 		# E_outp
 		s_tpoints_E_outp = network.E_outp_spkmon.t[:]
 		n_inds_E_outp = network.E_outp_spkmon.i[:]
-		# print('out layer: ', len(s_tpoints_E_outp))
+		print('# spks from out layer: ', len(s_tpoints_E_outp))
 
 		# Input_to_I
 		s_tpoints_Input_to_I = network.Input_to_I_spkmon.t[:]
@@ -178,56 +181,57 @@ def main():
 		n_I = network.N_e_outp
 		n_pool = network.N_c
 
-		fn = os.path.join(network.simulation_path, network.network_id + '_' + network.exp_type + '_expos' + str(exposure_n) + '.pickle')
+		if make_dir == '1':
+			fn = os.path.join(network.simulation_path, network.network_id + '_' + network.exp_type + '_expos' + str(exposure_n) + '.pickle')
 
-		with open(fn, 'wb') as f:
-			pickle.dump((
-				path_sim,
-				sim_id,
-				t_run,
-				exp_type,
-				stim_type,
-				stim_size,
-				stim_freq,
-				stim_freq_i,
-				n_Eoutp,
-				n_Einp,
-				n_I,
-				n_pool,
-				len_stim_inds_original_E,
-				s_tpoints_Input_to_Einp,
-				n_inds_Input_to_Einp,
-				s_tpoints_E_inp,
-				n_inds_E_inp,
-				s_tpoints_E_outp,
-				n_inds_E_outp,
-				s_tpoints_Input_to_I,
-				n_inds_Input_to_I,
-				s_tpoints_I,
-				n_inds_I,
-				s_tpoints_teach,
-				n_inds_teach
-				), f)
+			with open(fn, 'wb') as f:
+				pickle.dump((
+					path_sim,
+					sim_id,
+					t_run,
+					exp_type,
+					stim_type,
+					stim_size,
+					stim_freq,
+					stim_freq_i,
+					n_Eoutp,
+					n_Einp,
+					n_I,
+					n_pool,
+					len_stim_inds_original_E,
+					s_tpoints_Input_to_Einp,
+					n_inds_Input_to_Einp,
+					s_tpoints_E_inp,
+					n_inds_E_inp,
+					s_tpoints_E_outp,
+					n_inds_E_outp,
+					s_tpoints_Input_to_I,
+					n_inds_Input_to_I,
+					s_tpoints_I,
+					n_inds_I,
+					s_tpoints_teach,
+					n_inds_teach
+					), f)
 
-		plot_feedforwad_net(
-			network_state_path = network.simulation_path,
-			pickled_data = network.network_id + '_' + network.exp_type + '_expos' + str(exposure_n) + '.pickle',
-			exposure_n = exposure_n,
-			t_start = t_start)
+			plot_feedforwad_net(
+				network_state_path = network.simulation_path,
+				pickled_data = network.network_id + '_' + network.exp_type + '_expos' + str(exposure_n) + '.pickle',
+				exposure_n = exposure_n,
+				t_start = t_start)
 
-		feedforward_plot_activity(
-			sim_id = network.network_id, 
-			path_sim = network.simulation_path, 
-			t_run = t_run, 
-			rho_matrix = network.Input_to_Output_stamon.rho, 
-			time_arr = network.Input_to_Output_stamon.t[:],
-			w_matrix = network.Input_to_Output_stamon.w, 
-			time_arr_w = network.Input_to_Output_stamon.t[:],
-			eout_mon = network.Eout_stamon.Vm,
-			eout_time_arr = network.Eout_stamon.t[:],
-			stim_ids = network.stimulus_ids_Ninp,
-			exposure_n = exposure_n,
-			t_start = t_start)
+			feedforward_plot_activity(
+				sim_id = network.network_id, 
+				path_sim = network.simulation_path, 
+				t_run = t_run, 
+				rho_matrix = network.Input_to_Output_stamon.rho, 
+				time_arr = network.Input_to_Output_stamon.t[:],
+				w_matrix = network.Input_to_Output_stamon.w, 
+				time_arr_w = network.Input_to_Output_stamon.t[:],
+				eout_mon = network.Eout_stamon.Vm,
+				eout_time_arr = network.Eout_stamon.t[:],
+				stim_ids = network.stimulus_ids_Ninp,
+				exposure_n = exposure_n,
+				t_start = t_start)
 
 if __name__ == "__main__":
 	main()
