@@ -60,7 +60,7 @@ class FeedforwardNetwork:
 		self.stim_freq_i = 0*Hz
 
 		# Input (E) Population
-		self.N_e = 9 				# num. of neurons
+		self.N_e = 45 				# num. of neurons
 		self.Vr_e = -65*mV 			# resting potential
 		self.Vrst_e = -65*mV 		# reset potential
 		self.Vth_e_init = -58*mV 	# initial threshold voltage
@@ -125,7 +125,7 @@ class FeedforwardNetwork:
 		self.int_meth_neur = 'user-defined' # numerical integration method
 		self.int_meth_syn = 'user-defined' 	# E_E syn. num. integration method
 		self.dt_resolution = 0.001*second 	# Delta t of clock intervals
-		self.mon_dt = 0.1*ms				# Delta t for monitors clock
+		self.mon_dt = 0.001*second				# Delta t for monitors clock
 
 		self.stimulus_size = self.N_e		# Number of neurons in inp. layer
 		self.stim_active_neur_size = 0		# Number of active ids within stim.
@@ -343,8 +343,8 @@ class FeedforwardNetwork:
 			for post_id in range(0, len(self.E_outp)):
 				if isnan(self.M_syn[pre_id][post_id]) == False:
 					s = uniform(0, 1)					
-					# self.Input_to_Output.rho[pre_id, post_id] = round(s, 2)
-					self.Input_to_Output.rho[pre_id, post_id] = 1.0
+					self.Input_to_Output.rho[pre_id, post_id] = round(s, 2)
+					# self.Input_to_Output.rho[pre_id, post_id] = 1.0
 
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
 
@@ -441,7 +441,7 @@ class FeedforwardNetwork:
 	def set_stimulus_Ninp(self):
 		# Setting active neurons in the input layer
 		self.Input_to_E_inp.rates = 0*Hz # reset input activity
-		self.stimulus_ids_Ninp = load_stimulus_Ninp(self.stimulus_id)
+		self.stimulus_ids_Ninp = load_stimulus_Ninp(self.stimulus_id, self.N_e)
 		self.Input_to_E_inp.rates[self.stimulus_ids_Ninp] = self.stim_freq_Ninp
 
 		self.stim_size = len(self.stimulus_ids_Ninp)

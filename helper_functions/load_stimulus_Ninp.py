@@ -14,7 +14,7 @@ import random
 import numpy as np
 import sys
 
-def load_stimulus_Ninp(stimulus_id):
+def load_stimulus_Ninp(stimulus_id, input_size = 4):
 	if stimulus_id == 'x':
 		stimulus_neur_ids = [6,8,4,0,2]
 	elif stimulus_id == '.':
@@ -25,6 +25,8 @@ def load_stimulus_Ninp(stimulus_id):
 		stimulus_neur_ids = [6]
 	elif stimulus_id == 'lrc': # lower right corner
 		stimulus_neur_ids = [3]
+	elif stimulus_id == 'all': # lower right corner
+		stimulus_neur_ids = range(0, input_size)
 	else:
 		sys.exit('\n> ERROR - select valid stimulus (exiting)')
 

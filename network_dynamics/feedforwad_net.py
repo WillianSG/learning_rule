@@ -3,6 +3,9 @@
 @author: wgirao
 
 Comments:
+- sys.argv[2] = 1 : save sim data
+- sys.argv[1] = simulation time (float)
+- parameters set considering active input of 45 neurons
 """
 import setuptools
 import os, sys, pickle, shutil
@@ -29,7 +32,7 @@ from plot_feedforwad_net import *
 from feedforward_plot_activity import *
 
 def main():
-	make_dir = int(sys.argv[1])
+	make_dir = str(sys.argv[2])
 	# ----------- Network Initialization -----------
 
 	network = FeedforwardNetwork()
@@ -39,7 +42,11 @@ def main():
 	network.exp_date = strftime("%d%b%Y_%H-%M-%S_", localtime())
 
 	# Execution Parameters
-	network.t_run = 0.3*second
+	network.dt_resolution = 0.001*second 	# Delta t of clock intervals
+	network.mon_dt = 0.001*second
+
+
+	network.t_run = float(sys.argv[1])*second
 	network.int_meth_neur = 'linear'
 	network.int_meth_syn = 'euler'
 
@@ -53,22 +60,24 @@ def main():
 	network.N_c = 1
 
 	# Synapses
-	network.Einp_to_Eout_w = 100*mV
-	network.Input_to_I_w = 100*mV
-	network.Input_to_Einp_w = 1000*mV # 300mV
+	network.Einp_to_Eout_w = 300*mV # 300mV
 	network.I_to_Eout_w = 0*mV
-	network.teacher_to_Eout_w = 0*mV # 300mV
-	network.spont_to_input_w = 100*mV # 100mV
+	network.teacher_to_Eout_w = 100*mV # 100mV
+
+	network.Input_to_I_w = 100*mV # 100mV
+
+	network.Input_to_Einp_w = 100*mV # 100mV
+	network.spont_to_input_w = 50*mV # 50mV
 
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
 
 	# Neuron populations mean frequency
-	network.stim_freq_i = 100*Hz
-	network.stim_freq_Ninp = 5000*Hz # 100Hz
-	network.stim_freq_teach = 160*Hz # 160Hz
+	network.stim_freq_i = 50*Hz # 50Hz
+	network.stim_freq_Ninp = 150*Hz # 150Hz
+	network.stim_freq_teach = 100*Hz # 100Hz
 	network.stim_freq_spont = 20*Hz # 20Hz
 
-	network.stimulus_id = '.'
+	network.stimulus_id = 'all'
 
 	network.initialize_network_modules()
 
