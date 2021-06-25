@@ -28,6 +28,7 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning =
 		if stoplearning:
 			model_E_E_plastic = ''' 
 			w : volt
+			plastic : boolean (shared)
 			dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
 			dxpost/dt = -xpost / tau_xpost : 1 (clock-driven)
 			dxstop/dt = -xstop / tau_xstop : 1 (clock-driven) 
@@ -37,6 +38,7 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning =
 		else:
 			model_E_E_plastic = ''' 
 			w : volt
+			plastic : boolean (shared)
 			dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
 			dxpost/dt = -xpost / tau_xpost : 1 (clock-driven)
 			drho/dt = (int(rho > thr_b_rho)*int(rho < rho_max)  * alpha -
@@ -47,15 +49,17 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning =
 			model_E_E_plastic = ''' 
 			w : volt
 			rho : 1
+			plastic : boolean (shared)
 			dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
 			dxpost/dt = -xpost / tau_xpost : 1 (clock-driven)
-			dxstop/dt = -xstop / tau_xstop : 1 (clock-driven) '''
+			dxstop/dt = -xstop / tau_xstop : 1 (clock-driven)'''
 		else:
 			model_E_E_plastic = ''' 
 			w : volt
 			rho : 1
+			plastic : boolean (shared)
 			dxpre/dt = -xpre / tau_xpre : 1 (clock-driven)
-			dxpost/dt = -xpost / tau_xpost : 1 (clock-driven) '''
+			dxpost/dt = -xpost / tau_xpost : 1 (clock-driven)'''
 	else:
 		print ('Bistabilty setting unclear')
 
@@ -87,13 +91,13 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning =
 	rho_dep2: rho_neg2
 	"""
 	if stoplearning:
-		post_E_E_LR3 = ''' xstop = xstop + xstop_jump * (xstop_max - xstop)
+		post_E_E_LR3 = '''xstop = xstop + xstop_jump * (xstop_max - xstop)
 		xpost = clip((xpost + xpost_jump), 0.0, 1.0)
-		rho = clip((rho + (xpre * xpre_factor + rho_neg2 *int(xpre < thr_pre) * int(xpre > 0))*int(xstop < thr_stop_h)*int(xstop > thr_stop_l)), rho_min, rho_max)
+		rho = clip((rho + ((xpre * xpre_factor + rho_neg2 *int(xpre < thr_pre) * int(xpre > 0))*int(plastic))*int(xstop < thr_stop_h)*int(xstop > thr_stop_l)), rho_min, rho_max)
 		w = rho*w_max'''
 	else:
 		post_E_E_LR3 = '''xpost = clip((xpost + xpost_jump), 0.0, 1.0)
-			rho = clip((rho + xpre * xpre_factor + rho_neg2 *int(xpre < thr_pre) * int(xpre > 0)), rho_min, rho_max)
+			rho = clip((rho + (xpre * xpre_factor + rho_neg2 *int(xpre < thr_pre)*int(xpre > 0))*int(plastic)), rho_min, rho_max)
 			w = rho*w_max'''
 
 	# - On pre spike (LR3)
@@ -105,12 +109,12 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning =
 	rho_dep: rho_neg
 	"""
 	xpre_update = {'xpre_update': '''xpre = xpre + xpre_jump'''}
-	w_update = {'w_update' : ''' w = rho * w_max'''}
+	w_update = {'w_update' : ''' w = (rho * w_max)*int(plastic)'''}
 
 	if stoplearning:
-		rho_update_pre = {'rho_update_pre':'''rho = clip(rho + rho_neg *int(xpost > thr_post)*int(xstop < thr_stop_h)*int(xstop > thr_stop_l), rho_min, rho_max)'''}
+		rho_update_pre = {'rho_update_pre':'''rho = clip(rho + (rho_neg *int(xpost > thr_post)*int(xstop < thr_stop_h)*int(plastic))*int(xstop > thr_stop_l), rho_min, rho_max)'''}
 	else:
-		rho_update_pre = {'rho_update_pre':'''rho = clip(rho + rho_neg *int(xpost > thr_post), rho_min, rho_max)'''}
+		rho_update_pre = {'rho_update_pre':'''rho = clip(rho + (rho_neg *int(xpost > thr_post)*int(plastic)), rho_min, rho_max)'''}
 
 	# Defines the argument 'on_pre' for Brian2 - same as on_pre='v_post += w'
 	"""
