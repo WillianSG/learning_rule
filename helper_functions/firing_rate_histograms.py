@@ -52,6 +52,9 @@ def firing_rate_histograms(tpoints, inds, bin_width, N_pop, flag_hist):
 			# Set arbitrary number of bins
 			num_bins_rounded = 1
 
+		if num_bins_rounded < 1:
+			num_bins_rounded = 1
+
 		# b) Time-resolved histogram: count
 		t_hist_count, t_hist_edgs = np.histogram(a = tpoints,
 			bins = num_bins_rounded) 
