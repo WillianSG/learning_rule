@@ -100,21 +100,21 @@ def load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning =
 			rho = clip((rho + (xpre * xpre_factor + rho_neg2 *int(xpre < thr_pre)*int(xpre > 0))*int(plastic)), rho_min, rho_max)
 			w = rho*w_max'''
 
-	# - On pre spike (LR3)
+	# - On pre (1) spike (LR3)
 	xpre_update_LR3 = {'xpre_update': '''xpre = xpre + xpre_jump * (xpre_max - xpre)'''}
 
-	# - On pre spike (both LR1/LR2) 
+	# - On pre (2) spike (both LR1/LR2/LR3) 
 	"""
 	xpre_jump: A_pre
 	rho_dep: rho_neg
 	"""
 	xpre_update = {'xpre_update': '''xpre = xpre + xpre_jump'''}
-	w_update = {'w_update' : ''' w = (rho * w_max)*int(plastic)'''}
+	w_update = {'w_update' : ''' w = (rho * w_max)'''} # PROBLEM - w = (rho * w_max)*int(plastic)
 
 	if stoplearning:
 		rho_update_pre = {'rho_update_pre':'''rho = clip(rho + (rho_neg *int(xpost > thr_post)*int(xstop < thr_stop_h)*int(plastic))*int(xstop > thr_stop_l), rho_min, rho_max)'''}
 	else:
-		rho_update_pre = {'rho_update_pre':'''rho = clip(rho + (rho_neg *int(xpost > thr_post)*int(plastic)), rho_min, rho_max)'''}
+		rho_update_pre = {'rho_update_pre':'''rho = clip(rho + (rho_neg *int(xpost > thr_post))*int(plastic), rho_min, rho_max)'''}
 
 	# Defines the argument 'on_pre' for Brian2 - same as on_pre='v_post += w'
 	"""

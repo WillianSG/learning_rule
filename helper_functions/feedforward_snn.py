@@ -40,14 +40,13 @@ class FeedforwardNetwork:
 		self.N_c = 1						# num. of classes in data
 
 		# Synapses
-		self.Einp_to_Eout_w = 7.5*mV
+		self.w_max = 5*mV # upper boundary for excit. syn.
+
 		self.Input_to_I_w = 1*mV
 		self.Input_to_Einp_w = 1*mV
 		self.I_to_Eout_w = 1*mV
 		self.teacher_to_Eout_w = 1*mV
 		self.spont_to_input_w = 1*mV
-
-		self.w_e_e_max = 1*mV 		# upper boundary for excit. syn.
 
 		# Inhibitory Population
 		self.Vr_i = -60*mV 			# resting voltage
@@ -60,7 +59,7 @@ class FeedforwardNetwork:
 		self.stim_freq_i = 0*Hz
 
 		# Input (E) Population
-		self.N_e = 45 				# num. of neurons
+		self.N_e = 50 				# num. of neurons
 		self.Vr_e = -65*mV 			# resting potential
 		self.Vrst_e = -65*mV 		# reset potential
 		self.Vth_e_init = -58*mV 	# initial threshold voltage
@@ -319,6 +318,10 @@ class FeedforwardNetwork:
 		self.Input_to_Output.connect()			# feedforward connections
 		self.I_Eout.connect(j = 'i')			# inhib. pop. -> output pop.
 
+		self.Input_to_Output.plastic = False
+
+		print(self.Input_to_Output)
+
 		self.teacher_Eout.connect(j = 'i')
 		self.spont_input.connect(j = 'i')
 
@@ -331,7 +334,7 @@ class FeedforwardNetwork:
 		self.randomize_synaptic_weights()
 
 	def set_weights(self):
-		self.Input_to_Output.w = self.Einp_to_Eout_w
+		self.Input_to_Output.w = self.w_max
 		self.Input_I.w = self.Input_to_I_w
 		self.Input_1st_layer.w = self.Input_to_Einp_w
 		self.I_Eout.w = self.I_to_Eout_w
@@ -343,8 +346,8 @@ class FeedforwardNetwork:
 			for post_id in range(0, len(self.E_outp)):
 				if isnan(self.M_syn[pre_id][post_id]) == False:
 					s = uniform(0, 1)					
-					self.Input_to_Output.rho[pre_id, post_id] = round(s, 2)
-					# self.Input_to_Output.rho[pre_id, post_id] = 1.0
+					# self.Input_to_Output.rho[pre_id, post_id] = round(s, 2)
+					self.Input_to_Output.rho[pre_id, post_id] = 1.0
 
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
 
@@ -489,7 +492,7 @@ class FeedforwardNetwork:
 			'Vrst_i' : self.Vrst_i,
 			'Vth_i' : self.Vth_i,
 			'Vth_e_incr' : self.Vth_e_incr,
-			'w_max' : self.w_e_e_max,
+			'w_max' : self.w_max,
 			'xpre_jump' : self.xpre_jump,
 			'xpost_jump' : self.xpost_jump,
 			'tau_xpre' : self.tau_xpre,

@@ -321,7 +321,7 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 		rho_neg = -0.05
 		rho_neg2 = rho_neg
 
-	w_max = 1*mV
+	w_max = 5*mV
 
 	return tau_xpre,\
 	tau_xpost,\

@@ -60,9 +60,9 @@ def main():
 	network.N_c = 1
 
 	# Synapses
-	network.Einp_to_Eout_w = 300*mV # 300mV
+	network.w_max = 5*mV # max. weight of plastic synapses
 	network.I_to_Eout_w = 0*mV
-	network.teacher_to_Eout_w = 100*mV # 100mV
+	network.teacher_to_Eout_w = 0*mV # 100mV
 
 	network.Input_to_I_w = 100*mV # 100mV
 
@@ -73,9 +73,9 @@ def main():
 
 	# Neuron populations mean frequency
 	network.stim_freq_i = 50*Hz # 50Hz
-	network.stim_freq_Ninp = 150*Hz # 150Hz
+	network.stim_freq_Ninp = 100*Hz # 150Hz
 	network.stim_freq_teach = 100*Hz # 100Hz
-	network.stim_freq_spont = 20*Hz # 20Hz
+	network.stim_freq_spont = 0*Hz # 20Hz
 
 	network.stimulus_id = 'all'
 
@@ -131,18 +131,20 @@ def main():
 		# Input_to_E_inp
 		s_tpoints_Input_to_Einp = network.Input_to_E_inp_spkmon.t[:]
 		n_inds_Input_to_Einp = network.Input_to_E_inp_spkmon.i[:]
-		print('\n# spks from input to 1st layer: ', len(s_tpoints_Input_to_Einp))
+		# print('\n# spks from input to 1st layer: ', len(s_tpoints_Input_to_Einp))
 		# print(n_inds_Input_to_Einp)
+
+		print('# input size: ', network.N_e)
 
 		# E_inp
 		s_tpoints_E_inp = network.E_inp_spkmon.t[:]
 		n_inds_E_inp = network.E_inp_spkmon.i[:]
-		print('# spks from 1st layer: ', len(s_tpoints_E_inp))
+		print('# spks 1st layer: ', len(s_tpoints_E_inp))
 
 		# E_outp
 		s_tpoints_E_outp = network.E_outp_spkmon.t[:]
 		n_inds_E_outp = network.E_outp_spkmon.i[:]
-		print('# spks from out layer: ', len(s_tpoints_E_outp))
+		print('# spks out layer: ', len(s_tpoints_E_outp))
 
 		# Input_to_I
 		s_tpoints_Input_to_I = network.Input_to_I_spkmon.t[:]
