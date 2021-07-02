@@ -2,6 +2,12 @@
 """
 @author: wgirao
 @based-on: asonntag
+
+Comments:
+- min_freq = int(sys.argv[1])
+- max_freq = int(sys.argv[2])
+- num_sim = int(sys.argv[3])
+- parameter_set = str(sys.argv[4])
 """
 import setuptools
 import os, sys, pickle
@@ -70,7 +76,7 @@ N_Pre = 1
 N_Post = 1
 
 bistability = False
-stoplearning = True
+stoplearning = False
 
 isi_correlation = 'random' # "random", "positive", "negative"
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
@@ -156,7 +162,7 @@ else:
 print("Running network...\n")
 
 # Running network for each pair of frequency
-results = Parallel(n_jobs=2)(delayed(run_net_parallel)(p,q) for p,q in simulationsset)
+results = Parallel(n_jobs=num_cores)(delayed(run_net_parallel)(p,q) for p,q in simulationsset)
 
 for t in results:
 	p = t[0] # x

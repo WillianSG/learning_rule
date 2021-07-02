@@ -81,6 +81,8 @@ def run_frequencies(pre_rate, post_rate, t_run, dt_resolution, plasticity_rule, 
 
 	Pre_Post.connect(j = 'i') # each in source connected to one in target
 
+	Pre_Post.plastic = True
+
 	# - Initialization of synaptic variables
 	Pre_Post.rho = rho_init
 	num_Pre_Post_synaspes = len(Pre_Post.i)

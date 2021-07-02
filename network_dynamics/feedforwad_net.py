@@ -56,7 +56,7 @@ def main():
 	# Learning Rule
 	network.plasticity_rule = 'LR3'
 	network.parameter_set = '1.0'
-	network.bistability = False
+	network.bistability = True
 
 	# Neurons
 	network.neuron_type = 'LIF'
@@ -68,13 +68,14 @@ def main():
 	network.I_to_Eout_w = 0*mV			# Inhibitory to Output
 	network.spont_to_input_w = 0*mV 	# Spontaneous to Input
 
-	network.Input_to_I_w = 0*mV 		# 'virtual inh.' to Inhibitory
 	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input
+	network.Input_to_I_w = 0*mV 		# 'virtual inh.' to Inhibitory
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 100*Hz 	# Input pop. - 100*Hz
-	network.stim_freq_teach = 200*Hz 	# Teacher pop. - 200*Hz
-	network.stim_freq_spont = 0*Hz 		# Spontaneous activity pop. - 20*Hz
+	network.stim_freq_Ninp = 75*Hz 		# Input pop. - 100*Hz
+	network.stim_freq_teach = 180*Hz 	# Teacher pop. - 400*Hz/180*Hz
+	network.stim_freq_spont = 20*Hz 	# Spontaneous activity pop. - 20*Hz
+	network.stim_freq_i = 0*Hz			# Inhib. pop. - 50*Hz
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)

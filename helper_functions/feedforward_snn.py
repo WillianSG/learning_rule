@@ -40,13 +40,13 @@ class FeedforwardNetwork:
 		self.N_c = 1						# num. of classes in data
 
 		# Synapses
-		self.w_max = 5*mV # upper boundary for excit. syn.
+		self.w_max = 0*mV # upper boundary for excit. syn.
 
-		self.Input_to_I_w = 1*mV
-		self.Input_to_Einp_w = 1*mV
-		self.I_to_Eout_w = 1*mV
-		self.teacher_to_Eout_w = 1*mV
-		self.spont_to_input_w = 1*mV
+		self.Input_to_I_w = 0*mV
+		self.Input_to_Einp_w = 0*mV
+		self.I_to_Eout_w = 0*mV
+		self.teacher_to_Eout_w = 0*mV
+		self.spont_to_input_w = 0*mV
 
 		# Inhibitory Population
 		self.Vr_i = -60*mV 			# resting voltage
@@ -77,10 +77,10 @@ class FeedforwardNetwork:
 		self.N_e_outp = 1
 
 		# Teacher
-		self.stim_freq_teach = 2000*Hz
+		self.stim_freq_teach = 0*Hz
 
 		# Spontaneus activity
-		self.stim_freq_spont = 5*Hz
+		self.stim_freq_spont = 0*Hz
 
 		# Rule parameters
 		self.tau_rho = None
@@ -318,8 +318,6 @@ class FeedforwardNetwork:
 		self.Input_to_Output.connect()			# feedforward connections
 		self.I_Eout.connect(j = 'i')			# inhib. pop. -> output pop.
 
-		self.Input_to_Output.plastic = False
-
 		print(self.Input_to_Output)
 
 		self.teacher_Eout.connect(j = 'i')
@@ -481,7 +479,6 @@ class FeedforwardNetwork:
 
 	def set_I_from_coding_lvl(self):
 		# Setting active neurons in the Inhibitory population
-		self.Input_to_I.rates = 0*Hz # reset activity
 		# self.Input_to_I.rates[range(0, self.N_e_outp)] = self.coding_lvl*Hz
 		self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i
 
@@ -548,7 +545,7 @@ class FeedforwardNetwork:
 			self.xpost_min,
 			self.xpost_max,
 			self.xpre_max] = load_rule_params(self.plasticity_rule, 
-				self.parameter_set)
+				self.parameter_set, max_w = self.w_max)
 
 	def run_net(self, report = 'stdout', period = 1):
 		# Running simulation
