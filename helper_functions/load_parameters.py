@@ -4,6 +4,8 @@
 @based-on: asonntag
 """
 
+from brian2 import mV
+
 # Parameter set definitions.
 """
 input:
@@ -29,7 +31,7 @@ output:
 - w_max():
 Comments:
 """
-def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
+def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5, max_w = 0*mV):
 	from brian2 import ms, mV
 	xpre_jump = 1 # jump of x_pre
 	xpost_jump = 1 # jump of x_post
@@ -50,6 +52,8 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 	rho_neg2 = -0.05
 
 	thr_pre = 0.0
+
+	w_max = max_w
 
 	if plasticity_rule == 'LR2':
 		if parameter_set =='2.1':
@@ -320,8 +324,6 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5):
 		thr_pre = 0.2
 		rho_neg = -0.05
 		rho_neg2 = rho_neg
-
-	w_max = 5*mV
 
 	return tau_xpre,\
 	tau_xpost,\
