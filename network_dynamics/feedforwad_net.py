@@ -3,8 +3,8 @@
 @author: wgirao
 
 Comments:
-- sys.argv[2] = 1 : save sim data
 - sys.argv[1] = simulation time (float)
+- sys.argv[2] = 1 : save sim data
 - parameters set considering active input of 45 neurons
 """
 import setuptools
@@ -37,6 +37,9 @@ def main():
 
 	network = FeedforwardNetwork()
 
+	# Select single (test) stimulus
+	network.stimulus_id = 'all'
+
 	# Simulation
 	network.exp_type = 'feedforward_network'
 	network.exp_date = strftime("%d%b%Y_%H-%M-%S_", localtime())
@@ -59,25 +62,22 @@ def main():
 	network.neuron_type = 'LIF'
 	network.N_c = 1
 
-	# Synapses
-	network.w_max = 5*mV # max. weight of plastic synapses
-	network.I_to_Eout_w = 0*mV
-	network.teacher_to_Eout_w = 0*mV # 100mV
+	# Synaptic weights (max.)
+	network.w_max = 1*mV				# Input to Output - 1*mV
+	network.teacher_to_Eout_w = 20*mV 	# Teacher to Output - 20*mV
+	network.I_to_Eout_w = 0*mV			# Inhibitory to Output
+	network.spont_to_input_w = 0*mV 	# Spontaneous to Input
 
-	network.Input_to_I_w = 100*mV # 100mV
-
-	network.Input_to_Einp_w = 100*mV # 100mV
-	network.spont_to_input_w = 50*mV # 50mV
-
-	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
+	network.Input_to_I_w = 0*mV 		# 'virtual inh.' to Inhibitory
+	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input
 
 	# Neuron populations mean frequency
-	network.stim_freq_i = 50*Hz # 50Hz
-	network.stim_freq_Ninp = 100*Hz # 150Hz
-	network.stim_freq_teach = 100*Hz # 100Hz
-	network.stim_freq_spont = 0*Hz # 20Hz
+	network.stim_freq_Ninp = 100*Hz 	# Input pop. - 100*Hz
+	network.stim_freq_teach = 200*Hz 	# Teacher pop. - 200*Hz
+	network.stim_freq_spont = 0*Hz 		# Spontaneous activity pop. - 20*Hz
 
-	network.stimulus_id = 'all'
+	# Initializing network objects
+	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
 
 	network.initialize_network_modules()
 
@@ -125,6 +125,8 @@ def main():
 
 		network.set_stimulus_Ninp()
 
+		network.Input_to_Output.plastic = False
+
 		network.run_net()
 
 		# ----------- Storing simulation data -----------
@@ -154,12 +156,12 @@ def main():
 		# I
 		s_tpoints_I = network.I_spkmon.t[:]
 		n_inds_I = network.I_spkmon.i[:]
-		# print('I pop: ', len(s_tpoints_I))
+		print('# spks I pop: ', len(s_tpoints_I))
 
 		# teacher
 		s_tpoints_teach = network.teacher_spkmon.t[:]
 		n_inds_teach = network.teacher_spkmon.i[:]
-		# print('teacher pop: ', len(s_tpoints_teach))
+		print('# spks teacher pop: ', len(s_tpoints_teach))
 
 		# spontaneous
 		s_tpoints_spont = network.spont_spkmon.t[:]
