@@ -344,8 +344,8 @@ class FeedforwardNetwork:
 			for post_id in range(0, len(self.E_outp)):
 				if isnan(self.M_syn[pre_id][post_id]) == False:
 					s = uniform(0, 1)					
-					# self.Input_to_Output.rho[pre_id, post_id] = round(s, 2)
-					self.Input_to_Output.rho[pre_id, post_id] = 1.0
+					self.Input_to_Output.rho[pre_id, post_id] = round(s, 2)
+					# self.Input_to_Output.rho[pre_id, post_id] = 1.0
 
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
 
@@ -550,7 +550,7 @@ class FeedforwardNetwork:
 	def update_params_datasetclass(self, pattern_id):
 		if (pattern_id % 2) == 0:
 			# Update teacher frequency
-			self.stim_freq_teach = 400*Hz
+			self.stim_freq_teach = 150*Hz
 			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
 
 			# Update inhibition frequency
@@ -558,12 +558,21 @@ class FeedforwardNetwork:
 			self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i
 		else:
 			# Update teacher frequency
-			self.stim_freq_teach = 180*Hz
+			self.stim_freq_teach = 90*Hz
 			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
 
 			# Update inhibition frequency
-			self.stim_freq_i = 100*Hz
+			self.stim_freq_i = 20*Hz
 			self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i
+
+	def silince_for_testing(self):
+		# Update teacher frequency
+		self.stim_freq_teach = 0*Hz
+		self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
+
+		# Update inhibition frequency
+		self.stim_freq_i = 0*Hz
+		self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i
 
 	def run_net(self, report = 'stdout', period = 1):
 		# Running simulation
