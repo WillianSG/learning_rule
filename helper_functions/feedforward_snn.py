@@ -59,7 +59,7 @@ class FeedforwardNetwork:
 		self.stim_freq_i = 0*Hz
 
 		# Input (E) Population
-		self.N_e = 50 				# num. of neurons
+		self.N_e = 400 				# num. of neurons
 		self.Vr_e = -65*mV 			# resting potential
 		self.Vrst_e = -65*mV 		# reset potential
 		self.Vth_e_init = -58*mV 	# initial threshold voltage
@@ -546,6 +546,24 @@ class FeedforwardNetwork:
 			self.xpost_max,
 			self.xpre_max] = load_rule_params(self.plasticity_rule, 
 				self.parameter_set, max_w = self.w_max)
+
+	def update_params_datasetclass(self, pattern_id):
+		if (pattern_id % 2) == 0:
+			# Update teacher frequency
+			self.stim_freq_teach = 400*Hz
+			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
+
+			# Update inhibition frequency
+			self.stim_freq_i = 0*Hz
+			self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i
+		else:
+			# Update teacher frequency
+			self.stim_freq_teach = 180*Hz
+			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
+
+			# Update inhibition frequency
+			self.stim_freq_i = 100*Hz
+			self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i
 
 	def run_net(self, report = 'stdout', period = 1):
 		# Running simulation
