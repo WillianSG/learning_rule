@@ -68,7 +68,7 @@ num_sim = int(sys.argv[3])
 parameter_set = str(sys.argv[4])
 
 # Simulation run variables
-dt_resolution = 0.01 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
+dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 t_run = 1 # 5 | simulation time (seconds)
 noise = 0.75 # used to introduce difference between spike times betweem pre- and post-
 
@@ -129,6 +129,8 @@ drho_all = np.zeros((len(pre_freq),len(post_freq)))
 	xpost_min,
 	xpost_max,
 	xpre_max] = load_rule_params(plasticity_rule, parameter_set)
+
+print('\nw_max: ', w_max)
 
 # 2.1 ========== Learning rule as Brian2's synaptic model
 [model_E_E,

@@ -11,6 +11,8 @@ import os, sys, pickle, shutil
 from brian2 import *
 import numpy as np
 from time import localtime, strftime
+import matplotlib.pyplot as plt
+from matplotlib import gridspec
 
 prefs.codegen.target = 'numpy'
 
@@ -28,9 +30,8 @@ sys.path.append(os.path.join(parent_dir, dataset_dir))
 
 # Helper modules
 from feedforward_snn import FeedforwardNetwork
-from visualise_connectivity import visualise_connectivity
-from plot_feedforwad_net import *
-from feedforward_plot_activity import *
+from histograms_firing_rate import *
+from separate_ids_tpoints_active_spont import *
 
 def main():
 	sim_repetitions = int(sys.argv[2])
@@ -87,12 +88,6 @@ def main():
 
 	network.set_weights()
 
-	# ----------- Network Connectivity -----------	
-	# visualise_connectivity(network.Input_1st_layer)
-	# visualise_connectivity(network.Input_I)
-	# visualise_connectivity(network.Input_to_Output)
-	# visualise_connectivity(network.I_Eout)
-
 	# ----------- Results Directories -----------
 
 	# Results Directories
@@ -133,6 +128,12 @@ def main():
 	xpost_all = []
 	xpre_all = []
 
+	s_tpoints_input_all = []
+	n_inds_input_all = []
+
+	s_tpoints_output_all = []
+	n_inds_output_all = []
+
 	for exposure_n in range(0, sim_repetitions):
 		network.net.restore(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
 
@@ -143,84 +144,228 @@ def main():
 
 		network.run_net()
 
-		# # ----------- Storing simulation data -----------
+		# ----------- Storing simulation data -----------
 		rho_all.append(network.Input_to_Output_stamon.rho)
 		xpost_all.append(network.Input_to_Output_stamon.xpost)
 		xpre_all.append(network.Input_to_Output_stamon.xpre)
 
+		# input layer (spk times/ids)
+		s_tpoints_input_all.append(network.E_inp_spkmon.t[:])
+		n_inds_input_all.append(network.E_inp_spkmon.i[:])
 
-	# ----------- Xpre/Xpost avgs -----------
+		# output layer (spk times/ids)
+		s_tpoints_output_all.append(network.E_outp_spkmon.t[:])
+		n_inds_output_all.append(network.E_outp_spkmon.i[:])
 
-	xpre_active_avg = np.zeros(len(xpre_all[0][0]))
-	xpre_inactive_avg = np.zeros(len(xpre_all[0][0]))
-	
-	xpost_avg = np.zeros(len(xpost_all[0][0]))
 
-	count1 = 0
-	count2 = 0
+	# ============ averaging simulations results ============
 
-	for a in range(0, sim_repetitions):
+	# active
+	active_pot_syn_start = 0
+	active_pot_syn_end = 0
 
-		xpost_avg += xpost_all[a][0]
+	active_dep_syn_start = 0
+	active_dep_syn_end = 0
 
-		for b in range(0, network.N_e):
-			if b in network.stimulus_ids_Ninp:
-				xpre_active_avg += xpre_all[a][b]
+	# spontaneous
+	spont_pot_syn_start = 0
+	spont_pot_syn_end = 0
+
+	spont_dep_syn_start = 0
+	spont_dep_syn_end = 0
+
+	for i in range(0, sim_repetitions):
+		for j in range(0, network.N_e):
+			if j in network.stimulus_ids_Ninp:
+				if rho_all[i][j][0] > 0.5:
+					active_pot_syn_start += 1
+				else:
+					active_dep_syn_start += 1
+
+				if rho_all[i][j][-1] > 0.5:
+					active_pot_syn_end += 1
+				else:
+					active_dep_syn_end += 1
 			else:
-				xpre_inactive_avg += xpre_all[a][b]
+				if rho_all[i][j][0] > 0.5:
+					spont_pot_syn_start += 1
+				else:
+					spont_dep_syn_start += 1
 
-	# avg Ca of activated neurons in the pattern
-	xpre_active_avg = (xpre_active_avg/len(network.stimulus_ids_Ninp))/sim_repetitions
+				if rho_all[i][j][-1] > 0.5:
+					spont_pot_syn_end += 1
+				else:
+					spont_dep_syn_end += 1
 
-	# avg Ca of inactive (spontaneous) neurons in the pattern
-	xpre_inactive_avg = (xpre_inactive_avg/(network.N_e-len(network.stimulus_ids_Ninp)))/sim_repetitions
 
-	# avg Ca of (single) output neuron
-	xpost_avg = xpost_avg/sim_repetitions
+	# ----------- Firing freq. histogram avgs -----------
 
-	# simulation time array
-	sim_t_array = network.Input_to_Output_stamon.t
+# 	active_tpoints_all = []
+# 	active_ids_all = []
 
-	# ----------- Plotting -----------
+# 	spontaneous_tpoints_all = []
+# 	spontaneous_ids_all = []
 
-	fig0 = plt.figure(constrained_layout = True)
-	spec2 = gridspec.GridSpec(ncols = 2, nrows = 1, figure = fig0)
+# 	# separating input activity into 'active' and 'spontaneous'
+# 	for a in range(0, len(s_tpoints_input_all)):
+# 		[active_tpoints, 
+# 		active_ids, 
+# 		spontaneous_tpoints, 
+# 		spontaneous_ids] = separate_ids_tpoints_active_spont(
+# 			input_tpoints = s_tpoints_input_all[a], 
+# 			input_ids = n_inds_input_all[a], 
+# 			active_input_ids = network.stimulus_ids_Ninp)
 
-	fig0.suptitle('rule ' + network.plasticity_rule + '/param. ' + network.parameter_set, fontsize = 8)
+# 		active_tpoints_all.append(active_tpoints)
+# 		active_ids_all.append(active_ids)
 
-	# avg Ca2+ pre -----------
-	f2_ax1 = fig0.add_subplot(spec2[0, 0])
+# 		spontaneous_tpoints_all.append(spontaneous_tpoints)
+# 		spontaneous_ids_all.append(spontaneous_ids)
 
-	plt.plot(sim_t_array, xpre_active_avg, color = 'tomato', linestyle = 'solid', label = r'$Ca^{2+}_{act.}$')
+# 	# active input -----------
+# 	active_t_hist_edges_all = []
+# 	active_t_hist_freq_all = []
+# 	active_t_hist_bin_widths_all = []
 
-	plt.plot(sim_t_array, xpre_inactive_avg, color = 'grey', linestyle = 'solid', label = r'$Ca^{2+}_{inact.}$')
+# 	# averaging active input firing frequency
+# 	for i in range(0, len(active_tpoints_all)):
+# 		[t_hist_edges,
+# 		t_hist_freq, 
+# 		t_hist_bin_widths] = histograms_firing_rate(
+# 			t_points = active_tpoints_all[i], 
+# 			pop_size = len(network.stimulus_ids_Ninp))
 
-	plt.hlines(network.thr_pre, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{pre}$')
+# 		active_t_hist_edges_all.append(t_hist_edges)
+# 		active_t_hist_freq_all.append(t_hist_freq)
+# 		active_t_hist_bin_widths_all.append(t_hist_bin_widths)
 
-	f2_ax1.legend(prop = {'size': 8})
+# 	active_t_hist_freq_avg = np.zeros(len(active_t_hist_freq_all[0]))
 
-	f2_ax1.set_ylim([0.0, 1.0])
+# 	for i in range(0, len(active_t_hist_freq_all)):
+# 		active_t_hist_freq_avg += active_t_hist_freq_all[i]
 
-	plt.ylabel(r'$Ca^{2+}$' + ' (a.u.)', size = 6)
-	plt.xlabel('time (s)', size = 6)
+# 	active_t_hist_freq_avg = active_t_hist_freq_avg/len(active_t_hist_freq_all)
 
-	# avg Ca2+ post -----------
-	f2_ax2 = fig0.add_subplot(spec2[0, 1])
+# 	# spontaneous input -----------
+# 	spontaneous_t_hist_edges_all = []
+# 	spontaneous_t_hist_freq_all = []
+# 	spontaneous_t_hist_bin_widths_all = []
 
-	plt.plot(sim_t_array, xpost_avg, color = 'lightblue', linestyle = 'solid', label = r'$Ca^{2+}_{output}$')
+# 	# averaging spontaneous input firing frequency
+# 	for i in range(0, len(spontaneous_tpoints_all)):
+# 		[t_hist_edges,
+# 		t_hist_freq, 
+# 		t_hist_bin_widths] = histograms_firing_rate(
+# 			t_points = spontaneous_tpoints_all[i], 
+# 			pop_size = network.N_e - len(network.stimulus_ids_Ninp))
 
-	plt.hlines(network.thr_post, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{post}$')
+# 		spontaneous_t_hist_edges_all.append(t_hist_edges)
+# 		spontaneous_t_hist_freq_all.append(t_hist_freq)
+# 		spontaneous_t_hist_bin_widths_all.append(t_hist_bin_widths)
 
-	f2_ax2.legend(prop = {'size': 8})
+# 	spontaneous_t_hist_freq_avg = np.zeros(len(spontaneous_t_hist_freq_all[0]))
 
-	f2_ax2.set_ylim([0.0, 1.0])
+# 	for i in range(0, len(spontaneous_t_hist_freq_all)):
+# 		spontaneous_t_hist_freq_avg += spontaneous_t_hist_freq_all[i]
 
-	plt.ylabel(r'$Ca^{2+}$' + ' (a.u.)', size = 6)
-	plt.xlabel('time (s)', size = 6)
+# 	spontaneous_t_hist_freq_avg = spontaneous_t_hist_freq_avg/len(spontaneous_t_hist_freq_all)
 
-	plt.show()
+# 	# output neuron -----------
+
+# 	# ----------- Xpre/Xpost avgs -----------
+
+# 	xpre_active_avg = np.zeros(len(xpre_all[0][0]))
+# 	xpre_inactive_avg = np.zeros(len(xpre_all[0][0]))
+	
+# 	xpost_avg = np.zeros(len(xpost_all[0][0]))
+
+# 	for a in range(0, sim_repetitions):
+
+# 		xpost_avg += xpost_all[a][0]
+
+# 		for b in range(0, network.N_e):
+# 			if b in network.stimulus_ids_Ninp:
+# 				xpre_active_avg += xpre_all[a][b]
+# 			else:
+# 				xpre_inactive_avg += xpre_all[a][b]
+
+# 	# avg Ca of activated neurons in the pattern
+# 	xpre_active_avg = (xpre_active_avg/len(network.stimulus_ids_Ninp))/sim_repetitions
+
+# 	# avg Ca of inactive (spontaneous) neurons in the pattern
+# 	xpre_inactive_avg = (xpre_inactive_avg/(network.N_e-len(network.stimulus_ids_Ninp)))/sim_repetitions
+
+# 	# avg Ca of (single) output neuron
+# 	xpost_avg = xpost_avg/sim_repetitions
+
+# 	# ----------- pot/dep synapses avgs percentages -----------
+
+# 	# simulation time array
+# 	sim_t_array = network.Input_to_Output_stamon.t
+
+# 	# ============ plotting simulations results ============
+
+# 	fig0 = plt.figure(constrained_layout = True)
+# 	spec2 = gridspec.GridSpec(ncols = 2, nrows = 2, figure = fig0)
+
+# 	fig0.suptitle('rule ' + network.plasticity_rule + '/param. ' + network.parameter_set, fontsize = 8)
+
+# 	# ----------- avg Ca2+ pre -----------
+# 	f2_ax1 = fig0.add_subplot(spec2[0, 0])
+
+# 	plt.plot(sim_t_array, xpre_active_avg, color = 'tomato', linestyle = 'solid', label = r'$Ca^{2+}_{act.}$')
+
+# 	plt.plot(sim_t_array, xpre_inactive_avg, color = 'grey', linestyle = 'solid', label = r'$Ca^{2+}_{inact.}$')
+
+# 	plt.hlines(network.thr_pre, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{pre}$')
+
+# 	f2_ax1.legend(prop = {'size': 8})
+
+# 	f2_ax1.set_ylim([0.0, 1.0])
+
+# 	plt.ylabel(r'$Ca^{2+}$' + ' (a.u.)', size = 6)
+# 	plt.xlabel('time (s)', size = 6)
+
+# 	# ----------- avg Ca2+ post -----------
+# 	f2_ax2 = fig0.add_subplot(spec2[0, 1])
+
+# 	plt.plot(sim_t_array, xpost_avg, color = 'lightblue', linestyle = 'solid', label = r'$Ca^{2+}_{output}$')
+
+# 	plt.hlines(network.thr_post, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{post}$')
+
+# 	f2_ax2.legend(prop = {'size': 8})
+
+# 	f2_ax2.set_ylim([0.0, 1.0])
+
+# 	plt.ylabel(r'$Ca^{2+}$' + ' (a.u.)', size = 6)
+# 	plt.xlabel('time (s)', size = 6)
+
+# 	# ----------- avg firing frequency (active/spontaneous) -----------
+# 	f2_ax3 = fig0.add_subplot(spec2[1, 0])
+
+# 	plt.bar(
+# 		x = active_t_hist_edges_all[0],
+# 		height = active_t_hist_freq_avg,
+# 		width = active_t_hist_bin_widths_all[0],
+# 		color = 'tomato',
+# 		label = 'active')
+
+# 	plt.bar(
+# 		x = spontaneous_t_hist_edges_all[0],
+# 		height = spontaneous_t_hist_freq_avg,
+# 		width = spontaneous_t_hist_bin_widths_all[0],
+# 		color = 'grey',
+# 		label = 'spontaneous',
+# 		alpha = 0.75)
+
+# 	f2_ax3.legend(prop = {'size': 8})
+
+# 	plt.ylabel('freq (Hz)', size = 6)
+# 	plt.xlabel('time (s)', size = 6)
+
+# 	plt.show()
 
 if __name__ == "__main__":
 	main()
 
-	print("\n> feedforward_net.py - END\n")
+	print("\n> test_network_statistics.py - END\n")
