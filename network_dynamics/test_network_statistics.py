@@ -9,7 +9,7 @@ Comments:
 import setuptools
 import os, sys, pickle, shutil
 from brian2 import *
-from numpy import *
+import numpy as np
 from time import localtime, strftime
 
 prefs.codegen.target = 'numpy'
@@ -128,98 +128,94 @@ def main():
 
 	network.set_stimulus_dataset(full_dataset[0]) # 1st pattern
 
+	# arrays for avgs
+	rho_all = []
+	xpost_all = []
+	xpre_all = []
+
 	for exposure_n in range(0, sim_repetitions):
 		network.net.restore(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
 
-		network.randomize_synaptic_weights()
+		network.randomize_synaptic_weights() # ATTENTION - make sure r random
 
 		network.run_net()
 
 		# # ----------- Storing simulation data -----------
-		# Input_to_E_inp
-		s_tpoints_Input_to_Einp = network.Input_to_E_inp_spkmon.t[:]
-		n_inds_Input_to_Einp = network.Input_to_E_inp_spkmon.i[:]
+		rho_all.append(network.Input_to_Output_stamon.rho)
+		xpost_all.append(network.Input_to_Output_stamon.xpost)
+		xpre_all.append(network.Input_to_Output_stamon.xpre)
 
-		# E_inp
-		s_tpoints_E_inp = network.E_inp_spkmon.t[:]
-		n_inds_E_inp = network.E_inp_spkmon.i[:]
 
-		# E_outp
-		s_tpoints_E_outp = network.E_outp_spkmon.t[:]
-		n_inds_E_outp = network.E_outp_spkmon.i[:]
+	# ----------- Xpre/Xpost avgs -----------
 
-		# Input_to_I
-		s_tpoints_Input_to_I = network.Input_to_I_spkmon.t[:]
-		n_inds_Input_to_I = network.Input_to_I_spkmon.i[:]
+	xpre_active_avg = np.zeros(len(xpre_all[0][0]))
+	xpre_inactive_avg = np.zeros(len(xpre_all[0][0]))
+	
+	xpost_avg = np.zeros(len(xpost_all[0][0]))
 
-		# I
-		s_tpoints_I = network.I_spkmon.t[:]
-		n_inds_I = network.I_spkmon.i[:]
+	count1 = 0
+	count2 = 0
 
-		# teacher
-		s_tpoints_teach = network.teacher_spkmon.t[:]
-		n_inds_teach = network.teacher_spkmon.i[:]
+	for a in range(0, sim_repetitions):
 
-		# spontaneous
-		s_tpoints_spont = network.spont_spkmon.t[:]
-		n_inds_spont = network.spont_spkmon.i[:]
+		xpost_avg += xpost_all[a][0]
 
-		# synaptic variables
-		print(len(network.Input_to_Output_stamon.rho))
-		# print(network.Input_to_Output_stamon.xpre)
-		# print(network.Input_to_Output_stamon.xpost)
+		for b in range(0, network.N_e):
+			if b in network.stimulus_ids_Ninp:
+				xpre_active_avg += xpre_all[a][b]
+			else:
+				xpre_inactive_avg += xpre_all[a][b]
 
-	# sim_id = network.network_id
-	# path_sim = network.simulation_path
+	# avg Ca of activated neurons in the pattern
+	xpre_active_avg = (xpre_active_avg/len(network.stimulus_ids_Ninp))/sim_repetitions
 
-	# exp_type = network.exp_type
+	# avg Ca of inactive (spontaneous) neurons in the pattern
+	xpre_inactive_avg = (xpre_inactive_avg/(network.N_e-len(network.stimulus_ids_Ninp)))/sim_repetitions
 
-	# plasticity_rule = network.plasticity_rule
-	# parameter_set = network.parameter_set
-	# bistability = network.bistability
+	# avg Ca of (single) output neuron
+	xpost_avg = xpost_avg/sim_repetitions
 
-	# stim_type = network.stimulus_id
-	# stim_size = network.stim_size
-	# stim_freq = network.stim_freq_Ninp*Hz
-	# stim_freq_i = network.coding_lvl*Hz
+	# simulation time array
+	sim_t_array = network.Input_to_Output_stamon.t
 
-	# len_stim_inds_original_E = network.stim_size
+	# ----------- Plotting -----------
 
-	# n_Eoutp = network.N_e_outp
-	# n_Einp = network.N_e
-	# n_I = network.N_e_outp
-	# n_pool = network.N_c
+	fig0 = plt.figure(constrained_layout = True)
+	spec2 = gridspec.GridSpec(ncols = 2, nrows = 1, figure = fig0)
 
-	# fn = os.path.join(network.simulation_path, network.network_id + '_' + network.exp_type + '_expos' + str(exposure_n) + '.pickle')
+	fig0.suptitle('rule ' + network.plasticity_rule + '/param. ' + network.parameter_set, fontsize = 8)
 
-	# with open(fn, 'wb') as f:
-	# 	pickle.dump((
-	# 		path_sim,
-	# 		sim_id,
-	# 		t_run,
-	# 		exp_type,
-	# 		stim_type,
-	# 		stim_size,
-	# 		stim_freq,
-	# 		stim_freq_i,
-	# 		n_Eoutp,
-	# 		n_Einp,
-	# 		n_I,
-	# 		n_pool,
-	# 		len_stim_inds_original_E,
-	# 		s_tpoints_Input_to_Einp,
-	# 		n_inds_Input_to_Einp,
-	# 		s_tpoints_E_inp,
-	# 		n_inds_E_inp,
-	# 		s_tpoints_E_outp,
-	# 		n_inds_E_outp,
-	# 		s_tpoints_Input_to_I,
-	# 		n_inds_Input_to_I,
-	# 		s_tpoints_I,
-	# 		n_inds_I,
-	# 		s_tpoints_teach,
-	# 		n_inds_teach
-	# 		), f)
+	# avg Ca2+ pre -----------
+	f2_ax1 = fig0.add_subplot(spec2[0, 0])
+
+	plt.plot(sim_t_array, xpre_active_avg, color = 'tomato', linestyle = 'solid', label = r'$Ca^{2+}_{act.}$')
+
+	plt.plot(sim_t_array, xpre_inactive_avg, color = 'grey', linestyle = 'solid', label = r'$Ca^{2+}_{inact.}$')
+
+	plt.hlines(network.thr_pre, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{pre}$')
+
+	f2_ax1.legend(prop = {'size': 8})
+
+	f2_ax1.set_ylim([0.0, 1.0])
+
+	plt.ylabel(r'$Ca^{2+}$' + ' (a.u.)', size = 6)
+	plt.xlabel('time (s)', size = 6)
+
+	# avg Ca2+ post -----------
+	f2_ax2 = fig0.add_subplot(spec2[0, 1])
+
+	plt.plot(sim_t_array, xpost_avg, color = 'lightblue', linestyle = 'solid', label = r'$Ca^{2+}_{output}$')
+
+	plt.hlines(network.thr_post, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{post}$')
+
+	f2_ax2.legend(prop = {'size': 8})
+
+	f2_ax2.set_ylim([0.0, 1.0])
+
+	plt.ylabel(r'$Ca^{2+}$' + ' (a.u.)', size = 6)
+	plt.xlabel('time (s)', size = 6)
+
+	plt.show()
 
 if __name__ == "__main__":
 	main()
