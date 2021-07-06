@@ -59,7 +59,7 @@ class FeedforwardNetwork:
 		self.stim_freq_i = 0*Hz
 
 		# Input (E) Population
-		self.N_e = 400 				# num. of neurons
+		self.N_e = 400 				# num. of input neurons (1st layer)
 		self.Vr_e = -65*mV 			# resting potential
 		self.Vrst_e = -65*mV 		# reset potential
 		self.Vth_e_init = -58*mV 	# initial threshold voltage
@@ -318,8 +318,6 @@ class FeedforwardNetwork:
 		self.Input_to_Output.connect()			# feedforward connections
 		self.I_Eout.connect(j = 'i')			# inhib. pop. -> output pop.
 
-		print(self.Input_to_Output)
-
 		self.teacher_Eout.connect(j = 'i')
 		self.spont_input.connect(j = 'i')
 
@@ -425,7 +423,7 @@ class FeedforwardNetwork:
 
 		self.Input_to_Output_stamon = StateMonitor(
 			source = self.Input_to_Output,
-			variables = ('w', 'rho'),
+			variables = ('w', 'rho', 'xpre', 'xpost'),
 			record = True,
 			dt = self.mon_dt,
 			name = 'Input_to_Output_stamon')
@@ -438,6 +436,15 @@ class FeedforwardNetwork:
 			name = 'I_Eout_stamon')
 
 	# ----------- Network Operation Methods -----------
+
+	def update_input_connectivity(self):
+		# active neurons (pattern input)
+		self.Input_1st_layer.w = 0*mV
+		self.Input_1st_layer.w[self.stimulus_ids_Ninp, self.stimulus_ids_Ninp] = self.Input_to_Einp_w
+
+		# inactive neurons (spontaneous input)
+		self.spont_input.w = 0*mV
+		self.spont_input.w[self.stimulus_inactive_ids, self.stimulus_inactive_ids] = self.spont_to_input_w
 
 	def set_stimulus_Ninp(self):
 		# Setting active neurons in the input layer
@@ -473,6 +480,11 @@ class FeedforwardNetwork:
 
 		# Updating Inhibitory population activity lvl
 		self.set_I_from_coding_lvl()
+
+		# setting inactive ids
+		self.stimulus_inactive_ids = list(range(0, self.N_e))
+		for x in active_ids[0]:
+			self.stimulus_inactive_ids.remove(x)
 
 	def set_stimulus_I(self):
 		self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i

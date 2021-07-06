@@ -75,9 +75,9 @@ def main():
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 75*Hz 	# Input pop. - 75*Hz
-	network.stim_freq_teach = 20*Hz 	# Teacher pop. - 400*Hz/180*Hz
-	network.stim_freq_spont = 2*Hz 	# Spontaneous pop. - 2*Hz
+	network.stim_freq_Ninp = 80*Hz 	# Input pop. - 75*Hz
+	network.stim_freq_teach = 0*Hz 	# Teacher pop. - 400*Hz/180*Hz
+	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 2*Hz
 	network.stim_freq_i = 0*Hz		# Inhib. pop. - 100*Hz
 
 	# Initializing network objects
@@ -137,6 +137,9 @@ def main():
 		network.net.restore(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
 
 		network.randomize_synaptic_weights() # ATTENTION - make sure r random
+
+		# virtual input drives only active neurons
+		network.update_input_connectivity()
 
 		network.run_net()
 
