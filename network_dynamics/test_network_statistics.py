@@ -65,10 +65,10 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.w_max = 10*mV				# Input to Output - 5*mV
+	network.w_max = 0*mV				# Input to Output - 5*mV
 
-	network.teacher_to_Eout_w = 100*mV 	# Teacher to Output - 30*mV
-	network.I_to_Eout_w = 20*mV			# Inhibitory to Output - 20*mV
+	network.teacher_to_Eout_w = 50*mV 	# Teacher to Output - 50*mV
+	network.I_to_Eout_w = 40*mV			# Inhibitory to Output - 40*mV
 
 	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input - 100*mV
 	network.Input_to_I_w = 100*mV 		# 'virtual inh.' to Inhibitory - 100*mV
@@ -76,10 +76,10 @@ def main():
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 80*Hz 	# Input pop. - 75*Hz
-	network.stim_freq_teach = 100*Hz 	# Teacher pop. - 400*Hz/180*Hz
-	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 2*Hz
-	network.stim_freq_i = 0*Hz		# Inhib. pop. - 100*Hz
+	network.stim_freq_Ninp = 65*Hz 	# Input pop. - 65*Hz
+	network.stim_freq_teach = 20*Hz 	# Teacher pop. - 300*Hz/20*Hz
+	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 20*Hz
+	network.stim_freq_i = 20*Hz		# Inhib. pop. - 20*Hz
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
@@ -132,6 +132,12 @@ def main():
 	s_tpoints_output_all = []
 	n_inds_output_all = []
 
+	s_tpoints_teacher_all = []
+	n_inds_teacher_all = []
+
+	s_tpoints_inhibitory_all = []
+	n_inds_inhibitory_all = []
+
 	for exposure_n in range(0, sim_repetitions):
 		network.net.restore(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
 
@@ -156,6 +162,14 @@ def main():
 		# output layer (spk times/ids)
 		s_tpoints_output_all.append(network.E_outp_spkmon.t[:])
 		n_inds_output_all.append(network.E_outp_spkmon.i[:])
+
+		# teacher (spk times/ids)
+		s_tpoints_teacher_all.append(network.teacher_spkmon.t[:])
+		n_inds_teacher_all.append(network.teacher_spkmon.i[:])
+
+		# inhibition (spk times/ids)
+		s_tpoints_inhibitory_all.append(network.I_spkmon.t[:])
+		n_inds_inhibitory_all.append(network.I_spkmon.i[:])
 
 
 	# ============ averaging simulations results ============
@@ -324,6 +338,54 @@ def main():
 
 	output_t_hist_freq_avg = output_t_hist_freq_avg/len(output_t_hist_freq_all)
 
+	# inhibitory neuron -----------
+	inhibitory_t_hist_edges_all = []
+	inhibitory_t_hist_freq_all = []
+	inhibitory_t_hist_bin_widths_all = []
+	
+	# averaging inhibitory firing frequency
+	for i in range(0, len(s_tpoints_inhibitory_all)):
+		[t_hist_edges,
+		t_hist_freq, 
+		t_hist_bin_widths] = histograms_firing_rate(
+			t_points = s_tpoints_inhibitory_all[i], 
+			pop_size = 1)
+
+		inhibitory_t_hist_edges_all.append(t_hist_edges)
+		inhibitory_t_hist_freq_all.append(t_hist_freq)
+		inhibitory_t_hist_bin_widths_all.append(t_hist_bin_widths)
+
+	inhibitory_t_hist_freq_avg = np.zeros(len(inhibitory_t_hist_freq_all[0]))
+
+	for i in range(0, len(inhibitory_t_hist_freq_all)):
+		inhibitory_t_hist_freq_avg += inhibitory_t_hist_freq_all[i]
+
+	inhibitory_t_hist_freq_avg = inhibitory_t_hist_freq_avg/len(inhibitory_t_hist_freq_all)
+
+	# teacher neuron -----------
+	teacher_t_hist_edges_all = []
+	teacher_t_hist_freq_all = []
+	teacher_t_hist_bin_widths_all = []
+	
+	# averaging teacher firing frequency
+	for i in range(0, len(s_tpoints_teacher_all)):
+		[t_hist_edges,
+		t_hist_freq, 
+		t_hist_bin_widths] = histograms_firing_rate(
+			t_points = s_tpoints_teacher_all[i], 
+			pop_size = 1)
+
+		teacher_t_hist_edges_all.append(t_hist_edges)
+		teacher_t_hist_freq_all.append(t_hist_freq)
+		teacher_t_hist_bin_widths_all.append(t_hist_bin_widths)
+
+	teacher_t_hist_freq_avg = np.zeros(len(teacher_t_hist_freq_all[0]))
+
+	for i in range(0, len(teacher_t_hist_freq_all)):
+		teacher_t_hist_freq_avg += teacher_t_hist_freq_all[i]
+
+	teacher_t_hist_freq_avg = teacher_t_hist_freq_avg/len(teacher_t_hist_freq_all)
+
 	# ----------- avg Xpre/Xpost -----------
 
 	xpre_active_avg = np.zeros(len(xpre_all[0][0]))
@@ -358,14 +420,14 @@ def main():
 	# ============ plotting simulations results ============
 
 	fig0 = plt.figure(constrained_layout = True)
-	spec2 = gridspec.GridSpec(ncols = 2, nrows = 4, figure = fig0)
+	spec2 = gridspec.GridSpec(ncols = 2, nrows = 5, figure = fig0)
 
 	fig0.suptitle('rule ' + network.plasticity_rule + '/param. ' + network.parameter_set, fontsize = 8)
 
 	# ----------- avg Ca2+ pre -----------
 	f2_ax1 = fig0.add_subplot(spec2[0, 0])
 
-	plt.plot(sim_t_array, xpre_active_avg, color = 'tomato', linestyle = 'solid', label = r'$Ca^{2+}_{act.}$')
+	plt.plot(sim_t_array, xpre_active_avg, color = 'orchid', linestyle = 'solid', label = r'$Ca^{2+}_{act.}$')
 
 	plt.plot(sim_t_array, xpre_inactive_avg, color = 'grey', linestyle = 'solid', label = r'$Ca^{2+}_{inact.}$')
 
@@ -381,7 +443,7 @@ def main():
 	# ----------- avg Ca2+ post -----------
 	f2_ax2 = fig0.add_subplot(spec2[0, 1])
 
-	plt.plot(sim_t_array, xpost_avg, color = 'lightblue', linestyle = 'solid', label = r'$Ca^{2+}_{output}$')
+	plt.plot(sim_t_array, xpost_avg, color = 'orange', linestyle = 'solid', label = r'$Ca^{2+}_{output}$')
 
 	plt.hlines(network.thr_post, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{post}$')
 
@@ -399,8 +461,10 @@ def main():
 		x = active_t_hist_edges_all[0],
 		height = active_t_hist_freq_avg,
 		width = active_t_hist_bin_widths_all[0],
-		color = 'tomato',
-		label = 'active')
+		color = 'orchid',
+		label = 'active',
+		edgecolor = 'k',
+		linewidth = 0.5)
 
 	plt.bar(
 		x = spontaneous_t_hist_edges_all[0],
@@ -408,7 +472,9 @@ def main():
 		width = spontaneous_t_hist_bin_widths_all[0],
 		color = 'grey',
 		label = 'spontaneous',
-		alpha = 0.75)
+		alpha = 0.75,
+		edgecolor = 'k',
+		linewidth = 0.5)
 
 	f2_ax3.legend(prop = {'size': 8})
 
@@ -422,8 +488,10 @@ def main():
 		x = output_t_hist_edges_all[0],
 		height = output_t_hist_freq_avg,
 		width = output_t_hist_bin_widths_all[0],
-		color = 'lightblue',
-		label = 'output')
+		color = 'orange',
+		label = 'output',
+		edgecolor = 'k',
+		linewidth = 0.5)
 
 	f2_ax4.legend(prop = {'size': 8})
 
@@ -433,7 +501,7 @@ def main():
 	# ----------- avg pot/dep percentages / active (start) -----------
 	f2_ax5 = fig0.add_subplot(spec2[2, 0])
 
-	f2_ax5.pie([active_pot_syn_start_perc, active_dep_syn_start_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['tomato', 'lightblue'])
+	f2_ax5.pie([active_pot_syn_start_perc, active_dep_syn_start_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['orangered', 'royalblue'])
 
 	f2_ax5.axis('equal')
 
@@ -442,7 +510,7 @@ def main():
 	# ----------- avg pot/dep percentages / active (end) -----------
 	f2_ax6 = fig0.add_subplot(spec2[2, 1])
 
-	f2_ax6.pie([active_pot_syn_end_perc, active_dep_syn_end_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['tomato', 'lightblue'])
+	f2_ax6.pie([active_pot_syn_end_perc, active_dep_syn_end_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['orangered', 'royalblue'])
 
 	f2_ax6.axis('equal')
 
@@ -451,7 +519,7 @@ def main():
 	# ----------- avg pot/dep percentages / spont (start) -----------
 	f2_ax7 = fig0.add_subplot(spec2[3, 0])
 
-	f2_ax7.pie([spont_pot_syn_start_perc, spont_dep_syn_start_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['tomato', 'lightblue'])
+	f2_ax7.pie([spont_pot_syn_start_perc, spont_dep_syn_start_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['orangered', 'royalblue'])
 
 	f2_ax7.axis('equal')
 
@@ -460,11 +528,47 @@ def main():
 	# ----------- avg pot/dep percentages / spont (end) -----------
 	f2_ax8 = fig0.add_subplot(spec2[3, 1])
 
-	f2_ax8.pie([spont_pot_syn_end_perc, spont_dep_syn_end_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['tomato', 'lightblue'])
+	f2_ax8.pie([spont_pot_syn_end_perc, spont_dep_syn_end_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['orangered', 'royalblue'])
 
 	f2_ax8.axis('equal')
 
 	plt.title('Pot. vs Dep. / spont (end)', size = 8)
+
+	# ----------- avg firing frequency inhibitory -----------
+	f2_ax9 = fig0.add_subplot(spec2[4, 0])
+
+	plt.bar(
+		x = inhibitory_t_hist_edges_all[0],
+		height = inhibitory_t_hist_freq_avg,
+		width = inhibitory_t_hist_bin_widths_all[0],
+		color = 'tomato',
+		label = 'inhibitory',
+		edgecolor = 'k',
+		linewidth = 0.5)
+
+	f2_ax9.legend(prop = {'size': 8})
+
+	plt.ylabel('freq (Hz)', size = 6)
+	plt.xlabel('time (s)', size = 6)
+
+	# ----------- avg firing frequency teacher -----------
+	f2_ax10 = fig0.add_subplot(spec2[4, 1])
+
+	plt.bar(
+		x = teacher_t_hist_edges_all[0],
+		height = teacher_t_hist_freq_avg,
+		width = teacher_t_hist_bin_widths_all[0],
+		color = 'yellowgreen',
+		label = 'teacher',
+		edgecolor = 'k',
+		linewidth = 0.5)
+
+	f2_ax10.legend(prop = {'size': 8})
+
+	plt.ylabel('freq (Hz)', size = 6)
+	plt.xlabel('time (s)', size = 6)
+
+	# --------------------------------------------
 
 	# --------------------------------------------
 
