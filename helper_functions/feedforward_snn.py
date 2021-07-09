@@ -572,20 +572,12 @@ class FeedforwardNetwork:
 	def update_params_datasetclass(self, pattern_id):
 		if (pattern_id % 2) == 0:
 			# Update teacher frequency
-			self.stim_freq_teach = 150*Hz
+			self.stim_freq_teach = 300*Hz
 			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
-
-			# Update inhibition frequency
-			self.stim_freq_i = 0*Hz
-			self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i
 		else:
 			# Update teacher frequency
-			self.stim_freq_teach = 90*Hz
+			self.stim_freq_teach = 20*Hz
 			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
-
-			# Update inhibition frequency
-			self.stim_freq_i = 20*Hz
-			self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i
 
 	def silince_for_testing(self):
 		# Update teacher frequency
