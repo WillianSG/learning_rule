@@ -33,6 +33,7 @@ from visualise_connectivity import visualise_connectivity
 from plot_feedforwad_net import *
 from feedforward_plot_activity import *
 from make_ids_training_list import *
+from histograms_firing_rate import *
 
 def main():
 	# ----------- Simulation parameters -----------
@@ -41,7 +42,7 @@ def main():
 	num_epochs = int(sys.argv[3])
 
 	# ----------- Network Initialization -----------
-
+	
 	network = FeedforwardNetwork()
 
 	# Select single (test) stimulus
@@ -136,6 +137,8 @@ def main():
 		epoch_ids_list = make_ids_traning_list(
 			dataset_size = meta_data['dataset_size'],
 			epoch = epoch)
+
+		epoch_ids_list = [0, 1]
 
 		print('epoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
 
@@ -288,6 +291,93 @@ def main():
 			meta_data), f) # 'meta_data' is the dataset metadata
 
 	print('\n> network traing completed.')
+
+	# ----------- Testing trained network -----------
+
+	print('\n> testing trained network...\n')
+
+	presentation_time = float(sys.argv[1])*second
+
+	# 1 - restoring trained network state
+	network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
+
+	# 2 - silencing auxiliary populations
+	network.silince_for_testing()
+
+	# 3 - testing learned patterns
+	for pattern in range(0, 1):
+		print(' testing pattern # ', pattern+1)
+		
+		# setting stimulus to be presented
+		network.set_stimulus_dataset(full_dataset[pattern])
+
+		# update who's active/spontaneous in the input layer
+		network.update_input_connectivity()
+
+		# simulating
+		network.run_net(report = 'stdout')
+
+		# ----------- Output monitor data -----------
+		# calcium and spikes
+		temp_output_spks = network.E_outp_spkmon.t[:]
+		temp_output_Ca = network.Input_to_Output_stamon.xpost
+
+		# firing frequency histogram data
+		[t_hist_edges,
+		t_hist_freq, 
+		t_hist_bin_widths] = histograms_firing_rate(
+			t_points = temp_output_spks, 
+			pop_size = 1)
+
+		# where in spkmon current stimulus response starts
+		t_start = network.t_run - presentation_time
+
+		# retrieving response to stimulus
+		output_spks = temp_output_spks[temp_output_spks >= t_start]
+		output_Ca = temp_output_Ca[len(output_spks):]
+
+		# simulation time array
+		temp_sim_t_array = network.Input_to_Output_stamon.t
+		sim_t_array = temp_sim_t_array[temp_sim_t_array >= t_start]
+
+		# ----------- Plotting output activity -----------
+		fig0 = plt.figure(constrained_layout = True)
+		spec2 = gridspec.GridSpec(ncols = 2, nrows = 1, figure = fig0)
+
+		fig0.suptitle('Rule ' + network.plasticity_rule + ' | Param. set ' + network.parameter_set, fontsize = 8)
+
+		# ----------- Ca2+ post -----------
+		f2_ax2 = fig0.add_subplot(spec2[0, 0])
+
+		plt.plot(sim_t_array, output_Ca, color = 'orange', linestyle = 'solid', label = r'$Ca^{2+}_{output}$')
+
+		plt.hlines(network.thr_post, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{post}$')
+
+		f2_ax2.legend(prop = {'size': 8})
+
+		f2_ax2.set_ylim([0.0, 1.0])
+
+		plt.ylabel(r'$Ca^{2+}$' + ' (a.u.)', size = 6)
+		plt.xlabel('time (s)', size = 6)
+
+		# ----------- firing frequency output -----------
+		f2_ax4 = fig0.add_subplot(spec2[0, 1])
+
+		plt.bar(
+			x = t_hist_edges,
+			height = t_hist_freq,
+			width = t_hist_bin_widths,
+			color = 'orange',
+			label = 'output',
+			edgecolor = 'k',
+			linewidth = 0.5)
+
+		f2_ax4.legend(prop = {'size': 8})
+
+		plt.ylabel('freq (Hz)', size = 6)
+		plt.xlabel('time (s)', size = 6)
+
+		plt.show()
 
 if __name__ == "__main__":
 	main()
