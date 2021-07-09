@@ -5,7 +5,7 @@
 Comments:
 - sys.argv[1] = simulation time (float)
 - sys.argv[2] = 1 : save sim data
-- parameters set considering active input of 45 neurons
+- sys.argv[3] = total training epochs
 """
 import setuptools
 import os, sys, pickle, shutil
@@ -32,9 +32,14 @@ from feedforward_snn import FeedforwardNetwork
 from visualise_connectivity import visualise_connectivity
 from plot_feedforwad_net import *
 from feedforward_plot_activity import *
+from make_ids_training_list import *
 
 def main():
+	# ----------- Simulation parameters -----------
 	make_dir = str(sys.argv[2])
+
+	num_epochs = int(sys.argv[3])
+
 	# ----------- Network Initialization -----------
 
 	network = FeedforwardNetwork()
@@ -126,133 +131,145 @@ def main():
 
 	network.Input_to_Output.plastic = True
 
-	for exposure_n in range(0, 1):
-
-		print('pattern #', exposure_n+1)
+	for epoch in range(1, num_epochs+1):
 		
-		# 1 - select next pattern to be presented
-		network.set_stimulus_dataset(full_dataset[exposure_n])
+		epoch_ids_list = make_ids_traning_list(
+			dataset_size = meta_data['dataset_size'],
+			epoch = epoch)
 
-		# 2- update teacher signal based on pattern class
-		network.update_params_datasetclass(pattern_id = exposure_n+1)
+		print('initiating epoch #', epoch)
 
-		# 3 - update who's active/spontaneous in the input layer
-		network.update_input_connectivity()
+		for pattern_id in epoch_ids_list:			
+			# 1 - select next pattern to be presented
+			network.set_stimulus_dataset(full_dataset[pattern_id])
 
-		# 4 - simulate
-		network.run_net()
+			# 2- update teacher signal based on pattern class
+			network.update_params_datasetclass(pattern_id = pattern_id+1)
 
-		# 5 - (optional) plot simulation data
-		if make_dir == '1':
-			# # ----------- Storing simulation data -----------
-			# Input_to_E_inp
-			s_tpoints_Input_to_Einp = network.Input_to_E_inp_spkmon.t[:]
-			n_inds_Input_to_Einp = network.Input_to_E_inp_spkmon.i[:]
+			# 3 - update who's active/spontaneous in the input layer
+			network.update_input_connectivity()
 
-			# E_inp
-			s_tpoints_E_inp = network.E_inp_spkmon.t[:]
-			n_inds_E_inp = network.E_inp_spkmon.i[:]
+			# 4 - simulate
+			network.run_net()
 
-			# E_outp
-			s_tpoints_E_outp = network.E_outp_spkmon.t[:]
-			n_inds_E_outp = network.E_outp_spkmon.i[:]
+			# 5 - (optional) plot simulation data
+			if make_dir == '1':
+				# # ----------- Storing simulation data -----------
+				# Input_to_E_inp
+				s_tpoints_Input_to_Einp = network.Input_to_E_inp_spkmon.t[:]
+				n_inds_Input_to_Einp = network.Input_to_E_inp_spkmon.i[:]
 
-			# Input_to_I
-			s_tpoints_Input_to_I = network.Input_to_I_spkmon.t[:]
-			n_inds_Input_to_I = network.Input_to_I_spkmon.i[:]
+				# E_inp
+				s_tpoints_E_inp = network.E_inp_spkmon.t[:]
+				n_inds_E_inp = network.E_inp_spkmon.i[:]
 
-			# I
-			s_tpoints_I = network.I_spkmon.t[:]
-			n_inds_I = network.I_spkmon.i[:]
+				# E_outp
+				s_tpoints_E_outp = network.E_outp_spkmon.t[:]
+				n_inds_E_outp = network.E_outp_spkmon.i[:]
 
-			# teacher
-			s_tpoints_teach = network.teacher_spkmon.t[:]
-			n_inds_teach = network.teacher_spkmon.i[:]
+				# Input_to_I
+				s_tpoints_Input_to_I = network.Input_to_I_spkmon.t[:]
+				n_inds_Input_to_I = network.Input_to_I_spkmon.i[:]
 
-			# spontaneous
-			s_tpoints_spont = network.spont_spkmon.t[:]
-			n_inds_spont = network.spont_spkmon.i[:]
+				# I
+				s_tpoints_I = network.I_spkmon.t[:]
+				n_inds_I = network.I_spkmon.i[:]
 
-			sim_id = network.network_id
-			path_sim = network.simulation_path
+				# teacher
+				s_tpoints_teach = network.teacher_spkmon.t[:]
+				n_inds_teach = network.teacher_spkmon.i[:]
 
-			t_run += network.t_run
-			t_start += t_run - network.t_run
+				# spontaneous
+				s_tpoints_spont = network.spont_spkmon.t[:]
+				n_inds_spont = network.spont_spkmon.i[:]
 
-			exp_type = network.exp_type
+				sim_id = network.network_id
+				path_sim = network.simulation_path
 
-			plasticity_rule = network.plasticity_rule
-			parameter_set = network.parameter_set
-			bistability = network.bistability
+				t_run += network.t_run
+				t_start += t_run - network.t_run
 
-			stim_type = network.stimulus_id
-			stim_size = network.stim_size
-			stim_freq = network.stim_freq_Ninp*Hz
-			stim_freq_i = network.coding_lvl*Hz
+				exp_type = network.exp_type
 
-			len_stim_inds_original_E = network.stim_size
+				plasticity_rule = network.plasticity_rule
+				parameter_set = network.parameter_set
+				bistability = network.bistability
 
-			n_Eoutp = network.N_e_outp
-			n_Einp = network.N_e
-			n_I = network.N_e_outp
-			n_pool = network.N_c
+				stim_type = network.stimulus_id
+				stim_size = network.stim_size
+				stim_freq = network.stim_freq_Ninp*Hz
+				stim_freq_i = network.coding_lvl*Hz
 
-			fn = os.path.join(network.simulation_path, network.network_id + '_' + network.exp_type + '_expos' + str(exposure_n) + '.pickle')
+				len_stim_inds_original_E = network.stim_size
 
-			with open(fn, 'wb') as f:
-				pickle.dump((
-					path_sim,
-					sim_id,
-					t_run,
-					exp_type,
-					stim_type,
-					stim_size,
-					stim_freq,
-					stim_freq_i,
-					n_Eoutp,
-					n_Einp,
-					n_I,
-					n_pool,
-					len_stim_inds_original_E,
-					s_tpoints_Input_to_Einp,
-					n_inds_Input_to_Einp,
-					s_tpoints_E_inp,
-					n_inds_E_inp,
-					s_tpoints_E_outp,
-					n_inds_E_outp,
-					s_tpoints_Input_to_I,
-					n_inds_Input_to_I,
-					s_tpoints_I,
-					n_inds_I,
-					s_tpoints_teach,
-					n_inds_teach
-					), f)
+				n_Eoutp = network.N_e_outp
+				n_Einp = network.N_e
+				n_I = network.N_e_outp
+				n_pool = network.N_c
 
-			plot_feedforwad_net(
-				network_state_path = network.simulation_path,
-				pickled_data = network.network_id + '_' + network.exp_type + '_expos' + str(exposure_n) + '.pickle',
-				exposure_n = exposure_n,
-				t_start = t_start)
+				fn = os.path.join(network.simulation_path, network.network_id + '_' + network.exp_type + '_expos' + str(pattern_id) + '.pickle')
 
-			feedforward_plot_activity(
-				sim_id = network.network_id, 
-				path_sim = network.simulation_path, 
-				t_run = t_run, 
-				rho_matrix = network.Input_to_Output_stamon.rho, 
-				time_arr = network.Input_to_Output_stamon.t[:],
-				w_matrix = network.Input_to_Output_stamon.w, 
-				time_arr_w = network.Input_to_Output_stamon.t[:],
-				eout_mon = network.Eout_stamon.Vm,
-				eout_time_arr = network.Eout_stamon.t[:],
-				stim_ids = network.stimulus_ids_Ninp,
-				exposure_n = exposure_n,
-				t_start = t_start)
+				with open(fn, 'wb') as f:
+					pickle.dump((
+						path_sim,
+						sim_id,
+						t_run,
+						exp_type,
+						stim_type,
+						stim_size,
+						stim_freq,
+						stim_freq_i,
+						n_Eoutp,
+						n_Einp,
+						n_I,
+						n_pool,
+						len_stim_inds_original_E,
+						s_tpoints_Input_to_Einp,
+						n_inds_Input_to_Einp,
+						s_tpoints_E_inp,
+						n_inds_E_inp,
+						s_tpoints_E_outp,
+						n_inds_E_outp,
+						s_tpoints_Input_to_I,
+						n_inds_Input_to_I,
+						s_tpoints_I,
+						n_inds_I,
+						s_tpoints_teach,
+						n_inds_teach
+						), f)
+
+				plot_feedforwad_net(
+					network_state_path = network.simulation_path,
+					pickled_data = network.network_id + '_' + network.exp_type + '_expos' + str(pattern_id) + '.pickle',
+					exposure_n = pattern_id,
+					t_start = t_start)
+
+				feedforward_plot_activity(
+					sim_id = network.network_id, 
+					path_sim = network.simulation_path, 
+					t_run = t_run, 
+					rho_matrix = network.Input_to_Output_stamon.rho, 
+					time_arr = network.Input_to_Output_stamon.t[:],
+					w_matrix = network.Input_to_Output_stamon.w, 
+					time_arr_w = network.Input_to_Output_stamon.t[:],
+					eout_mon = network.Eout_stamon.Vm,
+					eout_time_arr = network.Eout_stamon.t[:],
+					stim_ids = network.stimulus_ids_Ninp,
+					exposure_n = pattern_id,
+					t_start = t_start)
+
+	# ----------- Finalizing Training (saving network state) -----------
 
 	# 6 - binarize weights based on synaptic internal state variable
 	network.w_trained_binarize()
 
+	# 6.1 - turning plasticity OFF for testing
+	network.Input_to_Output.plastic = False
+
 	# 7 - save trained network state
 	network.net.store(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
+
+	print('\n> network traing completed.')
 
 if __name__ == "__main__":
 	main()
