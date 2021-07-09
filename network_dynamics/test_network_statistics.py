@@ -65,8 +65,6 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.w_max = 0*mV				# Input to Output - 5*mV
-
 	network.teacher_to_Eout_w = 50*mV 	# Teacher to Output - 50*mV
 	network.I_to_Eout_w = 40*mV			# Inhibitory to Output - 40*mV
 
@@ -573,6 +571,8 @@ def main():
 	# --------------------------------------------
 
 	plt.show()
+
+	print('network w_max: ', network.w_max)
 
 if __name__ == "__main__":
 	main()

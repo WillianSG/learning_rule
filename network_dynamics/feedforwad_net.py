@@ -137,7 +137,7 @@ def main():
 			dataset_size = meta_data['dataset_size'],
 			epoch = epoch)
 
-		print('initiating epoch #', epoch)
+		print('epoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
 
 		for pattern_id in epoch_ids_list:			
 			# 1 - select next pattern to be presented
@@ -150,7 +150,7 @@ def main():
 			network.update_input_connectivity()
 
 			# 4 - simulate
-			network.run_net()
+			network.run_net(report = None)
 
 			# 5 - (optional) plot simulation data
 			if make_dir == '1':
@@ -268,6 +268,24 @@ def main():
 
 	# 7 - save trained network state
 	network.net.store(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
+
+	# 8 - simulation metadata
+	fn = os.path.join(network.simulation_path, network.network_id + '_' + network.exp_type + '_simulation_metadata.pickle')
+
+	with open(fn, 'wb') as f:
+		pickle.dump((
+			network.simulation_path,
+			network.network_id,
+			t_run,
+			network.dt_resolution,
+			network.mon_dt,
+			network.int_meth_neur,
+			network.int_meth_syn,
+			network.plasticity_rule,
+			network.parameter_set,
+			network.bistability,
+			num_epochs,
+			meta_data), f) # 'meta_data' is the dataset metadata
 
 	print('\n> network traing completed.')
 

@@ -6,7 +6,7 @@ Comments:
 """
 import numpy as np
 
-def histograms_firing_rate(t_points, pop_size, num_bins = 10):
+def histograms_firing_rate(t_points, pop_size, num_bins = 15):
 	"""
 	t_hist_count = values of histogram (# spks in each bar)
 	t_hist_edges: respective edges for the histogram bins - used as x coordinate of the bars in 'plt.bar()'
