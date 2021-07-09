@@ -343,7 +343,17 @@ class FeedforwardNetwork:
 				if isnan(self.M_syn[pre_id][post_id]) == False:
 					s = uniform(0, 1)					
 					self.Input_to_Output.rho[pre_id, post_id] = round(s, 2)
-					# self.Input_to_Output.rho[pre_id, post_id] = 1.0
+
+		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
+
+	def w_trained_binarize(self):
+		for pre_id in range(0, len(self.E_inp)):
+			for post_id in range(0, len(self.E_outp)):
+				if isnan(self.M_syn[pre_id][post_id]) == False:
+					if self.Input_to_Output.rho[pre_id, post_id] >= 0.5:
+						self.Input_to_Output.rho[pre_id, post_id] = 1.0
+					else:
+						self.Input_to_Output.rho[pre_id, post_id] = 0.0
 
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
 
