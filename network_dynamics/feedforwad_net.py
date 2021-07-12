@@ -304,7 +304,7 @@ def main():
 	network.silince_for_testing()
 
 	# 3 - testing learned patterns
-	for pattern_id in range(0, 2):
+	for pattern_id in range(0, meta_data['dataset_size']):
 		print(' -> pattern ', pattern_id+1, ' (', total_sim_t, ')')
 		
 		# setting stimulus to be presented
