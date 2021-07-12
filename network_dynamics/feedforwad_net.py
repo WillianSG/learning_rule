@@ -80,8 +80,8 @@ def main():
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 65*Hz 	# Input pop. - 65*Hz
-	network.stim_freq_teach = 20*Hz 	# Teacher pop. - 300*Hz/20*Hz
+	network.stim_freq_Ninp = 100*Hz 	# Input pop. - 65*Hz
+	network.stim_freq_teach = 300*Hz 	# Teacher pop. - 300*Hz/20*Hz
 	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 20*Hz
 	network.stim_freq_i = 20*Hz		# Inhib. pop. - 20*Hz
 
@@ -120,7 +120,7 @@ def main():
 	# ----------- Loading dataset -----------
 
 	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/12Jul2021_12-40-29_dataset_Fusi-size_2.pickle'
-	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_12-40-29_dataset_Fusi-size_2.pickle'
+	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
@@ -401,7 +401,8 @@ def main():
 			num_epochs,
 			meta_data, # 'meta_data' is the dataset metadata
 			mean_activity_c1,
-			mean_activity_c2), f)
+			mean_activity_c2,
+			network.M_syn), f)
 
 if __name__ == "__main__":
 	main()

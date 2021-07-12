@@ -78,7 +78,7 @@ def main():
 
 	# Neuron populations mean frequency
 	network.stim_freq_Ninp = 65*Hz 	# Input pop. - 65*Hz
-	network.stim_freq_teach = 20*Hz 	# Teacher pop. - 300*Hz/20*Hz
+	network.stim_freq_teach = 300*Hz 	# Teacher pop. - 300*Hz/20*Hz
 	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 20*Hz
 	network.stim_freq_i = 20*Hz		# Inhib. pop. - 20*Hz
 
@@ -112,7 +112,9 @@ def main():
 
 	# ----------- Loading dataset -----------
 
-	sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/01Jun2021_17-32-36_dataset_Fusi-size_100.pickle'
+	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/01Jun2021_17-32-36_dataset_Fusi-size_100.pickle'
+
+	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,

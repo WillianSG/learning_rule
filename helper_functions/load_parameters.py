@@ -118,7 +118,7 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5, max_w 
 			rho_neg = -0.05
 			rho_neg2 = -0.05
 			xpre_factor = 0.1
-			w_max = 1*mV # maximum weight of plastic synapses
+			w_max = 10*mV # maximum weight of plastic synapses
 		elif parameter_set == '1.1':
 			tau_xpre = 30*ms 
 			tau_xpost = 45*ms 
