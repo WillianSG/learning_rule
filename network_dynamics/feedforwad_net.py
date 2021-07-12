@@ -105,6 +105,7 @@ def main():
 		os.mkdir(sim_results)
 
 	sim_resul_final_path = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability))
+
 	if not(os.path.isdir(sim_resul_final_path)):
 		os.mkdir(sim_resul_final_path)
 
@@ -113,7 +114,7 @@ def main():
 	# Storing network initial state
 	network.net.store(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
 
-	t_run = 0*second
+	total_sim_t = 0*second
 	t_start = 0*second
 
 	# ----------- Loading dataset -----------
@@ -133,7 +134,7 @@ def main():
 
 	# ----------- Training -----------
 
-	print('\n\n> training network....\n')
+	print('\n> training network....')
 
 	network.Input_to_Output.plastic = True
 
@@ -143,13 +144,13 @@ def main():
 			dataset_size = meta_data['dataset_size'],
 			epoch = epoch)
 
-		epoch_ids_list = [0, 1]
-
-		print('epoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
+		print(' \nepoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
 
 		for pattern_id in epoch_ids_list:			
 			# 1 - select next pattern to be presented
 			network.set_stimulus_dataset(full_dataset[pattern_id])
+
+			print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
 
 			# 2- update teacher signal based on pattern class
 			network.update_params_datasetclass(pattern_id = pattern_id+1)
@@ -159,6 +160,8 @@ def main():
 
 			# 4 - simulate
 			network.run_net(report = None)
+
+			total_sim_t += network.t_run
 
 			# 5 - (optional) plot simulation data
 			if make_dir == '1':
@@ -193,9 +196,6 @@ def main():
 
 				sim_id = network.network_id
 				path_sim = network.simulation_path
-
-				t_run += network.t_run
-				t_start += t_run - network.t_run
 
 				exp_type = network.exp_type
 
@@ -255,7 +255,7 @@ def main():
 				feedforward_plot_activity(
 					sim_id = network.network_id, 
 					path_sim = network.simulation_path, 
-					t_run = t_run, 
+					t_run = total_sim_t, 
 					rho_matrix = network.Input_to_Output_stamon.rho, 
 					time_arr = network.Input_to_Output_stamon.t[:],
 					w_matrix = network.Input_to_Output_stamon.w, 
@@ -277,31 +277,25 @@ def main():
 	# 7 - save trained network state
 	network.net.store(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
 
-	# 8 - simulation metadata
-	fn = os.path.join(network.simulation_path, network.network_id + '_' + network.exp_type + '_simulation_metadata.pickle')
-
-	with open(fn, 'wb') as f:
-		pickle.dump((
-			network.simulation_path,
-			network.network_id,
-			t_run,
-			network.dt_resolution,
-			network.mon_dt,
-			network.int_meth_neur,
-			network.int_meth_syn,
-			network.plasticity_rule,
-			network.parameter_set,
-			network.bistability,
-			num_epochs,
-			meta_data), f) # 'meta_data' is the dataset metadata
-
-	print('\n> network traing completed.')
-
 	# ----------- Testing trained network -----------
 
 	print('\n> testing trained network...\n')
 
 	presentation_time = float(sys.argv[1])*second
+
+	mean_activity_c1 = []
+	mean_activity_c2 = []
+
+	# 0 - test results destination directory
+	test_data_path_c1 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability), 'class_1')
+	
+	if not(os.path.isdir(test_data_path_c1)):
+		os.mkdir(test_data_path_c1)
+
+	test_data_path_c2 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability), 'class_2')
+	
+	if not(os.path.isdir(test_data_path_c2)):
+		os.mkdir(test_data_path_c2)
 
 	# 1 - restoring trained network state
 	network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
@@ -310,81 +304,106 @@ def main():
 	network.silince_for_testing()
 
 	# 3 - testing learned patterns
-	for pattern in range(0, 1):
-		print(' testing pattern # ', pattern+1)
+	for pattern_id in range(0, 2):
+		print(' -> pattern ', pattern_id+1, ' (', total_sim_t, ')')
 		
 		# setting stimulus to be presented
-		network.set_stimulus_dataset(full_dataset[pattern])
+		network.set_stimulus_dataset(full_dataset[pattern_id])
 
 		# update who's active/spontaneous in the input layer
 		network.update_input_connectivity()
 
 		# simulating
-		network.run_net(report = 'stdout')
+		network.run_net(report = None)
+
+		total_sim_t += network.t_run
 
 		# ----------- Output monitor data -----------
-		# calcium and spikes
+		# spike times
 		temp_output_spks = network.E_outp_spkmon.t[:]
-		temp_output_Ca = network.Input_to_Output_stamon.xpost
+
+		# where in spkmon current stimulus response starts
+		t_start = total_sim_t - presentation_time
+
+		# retrieving response to stimulus
+		output_spks = temp_output_spks[temp_output_spks >= t_start]
 
 		# firing frequency histogram data
 		[t_hist_edges,
 		t_hist_freq, 
 		t_hist_bin_widths] = histograms_firing_rate(
-			t_points = temp_output_spks, 
+			t_points = output_spks, 
 			pop_size = 1)
-
-		# where in spkmon current stimulus response starts
-		t_start = network.t_run - presentation_time
-
-		# retrieving response to stimulus
-		output_spks = temp_output_spks[temp_output_spks >= t_start]
-		output_Ca = temp_output_Ca[len(output_spks):]
 
 		# simulation time array
 		temp_sim_t_array = network.Input_to_Output_stamon.t
 		sim_t_array = temp_sim_t_array[temp_sim_t_array >= t_start]
 
 		# ----------- Plotting output activity -----------
-		fig0 = plt.figure(constrained_layout = True)
-		spec2 = gridspec.GridSpec(ncols = 2, nrows = 1, figure = fig0)
+		if ((pattern_id+1) % 2) == 0:
+			mean_activity_c1.append(np.round(np.mean(t_hist_freq), 1))
 
-		fig0.suptitle('Rule ' + network.plasticity_rule + ' | Param. set ' + network.parameter_set, fontsize = 8)
+			img_name = os.path.join(test_data_path_c1, 'pattern_' + str(pattern_id) + '_c1.png')
 
-		# ----------- Ca2+ post -----------
-		f2_ax2 = fig0.add_subplot(spec2[0, 0])
+			plt.bar(
+				x = t_hist_edges,
+				height = t_hist_freq,
+				width = t_hist_bin_widths,
+				color = 'lightblue',
+				edgecolor = 'k',
+				linewidth = 0.5)
 
-		plt.plot(sim_t_array, output_Ca, color = 'orange', linestyle = 'solid', label = r'$Ca^{2+}_{output}$')
+			plt.title('Output response: pattern ' + str(pattern_id) + ' | class 1')
+		else:
+			mean_activity_c2.append(np.round(np.mean(t_hist_freq), 1))
 
-		plt.hlines(network.thr_post, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{post}$')
+			img_name = os.path.join(test_data_path_c2, 'pattern_' + str(pattern_id) + '_c2.png')
 
-		f2_ax2.legend(prop = {'size': 8})
+			plt.bar(
+				x = t_hist_edges,
+				height = t_hist_freq,
+				width = t_hist_bin_widths,
+				color = 'tomato',
+				edgecolor = 'k',
+				linewidth = 0.5)
 
-		f2_ax2.set_ylim([0.0, 1.0])
+			plt.title('Output response: pattern ' + str(pattern_id) + ' | class 2')
 
-		plt.ylabel(r'$Ca^{2+}$' + ' (a.u.)', size = 6)
-		plt.xlabel('time (s)', size = 6)
-
-		# ----------- firing frequency output -----------
-		f2_ax4 = fig0.add_subplot(spec2[0, 1])
-
-		plt.bar(
-			x = t_hist_edges,
-			height = t_hist_freq,
-			width = t_hist_bin_widths,
-			color = 'orange',
-			label = 'output',
-			edgecolor = 'k',
-			linewidth = 0.5)
-
-		f2_ax4.legend(prop = {'size': 8})
+		plt.xlim([t_start, total_sim_t])
 
 		plt.ylabel('freq (Hz)', size = 6)
 		plt.xlabel('time (s)', size = 6)
 
-		plt.show()
+		mean_activity = np.round(np.mean(t_hist_freq), 1)
+
+		plt.hlines(mean_activity, t_start, total_sim_t, color = 'k', linestyle = '--', label = 'avg frequency', linewidth = 0.5)
+
+		plt.legend(prop = {'size': 6})
+
+		plt.savefig(img_name)
+		plt.close()
+
+	# saving simulation data
+	fn = os.path.join(network.simulation_path, network.network_id + '_' + network.exp_type + '_simulation_metadata_n_results.pickle')
+
+	with open(fn, 'wb') as f:
+		pickle.dump((
+			network.simulation_path,
+			network.network_id,
+			total_sim_t,
+			network.dt_resolution,
+			network.mon_dt,
+			network.int_meth_neur,
+			network.int_meth_syn,
+			network.plasticity_rule,
+			network.parameter_set,
+			network.bistability,
+			num_epochs,
+			meta_data, # 'meta_data' is the dataset metadata
+			mean_activity_c1,
+			mean_activity_c2), f)
 
 if __name__ == "__main__":
 	main()
 
-	print("\n> feedforward_net.py - END\n")
+	print("\nfeedforward_net.py - END\n")
