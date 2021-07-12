@@ -5,6 +5,9 @@
 Comments:
 - sys.argv[1] = simulation time (float)
 - sys.argv[2] = number of simulation repetitions
+
+Fixes:
+- Wrongly averaged post- Ca2+ trace.
 """
 import setuptools
 import os, sys, pickle, shutil
