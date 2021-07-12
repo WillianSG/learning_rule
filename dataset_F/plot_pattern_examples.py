@@ -11,7 +11,7 @@ import os, sys, pickle, shutil
 
 # dataset = os.path.join(,) # loading data
 
-with open('01Jun2021_17-32-36_dataset_Fusi-size_100.pickle','rb') as f:(
+with open('12Jul2021_17-36-28_dataset_Fusi-size_50.pickle','rb') as f:(
 	meta_data,
 	full_dataset) = pickle.load(f)
 

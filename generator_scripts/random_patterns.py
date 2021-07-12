@@ -4,6 +4,8 @@
 
 Comments:
 - set total # neurons to 400 (20x20 pattern)
+- sys.argv[1] = total number of patterns generated
+- sys.argv[2] = total number of neurons in pattern
 """
 import setuptools
 import os, sys, pickle, shutil
