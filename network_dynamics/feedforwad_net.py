@@ -118,13 +118,18 @@ def main():
 
 	# ----------- Loading dataset -----------
 
-	sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/01Jun2021_17-32-36_dataset_Fusi-size_100.pickle'
+	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/12Jul2021_12-40-29_dataset_Fusi-size_2.pickle'
+	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_12-40-29_dataset_Fusi-size_2.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
 		full_dataset) = pickle.load(f)
 
-	print('\n\n> dataset (metadata): ', meta_data, '\n')
+	print('\n================== dataset metadata ==================')
+	for key, value in meta_data.items():
+		print(key, ':', value)
+	print('======================================================\n')
+
 
 	# ----------- Training -----------
 
