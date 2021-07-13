@@ -15,6 +15,7 @@ from numpy import *
 from random import uniform
 import numpy as np
 from time import localtime
+import matplotlib.pyplot as plt
 
 # Helper Modules
 from load_parameters import *
@@ -568,6 +569,21 @@ class FeedforwardNetwork:
 			self.xpost_max,
 			self.xpre_max] = load_rule_params(self.plasticity_rule, 
 				self.parameter_set, max_w = self.w_max)
+
+	def export_syn_matrix(self, name = 'none'):
+		file_name = os.path.join(self.simulation_path, self.network_id + '_' + self.exp_type + '_' + name + '.png')
+
+		plt.title('Synaptic Matrix | ' + name, size = 10)
+
+		temp = self.M_syn
+
+		plt.imshow(temp.reshape(20, 20), cmap = 'Greys', interpolation = 'none')
+
+		plt.xticks([])
+		plt.yticks([])
+		plt.savefig(file_name)
+
+		print('\n [synaptic matrix exported]\n')
 
 	def update_teacher_singal(self, pattern_id):
 		if (pattern_id % 2) == 0: # class 1
