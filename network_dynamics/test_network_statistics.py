@@ -68,19 +68,18 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.teacher_to_Eout_w = 50*mV 	# Teacher to Output - 50*mV
-	network.I_to_Eout_w = 40*mV			# Inhibitory to Output - 40*mV
+	network.teacher_to_Eout_w = 40*mV 	# Teacher to Output - 40*mV
+	network.I_to_Eout_w = 10*mV			# Inhibitory to Output - 10*mV
 
 	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input - 100*mV
 	network.Input_to_I_w = 100*mV 		# 'virtual inh.' to Inhibitory - 100*mV
-
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 65*Hz 	# Input pop. - 65*Hz
-	network.stim_freq_teach = 300*Hz 	# Teacher pop. - 300*Hz/20*Hz
+	network.stim_freq_Ninp = 80*Hz 		# Input pop. - 80*Hz
+	network.stim_freq_teach = 200*Hz 	# Teacher pop. - 200*Hz/20*Hz
 	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 20*Hz
-	network.stim_freq_i = 20*Hz		# Inhib. pop. - 20*Hz
+	network.stim_freq_i = 0*Hz			# Inhib. pop. - 20*Hz
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
@@ -140,6 +139,8 @@ def main():
 
 	s_tpoints_inhibitory_all = []
 	n_inds_inhibitory_all = []
+
+	print('\n-> network w_max: ', network.w_max, '\n')
 
 	for exposure_n in range(0, sim_repetitions):
 		network.net.restore(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
@@ -576,8 +577,6 @@ def main():
 	# --------------------------------------------
 
 	plt.show()
-
-	print('network w_max: ', network.w_max)
 
 if __name__ == "__main__":
 	main()

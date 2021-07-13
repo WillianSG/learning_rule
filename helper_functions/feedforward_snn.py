@@ -569,10 +569,10 @@ class FeedforwardNetwork:
 			self.xpre_max] = load_rule_params(self.plasticity_rule, 
 				self.parameter_set, max_w = self.w_max)
 
-	def update_params_datasetclass(self, pattern_id):
+	def update_teacher_singal(self, pattern_id):
 		if (pattern_id % 2) == 0:
 			# Update teacher frequency
-			self.stim_freq_teach = 300*Hz
+			self.stim_freq_teach = 120*Hz
 			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
 		else:
 			# Update teacher frequency
