@@ -71,7 +71,7 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.teacher_to_Eout_w = 40*mV 	# Teacher to Output - 40*mV
+	network.teacher_to_Eout_w = 60*mV 	# Teacher to Output - 40*mV
 	network.I_to_Eout_w = 10*mV			# Inhibitory to Output - 10*mV
 
 	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input - 100*mV
@@ -79,9 +79,9 @@ def main():
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 80*Hz 		# Input pop. - 80*Hz
-	network.stim_freq_teach = 200*Hz 	# Teacher pop. - 200*Hz/20*Hz
-	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 20*Hz
+	network.stim_freq_Ninp = 60*Hz 		# Input pop. - 80*Hz
+	network.stim_freq_teach = 200*Hz 	# Teacher pop. - 200*Hz/5*Hz
+	network.stim_freq_spont = 5*Hz 	# Spontaneous pop. - 5*Hz
 	network.stim_freq_i = 0*Hz			# Inhib. pop. - 20*Hz
 
 	# Initializing network objects
@@ -103,7 +103,7 @@ def main():
 	if not(os.path.isdir(sim_results)):
 		os.mkdir(sim_results)
 
-	sim_resul_final_path = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability))
+	sim_resul_final_path = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run)
 
 	if not(os.path.isdir(sim_resul_final_path)):
 		os.mkdir(sim_resul_final_path)
@@ -126,10 +126,11 @@ def main():
 		full_dataset) = pickle.load(f)
 
 	print('\n================== network metadata ==================')
-	print('active input (Hz/w) : ', network.stim_freq_Ninp, '/', network.Input_to_Einp_w)
-	print('spont. input (Hz/w) : ', network.stim_freq_spont, '/', network.spont_to_input_w)
+	print('active input (Hz/w) : ', network.stim_freq_Ninp, '/', network.w_max)
+	print('spont. input (Hz/w) : ', network.stim_freq_spont, '/', network.w_max)
 	print('teacher (Hz/w)      : ', network.stim_freq_teach, '/', network.teacher_to_Eout_w)
-	print('inhibition (Hz/w)   : ', network.stim_freq_i, '/', network.Input_to_I_w)
+	print('inhibition (Hz/w)   : ', network.stim_freq_i, '/', network.I_to_Eout_w)
+	print('\nw_max             : ', network.w_max)
 	print('======================================================\n')
 
 	print('\n================== dataset metadata ==================')
@@ -137,6 +138,7 @@ def main():
 		print(key, ':', value)
 	print('======================================================\n')
 
+	network.export_syn_matrix(name = 'initial')
 
 	# ----------- Training -----------
 
@@ -152,14 +154,14 @@ def main():
 
 		print(' \nepoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
 
-		for pattern_id in epoch_ids_list:			
+		for pattern_id in epoch_ids_list:
 			# 1 - select next pattern to be presented
 			network.set_stimulus_dataset(full_dataset[pattern_id])
 
 			print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
 
 			# 2- update teacher signal based on pattern class
-			network.update_teacher_singal(pattern_id = pattern_id+1)
+			network.update_teacher_singal(pattern_id = pattern_id)
 
 			# 3 - update who's active/spontaneous in the input layer
 			network.update_input_connectivity()
@@ -275,7 +277,9 @@ def main():
 	# ----------- Finalizing Training (saving network state) -----------
 
 	# 6 - binarize weights based on synaptic internal state variable
-	network.w_trained_binarize()
+	network.binarize_syn_matrix()
+
+	network.export_syn_matrix(name = 'trained')
 
 	# 6.1 - turning plasticity OFF for testing
 	network.Input_to_Output.plastic = False
@@ -293,12 +297,12 @@ def main():
 	mean_activity_c2 = []
 
 	# 0 - test results destination directory
-	test_data_path_c1 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability), 'class_1')
+	test_data_path_c1 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run), 'class_1')
 	
 	if not(os.path.isdir(test_data_path_c1)):
 		os.mkdir(test_data_path_c1)
 
-	test_data_path_c2 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability), 'class_2')
+	test_data_path_c2 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run), 'class_2')
 	
 	if not(os.path.isdir(test_data_path_c2)):
 		os.mkdir(test_data_path_c2)
@@ -396,6 +400,7 @@ def main():
 		pickle.dump((
 			network.simulation_path,
 			network.network_id,
+			network.t_run,
 			total_sim_t,
 			network.dt_resolution,
 			network.mon_dt,

@@ -347,7 +347,7 @@ class FeedforwardNetwork:
 
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
 
-	def w_trained_binarize(self):
+	def binarize_syn_matrix(self):
 		for pre_id in range(0, len(self.E_inp)):
 			for post_id in range(0, len(self.E_outp)):
 				if isnan(self.M_syn[pre_id][post_id]) == False:
@@ -571,7 +571,11 @@ class FeedforwardNetwork:
 				self.parameter_set, max_w = self.w_max)
 
 	def export_syn_matrix(self, name = 'none'):
-		file_name = os.path.join(self.simulation_path, self.network_id + '_' + self.exp_type + '_' + name + '.png')
+		self.M_syn = np.full((len(self.E_inp), len(self.E_outp)), np.nan)
+		
+		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
+
+		file_name = os.path.join(self.simulation_path, self.network_id + '_Msyn_' + name + '.png')
 
 		plt.title('Synaptic Matrix | ' + name, size = 10)
 
@@ -588,12 +592,32 @@ class FeedforwardNetwork:
 	def update_teacher_singal(self, pattern_id):
 		if (pattern_id % 2) == 0: # class 1
 			# Update teacher frequency
-			self.stim_freq_teach = 20*Hz
+			self.stim_freq_teach = 5*Hz
 			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
+			self.teacher_to_Eout_w = 60*mV
+
+			# Update inhibition frequency
+			self.stim_freq_i = 0*Hz
+			self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i
+			self.I_to_Eout_w = 0*mV
+
+			# spont
+			self.stim_freq_spont = 5*Hz
+			self.spontaneous_act_pop.rates[range(0, self.N_e)] = self.stim_freq_spont
 		else: # class 2
 			# Update teacher frequency
 			self.stim_freq_teach = 200*Hz
 			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
+			self.teacher_to_Eout_w = 60*mV
+
+			# Update inhibition frequency
+			self.stim_freq_i = 0*Hz
+			self.Input_to_I.rates[range(0, self.N_e_outp)] = self.stim_freq_i
+			self.I_to_Eout_w = 0*mV
+
+			# spont
+			self.stim_freq_spont = 35*Hz
+			self.spontaneous_act_pop.rates[range(0, self.N_e)] = self.stim_freq_spont
 
 	def silince_for_testing(self):
 		# Update teacher frequency
