@@ -570,13 +570,13 @@ class FeedforwardNetwork:
 				self.parameter_set, max_w = self.w_max)
 
 	def update_teacher_singal(self, pattern_id):
-		if (pattern_id % 2) == 0:
-			# Update teacher frequency
-			self.stim_freq_teach = 120*Hz
-			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
-		else:
+		if (pattern_id % 2) == 0: # class 1
 			# Update teacher frequency
 			self.stim_freq_teach = 20*Hz
+			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
+		else: # class 2
+			# Update teacher frequency
+			self.stim_freq_teach = 200*Hz
 			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
 
 	def silince_for_testing(self):
