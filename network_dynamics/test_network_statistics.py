@@ -69,18 +69,23 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.teacher_to_Eout_w = 60*mV 	# Teacher to Output - 20*mV
-	network.I_to_Eout_w = 10*mV			# Inhibitory to Output - 30*mV
+	network.I_to_Eout_w = 0*mV			# Inhibitory to Output - 30*mV
 
 	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input - 100*mV
-	network.Input_to_I_w = 100*mV 		# 'virtual inh.' to Inhibitory - 100*mV
+	network.Input_to_I_w = 0*mV 		# 'virtual inh.' to Inhibitory - 100*mV
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 60*Hz 		# Input pop. - 80*Hz
-	network.stim_freq_teach = int(sys.argv[3])*Hz 	# Teacher pop. - 200*Hz/0*Hz
-	network.stim_freq_spont = 5*Hz 	# Spontaneous pop. - 40*Hz
-	network.stim_freq_i = 0*Hz		# Inhib. pop. - 100*Hz
+	network.stim_freq_Ninp = 75*Hz 		# Input pop. - 60*Hz
+	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 1*Hz
+	network.stim_freq_i = 0*Hz			# Inhib. pop. - 5*Hz
+
+	if int(sys.argv[3]) == 1:
+		network.stim_freq_teach = 200*Hz 	# Teacher pop. - 200*Hz/0*Hz
+		network.teacher_to_Eout_w = 40*mV 	# Teacher to Output - 20*mV
+	else:
+		network.stim_freq_teach = 20*Hz
+		network.teacher_to_Eout_w = 40*mV 	# Teacher to Output - 20*mV
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)

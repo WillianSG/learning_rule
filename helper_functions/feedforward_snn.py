@@ -237,12 +237,12 @@ class FeedforwardNetwork:
 		self.E_outp.Vm = (self.Vrst_e + rand(self.N_e_outp) * (self.Vth_e_init - self.Vr_e))
 
 	def set_teach_pop(self):
-		self.teacher_pop = NeuronGroup(N = 1,
+		self.teacher_pop = NeuronGroup(N = self.N_e_outp,
 			model = 'rates : Hz',
 			threshold = 'rand()<rates*dt', 
 			name = 'teacher')
 
-		self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
+		self.teacher_pop.rates[range(0, self.N_e_outp)] = self.stim_freq_teach
 
 	def set_teacher_signal(self, pattern_id):
 		signal = 6*Hz
@@ -344,6 +344,7 @@ class FeedforwardNetwork:
 				if isnan(self.M_syn[pre_id][post_id]) == False:
 					s = uniform(0, 1)					
 					self.Input_to_Output.rho[pre_id, post_id] = round(s, 2)
+					# self.Input_to_Output.rho[pre_id, post_id] = 1.0
 
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
 
@@ -457,6 +458,20 @@ class FeedforwardNetwork:
 		self.spont_input.w = 0*mV
 		self.spont_input.w[self.stimulus_inactive_ids, self.stimulus_inactive_ids] = self.spont_to_input_w
 
+	"""
+	Target output neuron receives high rate teacher signal. Reminder of output neurons (that shouldn't responde) receive signals to fire at a spontaneous rate (to depress synapses).
+	"""
+	def update_teachers_rates(self, target_out):
+
+		reminder_out_ids = list(range(0, self.N_e_outp))
+		reminder_out_ids.remove(target_out)
+
+		# target out fires at high rate (teacher's help)
+		self.teacher_pop.rates[target_out] = self.stim_freq_teach
+
+		# reminder of outs fire at spontaneous rate
+		self.teacher_pop.rates[reminder_out_ids] = self.stim_freq_spont
+
 	def set_stimulus_Ninp(self):
 		# Setting active neurons in the input layer
 		self.Input_to_E_inp.rates = 0*Hz # reset input activity
@@ -472,6 +487,11 @@ class FeedforwardNetwork:
 
 		# Updating Inhibitory population activity lvl
 		self.set_I_from_coding_lvl()
+
+		# setting inactive ids
+		self.stimulus_inactive_ids = list(range(0, self.N_e))
+		for x in self.stimulus_ids_Ninp:
+			self.stimulus_inactive_ids.remove(x)
 
 	def set_stimulus_dataset(self, pattern):
 		# getting ids of active neurons in pattern
@@ -575,26 +595,37 @@ class FeedforwardNetwork:
 		
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
 
-		file_name = os.path.join(self.simulation_path, self.network_id + '_Msyn_' + name + '.png')
+		out_syn = [ [] for j in range(self.N_e_outp)]
 
-		plt.title('Synaptic Matrix | ' + name, size = 10)
+		for synapse_row in self.M_syn:
+			out_neuron_id = 0
+			for w in synapse_row:
+				out_syn[out_neuron_id].append(w)
+				out_neuron_id += 1
 
-		temp = self.M_syn
+		out_id = 0
+		for syns in out_syn:
+			file_name = os.path.join(self.simulation_path, self.network_id + '_Msyn_' + name + '.png')
 
-		plt.imshow(temp.reshape(20, 20), cmap = 'Greys', interpolation = 'none')
+			plt.title('Synaptic Matrix | out # ' + str(out_id), size = 10)
 
-		plt.xticks([])
-		plt.yticks([])
-		plt.savefig(file_name)
+			plt.imshow(np.array(syns).reshape(3, 3), cmap = 'Greys', interpolation = 'none')
+
+			plt.xticks([])
+			plt.yticks([])
+			# plt.savefig(file_name)
+			plt.show()
+
+			out_id += 1
 
 		print('\n [synaptic matrix exported]\n')
 
 	def update_teacher_singal(self, pattern_id):
 		if (pattern_id % 2) == 0: # class 1
 			# Update teacher frequency
-			self.stim_freq_teach = 5*Hz
+			self.stim_freq_teach = 10*Hz
 			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
-			self.teacher_to_Eout_w = 60*mV
+			self.teacher_to_Eout_w = 100*mV
 
 			# Update inhibition frequency
 			self.stim_freq_i = 0*Hz
@@ -602,13 +633,13 @@ class FeedforwardNetwork:
 			self.I_to_Eout_w = 0*mV
 
 			# spont
-			self.stim_freq_spont = 5*Hz
+			self.stim_freq_spont = 0*Hz
 			self.spontaneous_act_pop.rates[range(0, self.N_e)] = self.stim_freq_spont
 		else: # class 2
 			# Update teacher frequency
 			self.stim_freq_teach = 200*Hz
 			self.teacher_pop.rates[range(0, 1)] = self.stim_freq_teach
-			self.teacher_to_Eout_w = 60*mV
+			self.teacher_to_Eout_w = 100*mV
 
 			# Update inhibition frequency
 			self.stim_freq_i = 0*Hz
@@ -616,7 +647,7 @@ class FeedforwardNetwork:
 			self.I_to_Eout_w = 0*mV
 
 			# spont
-			self.stim_freq_spont = 35*Hz
+			self.stim_freq_spont = 32*Hz
 			self.spontaneous_act_pop.rates[range(0, self.N_e)] = self.stim_freq_spont
 
 	def silince_for_testing(self):

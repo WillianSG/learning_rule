@@ -71,7 +71,7 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.teacher_to_Eout_w = 60*mV 	# Teacher to Output - 40*mV
+	network.teacher_to_Eout_w = 100*mV 	# Teacher to Output - 40*mV
 	network.I_to_Eout_w = 10*mV			# Inhibitory to Output - 10*mV
 
 	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input - 100*mV
@@ -79,10 +79,7 @@ def main():
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 60*Hz 		# Input pop. - 80*Hz
-	network.stim_freq_teach = 200*Hz 	# Teacher pop. - 200*Hz/5*Hz
-	network.stim_freq_spont = 5*Hz 	# Spontaneous pop. - 5*Hz
-	network.stim_freq_i = 0*Hz			# Inhib. pop. - 20*Hz
+	network.stim_freq_Ninp = 80*Hz 		# Input pop. - 80*Hz
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)

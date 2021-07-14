@@ -14,7 +14,7 @@ import random
 import numpy as np
 import sys
 
-def load_stimulus_Ninp(stimulus_id, input_size = 4):
+def load_stimulus_Ninp(stimulus_id, input_size = 9):
 	if stimulus_id == 'x':
 		stimulus_neur_ids = [6,8,4,0,2]
 	elif stimulus_id == '.':
