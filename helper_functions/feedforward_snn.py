@@ -624,11 +624,33 @@ class FeedforwardNetwork:
 			plt.xticks([])
 			plt.yticks([])
 			plt.savefig(file_name)
-			# plt.show()
 
 			out_id += 1
 
 		print('\n[ synaptic matrix exported ]\n')
+
+	def get_out_neurons_spks_t(self, start):
+		counter = 0 # marks where in the ids array the valid spk times start
+		for i in self.E_outp_spkmon.t[:]:
+			if i >= start:
+				break
+			counter += 1
+
+		temp_out_spks_t = [ [] for j in range(self.N_e_outp)]
+
+		# print('\n', self.E_outp_spkmon.t[:])
+		# print(self.E_outp_spkmon.i[:])
+
+		out_spks_t = self.E_outp_spkmon.t[:][self.E_outp_spkmon.t[:]>=start]
+		out_spks_ids = self.E_outp_spkmon.i[counter:]
+
+		index_counter = 0
+		for out_id in out_spks_ids:
+			temp_out_spks_t[out_id].append(out_spks_t[index_counter])
+
+			index_counter += 1
+
+		return temp_out_spks_t
 
 	def update_teacher_singal(self, pattern_id):
 		if (pattern_id % 2) == 0: # class 1
