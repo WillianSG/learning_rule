@@ -77,17 +77,17 @@ def main():
 
 	# Synaptic weights (max.)
 	network.teacher_to_Eout_w = 40*mV 	# Teacher to Output - 40*mV
-	network.I_to_Eout_w = 0*mV			# Inhibitory to Output - 10*mV
+	network.I_to_Eout_w = 40*mV			# Inhibitory to Output - 10*mV
 
 	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input - 100*mV
 	network.Input_to_I_w = 100*mV 		# 'virtual inh.' to Inhibitory - 100*mV
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 75*Hz 	# Input pop. - 75*Hz
-	network.stim_freq_teach = 200*Hz 	# Teacher pop. - 200*Hz
-	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 2*Hz
-	network.stim_freq_i = 0*Hz		# Inhib. pop. - 100*Hz
+	network.stim_freq_Ninp = 100*Hz 	# Input pop.
+	network.stim_freq_teach = 250*Hz 	# Teacher pop.
+	network.stim_freq_spont = 1*Hz 		# Spontaneous pop.
+	network.stim_freq_i = 0*Hz			# Inhib. pop.
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
@@ -138,6 +138,7 @@ def main():
 	print('\nmax. plastic weight : ', network.w_max)
 	print('\nnum. input neurons  : ', network.N_e)
 	print('num. output neurons : ', network.N_e_outp)
+	print('\nt run             : ', network.t_run)
 	print('======================================================\n')
 
 	print('================== dataset metadata ==================')

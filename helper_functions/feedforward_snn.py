@@ -470,7 +470,10 @@ class FeedforwardNetwork:
 		self.teacher_pop.rates[target_out] = self.stim_freq_teach
 
 		# reminder of outs fire at spontaneous rate
-		self.teacher_pop.rates[reminder_out_ids] = self.stim_freq_spont
+		"""
+		Spontaneous rate of 20Hz for the NTONs causes all synapses to depress too quickly.
+		"""
+		self.teacher_pop.rates[reminder_out_ids] = 0*Hz
 
 	def set_stimulus_Ninp(self):
 		# Setting active neurons in the input layer

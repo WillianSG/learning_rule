@@ -69,23 +69,23 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.I_to_Eout_w = 0*mV			# Inhibitory to Output - 30*mV
+	network.teacher_to_Eout_w = 40*mV 	# Teacher to Output - 20*mV
+	network.I_to_Eout_w = 40*mV			# Inhibitory to Output - 30*mV
 
 	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input - 100*mV
-	network.Input_to_I_w = 0*mV 		# 'virtual inh.' to Inhibitory - 100*mV
+	network.Input_to_I_w = 20*mV 		# 'virtual inh.' to Inhibitory - 100*mV
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 75*Hz 		# Input pop. - 60*Hz
-	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 1*Hz
+	network.stim_freq_Ninp = 100*Hz 		# Input pop. - 60*Hz
+	network.stim_freq_spont = 1*Hz 	# Spontaneous pop. - 1*Hz
 	network.stim_freq_i = 0*Hz			# Inhib. pop. - 5*Hz
 
 	if int(sys.argv[3]) == 1:
-		network.stim_freq_teach = 200*Hz 	# Teacher pop. - 200*Hz/0*Hz
-		network.teacher_to_Eout_w = 40*mV 	# Teacher to Output - 20*mV
+		network.stim_freq_teach = 250*Hz 	# Teacher pop. - 200*Hz/0*Hz
 	else:
-		network.stim_freq_teach = 20*Hz
-		network.teacher_to_Eout_w = 40*mV 	# Teacher to Output - 20*mV
+		network.stim_freq_teach = 0*Hz
+		network.stim_freq_i = 250*Hz			# Inhib. pop. - 5*Hz
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
@@ -151,9 +151,9 @@ def main():
 	print('spont. input (Hz/w) : ', network.stim_freq_spont, '/', network.w_max)
 	print('teacher (Hz/w)      : ', network.stim_freq_teach, '/', network.teacher_to_Eout_w)
 	print('inhibition (Hz/w)   : ', network.stim_freq_i, '/', network.I_to_Eout_w)
+	print('\nnetwork w_max     : ', network.w_max, '\n')
+	print('\nt run             : ', network.t_run, '\n')
 	print('======================================================\n')
-
-	print('\n-> network w_max: ', network.w_max, '\n')
 
 	for exposure_n in range(0, sim_repetitions):
 		network.net.restore(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
@@ -165,7 +165,7 @@ def main():
 		# virtual input drives only active neurons
 		network.update_input_connectivity()
 
-		network.run_net()
+		network.run_net(report = None)
 
 		# ----------- Storing simulation data -----------
 		rho_all.append(network.Input_to_Output_stamon.rho)
