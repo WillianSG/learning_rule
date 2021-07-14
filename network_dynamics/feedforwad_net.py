@@ -6,6 +6,7 @@ Comments:
 - sys.argv[1] = simulation time (float)
 - sys.argv[2] = 1 : save sim data
 - sys.argv[3] = total training epochs
+- sys.argv[4] = 1 : test trained network
 """
 import setuptools
 import os, sys, pickle, shutil
@@ -45,6 +46,10 @@ def main():
 	
 	network = FeedforwardNetwork()
 
+	# populations sizes
+	network.N_e = 400
+	network.N_e_outp = 2
+
 	# Select single (test) stimulus
 	network.stimulus_id = 'all'
 
@@ -71,15 +76,18 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.teacher_to_Eout_w = 100*mV 	# Teacher to Output - 40*mV
-	network.I_to_Eout_w = 10*mV			# Inhibitory to Output - 10*mV
+	network.teacher_to_Eout_w = 40*mV 	# Teacher to Output - 40*mV
+	network.I_to_Eout_w = 0*mV			# Inhibitory to Output - 10*mV
 
 	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input - 100*mV
 	network.Input_to_I_w = 100*mV 		# 'virtual inh.' to Inhibitory - 100*mV
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 80*Hz 		# Input pop. - 80*Hz
+	network.stim_freq_Ninp = 75*Hz 	# Input pop. - 75*Hz
+	network.stim_freq_teach = 200*Hz 	# Teacher pop. - 200*Hz
+	network.stim_freq_spont = 20*Hz 	# Spontaneous pop. - 2*Hz
+	network.stim_freq_i = 0*Hz		# Inhib. pop. - 100*Hz
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
@@ -116,7 +124,7 @@ def main():
 	# ----------- Loading dataset -----------
 
 	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/12Jul2021_12-40-29_dataset_Fusi-size_2.pickle'
-	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
+	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_12-40-29_dataset_Fusi-size_2.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
@@ -127,10 +135,12 @@ def main():
 	print('spont. input (Hz/w) : ', network.stim_freq_spont, '/', network.w_max)
 	print('teacher (Hz/w)      : ', network.stim_freq_teach, '/', network.teacher_to_Eout_w)
 	print('inhibition (Hz/w)   : ', network.stim_freq_i, '/', network.I_to_Eout_w)
-	print('\nw_max             : ', network.w_max)
+	print('\nmax. plastic weight : ', network.w_max)
+	print('\nnum. input neurons  : ', network.N_e)
+	print('num. output neurons : ', network.N_e_outp)
 	print('======================================================\n')
 
-	print('\n================== dataset metadata ==================')
+	print('================== dataset metadata ==================')
 	for key, value in meta_data.items():
 		print(key, ':', value)
 	print('======================================================\n')
@@ -157,8 +167,16 @@ def main():
 
 			print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
 
+			if pattern_id == 0:
+				network.update_teachers_rates(target_out = 0)
+			elif pattern_id == 1:
+				network.update_teachers_rates(target_out = 1)
+
 			# 2- update teacher signal based on pattern class
-			network.update_teacher_singal(pattern_id = pattern_id)
+			"""
+			deprecated - old method for single output neuron.
+			"""
+			# network.update_teacher_singal(pattern_id = pattern_id)
 
 			# 3 - update who's active/spontaneous in the input layer
 			network.update_input_connectivity()
@@ -286,131 +304,132 @@ def main():
 
 	# ----------- Testing trained network -----------
 
-	print('\n> testing trained network...\n')
+	if sys.argv[4] == '1':
+		print('\n> testing trained network...\n')
 
-	presentation_time = float(sys.argv[1])*second
+		presentation_time = float(sys.argv[1])*second
 
-	mean_activity_c1 = []
-	mean_activity_c2 = []
+		mean_activity_c1 = []
+		mean_activity_c2 = []
 
-	# 0 - test results destination directory
-	test_data_path_c1 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run), 'class_1')
-	
-	if not(os.path.isdir(test_data_path_c1)):
-		os.mkdir(test_data_path_c1)
-
-	test_data_path_c2 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run), 'class_2')
-	
-	if not(os.path.isdir(test_data_path_c2)):
-		os.mkdir(test_data_path_c2)
-
-	# 1 - restoring trained network state
-	network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
-
-	# 2 - silencing auxiliary populations
-	network.silince_for_testing()
-
-	# 3 - testing learned patterns
-	for pattern_id in range(0, meta_data['dataset_size']):
-		print(' -> pattern ', pattern_id+1, ' (', total_sim_t, ')')
+		# 0 - test results destination directory
+		test_data_path_c1 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run), 'class_1')
 		
-		# setting stimulus to be presented
-		network.set_stimulus_dataset(full_dataset[pattern_id])
+		if not(os.path.isdir(test_data_path_c1)):
+			os.mkdir(test_data_path_c1)
 
-		# update who's active/spontaneous in the input layer
-		network.update_input_connectivity()
+		test_data_path_c2 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run), 'class_2')
+		
+		if not(os.path.isdir(test_data_path_c2)):
+			os.mkdir(test_data_path_c2)
 
-		# simulating
-		network.run_net(report = None)
+		# 1 - restoring trained network state
+		network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
 
-		total_sim_t += network.t_run
+		# 2 - silencing auxiliary populations
+		network.silince_for_testing()
 
-		# ----------- Output monitor data -----------
-		# spike times
-		temp_output_spks = network.E_outp_spkmon.t[:]
+		# 3 - testing learned patterns
+		for pattern_id in range(0, meta_data['dataset_size']):
+			print(' -> pattern ', pattern_id+1, ' (', total_sim_t, ')')
+			
+			# setting stimulus to be presented
+			network.set_stimulus_dataset(full_dataset[pattern_id])
 
-		# where in spkmon current stimulus response starts
-		t_start = total_sim_t - presentation_time
+			# update who's active/spontaneous in the input layer
+			network.update_input_connectivity()
 
-		# retrieving response to stimulus
-		output_spks = temp_output_spks[temp_output_spks >= t_start]
+			# simulating
+			network.run_net(report = None)
 
-		# firing frequency histogram data
-		[t_hist_edges,
-		t_hist_freq, 
-		t_hist_bin_widths] = histograms_firing_rate(
-			t_points = output_spks, 
-			pop_size = 1)
+			total_sim_t += network.t_run
 
-		# simulation time array
-		temp_sim_t_array = network.Input_to_Output_stamon.t
-		sim_t_array = temp_sim_t_array[temp_sim_t_array >= t_start]
+			# ----------- Output monitor data -----------
+			# spike times
+			temp_output_spks = network.E_outp_spkmon.t[:]
 
-		# ----------- Plotting output activity -----------
-		if ((pattern_id+1) % 2) == 0:
-			mean_activity_c1.append(np.round(np.mean(t_hist_freq), 1))
+			# where in spkmon current stimulus response starts
+			t_start = total_sim_t - presentation_time
 
-			img_name = os.path.join(test_data_path_c1, 'pattern_' + str(pattern_id) + '_c1.png')
+			# retrieving response to stimulus
+			output_spks = temp_output_spks[temp_output_spks >= t_start]
 
-			plt.bar(
-				x = t_hist_edges,
-				height = t_hist_freq,
-				width = t_hist_bin_widths,
-				color = 'lightblue',
-				edgecolor = 'k',
-				linewidth = 0.5)
+			# firing frequency histogram data
+			[t_hist_edges,
+			t_hist_freq, 
+			t_hist_bin_widths] = histograms_firing_rate(
+				t_points = output_spks, 
+				pop_size = 1)
 
-			plt.title('Output response: pattern ' + str(pattern_id) + ' | class 1')
-		else:
-			mean_activity_c2.append(np.round(np.mean(t_hist_freq), 1))
+			# simulation time array
+			temp_sim_t_array = network.Input_to_Output_stamon.t
+			sim_t_array = temp_sim_t_array[temp_sim_t_array >= t_start]
 
-			img_name = os.path.join(test_data_path_c2, 'pattern_' + str(pattern_id) + '_c2.png')
+			# ----------- Plotting output activity -----------
+			if ((pattern_id+1) % 2) == 0:
+				mean_activity_c1.append(np.round(np.mean(t_hist_freq), 1))
 
-			plt.bar(
-				x = t_hist_edges,
-				height = t_hist_freq,
-				width = t_hist_bin_widths,
-				color = 'tomato',
-				edgecolor = 'k',
-				linewidth = 0.5)
+				img_name = os.path.join(test_data_path_c1, 'pattern_' + str(pattern_id) + '_c1.png')
 
-			plt.title('Output response: pattern ' + str(pattern_id) + ' | class 2')
+				plt.bar(
+					x = t_hist_edges,
+					height = t_hist_freq,
+					width = t_hist_bin_widths,
+					color = 'lightblue',
+					edgecolor = 'k',
+					linewidth = 0.5)
 
-		plt.xlim([t_start, total_sim_t])
+				plt.title('Output response: pattern ' + str(pattern_id) + ' | class 1')
+			else:
+				mean_activity_c2.append(np.round(np.mean(t_hist_freq), 1))
 
-		plt.ylabel('freq (Hz)', size = 6)
-		plt.xlabel('time (s)', size = 6)
+				img_name = os.path.join(test_data_path_c2, 'pattern_' + str(pattern_id) + '_c2.png')
 
-		mean_activity = np.round(np.mean(t_hist_freq), 1)
+				plt.bar(
+					x = t_hist_edges,
+					height = t_hist_freq,
+					width = t_hist_bin_widths,
+					color = 'tomato',
+					edgecolor = 'k',
+					linewidth = 0.5)
 
-		plt.hlines(mean_activity, t_start, total_sim_t, color = 'k', linestyle = '--', label = 'avg frequency', linewidth = 0.5)
+				plt.title('Output response: pattern ' + str(pattern_id) + ' | class 2')
 
-		plt.legend(prop = {'size': 6})
+			plt.xlim([t_start, total_sim_t])
 
-		plt.savefig(img_name)
-		plt.close()
+			plt.ylabel('freq (Hz)', size = 6)
+			plt.xlabel('time (s)', size = 6)
 
-	# saving simulation data
-	fn = os.path.join(network.simulation_path, network.network_id + '_' + network.exp_type + '_simulation_metadata_n_results.pickle')
+			mean_activity = np.round(np.mean(t_hist_freq), 1)
 
-	with open(fn, 'wb') as f:
-		pickle.dump((
-			network.simulation_path,
-			network.network_id,
-			network.t_run,
-			total_sim_t,
-			network.dt_resolution,
-			network.mon_dt,
-			network.int_meth_neur,
-			network.int_meth_syn,
-			network.plasticity_rule,
-			network.parameter_set,
-			network.bistability,
-			num_epochs,
-			meta_data, # 'meta_data' is the dataset metadata
-			mean_activity_c1,
-			mean_activity_c2,
-			network.M_syn), f)
+			plt.hlines(mean_activity, t_start, total_sim_t, color = 'k', linestyle = '--', label = 'avg frequency', linewidth = 0.5)
+
+			plt.legend(prop = {'size': 6})
+
+			plt.savefig(img_name)
+			plt.close()
+
+		# saving simulation data
+		fn = os.path.join(network.simulation_path, network.network_id + '_' + network.exp_type + '_simulation_metadata_n_results.pickle')
+
+		with open(fn, 'wb') as f:
+			pickle.dump((
+				network.simulation_path,
+				network.network_id,
+				network.t_run,
+				total_sim_t,
+				network.dt_resolution,
+				network.mon_dt,
+				network.int_meth_neur,
+				network.int_meth_syn,
+				network.plasticity_rule,
+				network.parameter_set,
+				network.bistability,
+				num_epochs,
+				meta_data, # 'meta_data' is the dataset metadata
+				mean_activity_c1,
+				mean_activity_c2,
+				network.M_syn), f)
 
 if __name__ == "__main__":
 	main()

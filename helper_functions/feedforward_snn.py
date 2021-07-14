@@ -590,7 +590,7 @@ class FeedforwardNetwork:
 			self.xpre_max] = load_rule_params(self.plasticity_rule, 
 				self.parameter_set, max_w = self.w_max)
 
-	def export_syn_matrix(self, name = 'none'):
+	def export_syn_matrix(self, name = 'none', opt = ''):
 		self.M_syn = np.full((len(self.E_inp), len(self.E_outp)), np.nan)
 		
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
@@ -605,20 +605,23 @@ class FeedforwardNetwork:
 
 		out_id = 0
 		for syns in out_syn:
-			file_name = os.path.join(self.simulation_path, self.network_id + '_Msyn_' + name + '.png')
+			file_name = os.path.join(self.simulation_path, 'outNeu_' + str(out_id) + '_Msyn_' + name + opt + '.png')
 
 			plt.title('Synaptic Matrix | out # ' + str(out_id), size = 10)
 
-			plt.imshow(np.array(syns).reshape(3, 3), cmap = 'Greys', interpolation = 'none')
+			if self.N_e == 400:
+				plt.imshow(np.array(syns).reshape(20, 20), cmap = 'Greys', interpolation = 'none')
+			elif self.N_e == 9:
+				plt.imshow(np.array(syns).reshape(3, 3), cmap = 'Greys', interpolation = 'none')
 
 			plt.xticks([])
 			plt.yticks([])
-			# plt.savefig(file_name)
-			plt.show()
+			plt.savefig(file_name)
+			# plt.show()
 
 			out_id += 1
 
-		print('\n [synaptic matrix exported]\n')
+		print('\n[ synaptic matrix exported ]\n')
 
 	def update_teacher_singal(self, pattern_id):
 		if (pattern_id % 2) == 0: # class 1
