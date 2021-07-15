@@ -313,17 +313,6 @@ def main():
 		mean_activity_c1 = []
 		mean_activity_c2 = []
 
-		# 0 - test results destination directory
-		# test_data_path_c1 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run), 'class_1')
-		
-		# if not(os.path.isdir(test_data_path_c1)):
-		# 	os.mkdir(test_data_path_c1)
-
-		# test_data_path_c2 = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run), 'class_2')
-		
-		# if not(os.path.isdir(test_data_path_c2)):
-		# 	os.mkdir(test_data_path_c2)
-
 		# 1 - restoring trained network state
 		network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
 
