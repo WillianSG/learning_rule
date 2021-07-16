@@ -8,7 +8,7 @@ Comments:
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
-import pickle
+import pickle, os
 
 with open('12Jul2021_18-25-21_dataset_Fusi-size_10.pickle','rb') as f:(
 	meta_data,
@@ -54,23 +54,23 @@ fig0.suptitle('Avg Pattern Matrices | dataset size ' + str(meta_data['dataset_si
 # ----------- Class 1 -----------
 f2_ax1 = fig0.add_subplot(spec2[0, 0])
 
-reshaped = class1_patterns_sum.reshape(20, 20)
+reshaped_c1 = class1_patterns_sum.reshape(20, 20)
 
 plt.title('Class 1', size = 10)
 
 plt.xticks([])
 plt.yticks([])
 
-plt.imshow(reshaped, cmap = 'Greys', interpolation = 'none')
+plt.imshow(reshaped_c1, cmap = 'Greys', interpolation = 'none')
 
 # ----------- Class 2 -----------
 f2_ax2 = fig0.add_subplot(spec2[1, 0])
 
-reshaped = class2_patterns_sum.reshape(20, 20)
+reshaped_c2 = class2_patterns_sum.reshape(20, 20)
 
 plt.title('Class 2', size = 10)
 
-plt.imshow(reshaped, cmap = 'Greys', interpolation = 'none')
+plt.imshow(reshaped_c2, cmap = 'Greys', interpolation = 'none')
 
 plt.xticks([])
 plt.yticks([])
@@ -79,3 +79,11 @@ plt.savefig(
 	meta_data['timestamp'] +  '_dataset_size_' + str(meta_data['dataset_size']) + '_summed_patterns.png',
 	bbox_inches = 'tight',
 	dpi = 200)
+
+fn =  meta_data['timestamp'] +  '_dataset_size_' + str(meta_data['dataset_size']) + '_summed_patterns.pickle'
+
+with open(fn, 'wb') as f:
+	pickle.dump((
+		reshaped_c1,
+		reshaped_c2
+		), f)

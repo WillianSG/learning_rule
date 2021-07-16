@@ -120,11 +120,23 @@ def main():
 	# ----------- Loading dataset -----------
 
 	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/12Jul2021_12-40-29_dataset_Fusi-size_2.pickle'
-	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_17-36-28_dataset_Fusi-size_50.pickle'
+	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
 		full_dataset) = pickle.load(f)
+
+	# ----------- Loading patterns matrix summary -----------
+
+	patterns_avg_filename = meta_data['timestamp'] +  '_dataset_size_' + str(meta_data['dataset_size']) + '_summed_patterns.pickle'
+
+	dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
+
+	with open(dataset_patterns_avg,'rb') as f:(
+		reshaped_c1,
+		reshaped_c2) = pickle.load(f)
+
+	# ----------- Simulation summary -----------
 
 	print('\n================== network metadata ==================')
 	print('active input (Hz/w) : ', network.stim_freq_Ninp, '/', network.w_max)
@@ -184,7 +196,7 @@ def main():
 	# 6 - binarize weights based on synaptic internal state variable
 	network.binarize_syn_matrix()
 
-	network.export_syn_matrix(name = 'trained')
+	network.export_syn_matrix(name = 'trained', class1 = reshaped_c1, class2 = reshaped_c2)
 
 	# 6.1 - turning plasticity OFF for testing
 	network.Input_to_Output.plastic = False

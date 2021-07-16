@@ -16,6 +16,7 @@ from random import uniform
 import numpy as np
 from time import localtime
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
 
 # Helper Modules
 from load_parameters import *
@@ -597,7 +598,10 @@ class FeedforwardNetwork:
 			self.xpre_max] = load_rule_params(self.plasticity_rule, 
 				self.parameter_set, max_w = self.w_max)
 
-	def export_syn_matrix(self, name = 'none', opt = ''):
+	def export_syn_matrix(self, name = 'none', opt = '', 
+		class1 = [], 
+		class2 = []):
+
 		self.M_syn = np.full((len(self.E_inp), len(self.E_outp)), np.nan)
 		
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
@@ -610,22 +614,59 @@ class FeedforwardNetwork:
 				out_syn[out_neuron_id].append(w)
 				out_neuron_id += 1
 
-		out_id = 0
-		for syns in out_syn:
-			file_name = os.path.join(self.simulation_path, 'outNeu_' + str(out_id) + '_Msyn_' + name + opt + '.png')
+		# ====================== plotting ======================
 
-			plt.title('Synaptic Matrix | out # ' + str(out_id), size = 10)
+		fig0 = plt.figure(constrained_layout = True)
 
-			if self.N_e == 400:
-				plt.imshow(np.array(syns).reshape(20, 20), cmap = 'Greys', interpolation = 'none')
-			elif self.N_e == 9:
-				plt.imshow(np.array(syns).reshape(3, 3), cmap = 'Greys', interpolation = 'none')
+		widths = [8]
+		heights = [8, 8]
 
-			plt.xticks([])
-			plt.yticks([])
-			plt.savefig(file_name)
+		spec2 = gridspec.GridSpec(
+			ncols = 1, 
+			nrows = 2, 
+			width_ratios = widths,
+			height_ratios = heights,
+			figure = fig0)
 
-			out_id += 1
+		fig0.suptitle('Output Neuron\'s Synaptic Matrix | ' + name, fontsize = 8)
+
+		file_name = os.path.join(self.simulation_path, 'outNeurons__Msyn_' + name + opt + '.png')
+
+		# ----------- Output Neuron 0 -----------
+
+		f2_ax1 = fig0.add_subplot(spec2[0, 0])
+
+		plt.title('Output neuron 0', size = 10)
+
+		plt.xticks([])
+		plt.yticks([])
+
+		if len(class1) != 0:
+			plt.imshow(class1, cmap = 'Greys', interpolation = 'none')
+
+			plt.imshow(np.array(out_syn[0]).reshape(20, 20), cmap = 'Blues', interpolation = 'none', alpha = 0.3)
+		else:
+			plt.imshow(np.array(out_syn[0]).reshape(20, 20), cmap = 'Greys', interpolation = 'none')
+
+		# ----------- Output Neuron 1 -----------
+
+		f2_ax2 = fig0.add_subplot(spec2[1, 0])
+
+		plt.title('Output neuron 1', size = 10)
+
+		plt.xticks([])
+		plt.yticks([])
+
+		if len(class2) != 0:
+			plt.imshow(class2, cmap = 'Greys', interpolation = 'none')
+
+			plt.imshow(np.array(out_syn[1]).reshape(20, 20), cmap = 'Reds', interpolation = 'none', alpha = 0.3)
+		else:
+			plt.imshow(np.array(out_syn[1]).reshape(20, 20), cmap = 'Greys', interpolation = 'none')
+
+		# ----------- Saving -----------
+
+		plt.savefig(file_name, bbox_inches = 'tight', dpi = 200)
 
 		print('\n[ synaptic matrix exported ]\n')
 
