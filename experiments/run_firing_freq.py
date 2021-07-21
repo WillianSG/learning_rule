@@ -75,8 +75,8 @@ noise = 0.75 # used to introduce difference between spike times betweem pre- and
 N_Pre = 1
 N_Post = 1
 
-bistability = False
-stoplearning = False
+bistability = True
+stoplearning = True
 
 isi_correlation = 'random' # "random", "positive", "negative"
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
@@ -128,7 +128,13 @@ drho_all = np.zeros((len(pre_freq),len(post_freq)))
 	xpre_min,
 	xpost_min,
 	xpost_max,
-	xpre_max] = load_rule_params(plasticity_rule, parameter_set)
+	xpre_max,
+	tau_xstop,
+	xstop_jump,
+	xstop_max,
+	xstop_min,
+	thr_stop_h,
+	thr_stop_l] = load_rule_params(plasticity_rule, parameter_set)
 
 print('\nw_max: ', w_max)
 
@@ -136,13 +142,6 @@ print('\nw_max: ', w_max)
 [model_E_E,
 	pre_E_E,
 	post_E_E] = load_synapse_model(plasticity_rule, neuron_type, bistability, stoplearning = stoplearning)
-
-tau_xstop = 300*ms
-xstop_jump = 0.09
-xstop_max = 1
-xstop_min = 0
-thr_stop_h = 0.6
-thr_stop_l = 0.55
 
 # 2 ========== Running network in parallel ==========
 def run_net_parallel(p, q):

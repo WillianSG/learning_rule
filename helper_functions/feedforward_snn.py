@@ -35,7 +35,8 @@ class FeedforwardNetwork:
 		# Learning Rule
 		self.plasticity_rule = 'user-defined'
 		self.parameter_set = 'user-defined'
-		self.bistability = True
+		self.bistability = False
+		self.stoplearning = False
 
 		# Neuron Groups
 		self.neuron_type = 'user-defined'	# neuron model
@@ -111,12 +112,12 @@ class FeedforwardNetwork:
 		self.xpre_max = 1
 
 		# Stop-Learning
-		self.tau_xstop = 300*ms
-		self.xstop_jump = 0.09
-		self.xstop_max = 1
+		self.tau_xstop = 0*ms
+		self.xstop_jump = 0.0
+		self.xstop_max = 0
 		self.xstop_min = 0
-		self.thr_stop_h = 0.6
-		self.thr_stop_l = 0.55
+		self.thr_stop_h = 0.0
+		self.thr_stop_l = 0.0
 
 		# General
 		self.exp_type = 'user-defined' 		# type of experiment
@@ -268,7 +269,8 @@ class FeedforwardNetwork:
 		[self.model_E_E, self.pre_E_E, self.post_E_E] = load_synapse_model(
 			plasticity_rule = self.plasticity_rule,
 			neuron_type = self.neuron_type,
-			bistability = self.bistability)
+			bistability = self.bistability,
+			stoplearning = self.stoplearning)
 
 		# between "input neurons" and 1st (E_inp) layer
 		self.Input_1st_layer = Synapses(source = self.Input_to_E_inp, 
@@ -595,7 +597,13 @@ class FeedforwardNetwork:
 			self.xpre_min,
 			self.xpost_min,
 			self.xpost_max,
-			self.xpre_max] = load_rule_params(self.plasticity_rule, 
+			self.xpre_max,
+			self.tau_xstop,
+			self.xstop_jump,
+			self.xstop_max,
+			self.xstop_min,
+			self.thr_stop_h,
+			self.thr_stop_l] = load_rule_params(self.plasticity_rule, 
 				self.parameter_set, max_w = self.w_max)
 
 	def export_syn_matrix(self, name = 'none', opt = '', 

@@ -55,6 +55,14 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5, max_w 
 
 	w_max = max_w
 
+	# Stop-learning parameters
+	tau_xstop = 0*ms
+	xstop_jump = 0.0
+	xstop_max = 0
+	xstop_min = 0
+	thr_stop_h = 0.0
+	thr_stop_l = 0.0
+
 	if plasticity_rule == 'LR2':
 		if parameter_set =='2.1':
 			tau_xpre = 13*ms # time constant x_pre 
@@ -155,6 +163,13 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5, max_w 
 			rho_neg2 = -0.001 ##
 			xpre_factor = 0.01 #
 			w_max = 2.5*mV
+			# Stop-learning parameters
+			tau_xstop = 300*ms
+			xstop_jump = 0.09
+			xstop_max = 1.0
+			xstop_min = 0.0
+			thr_stop_h = 0.6
+			thr_stop_l = 0.25
 		elif parameter_set == '1.1':
 			tau_xpre = 30*ms 
 			tau_xpost = 45*ms 
@@ -383,4 +398,10 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5, max_w 
 	xpre_min,\
 	xpost_min,\
 	xpost_max,\
-	xpre_max
+	xpre_max,\
+	tau_xstop,\
+	xstop_jump,\
+	xstop_max,\
+	xstop_min,\
+	thr_stop_h,\
+	thr_stop_l

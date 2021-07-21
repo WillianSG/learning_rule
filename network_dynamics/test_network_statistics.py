@@ -63,6 +63,7 @@ def main():
 	network.plasticity_rule = 'LR3'
 	network.parameter_set = '1.C'
 	network.bistability = True
+	network.stoplearning = True
 
 	# Neurons
 	network.neuron_type = 'LIF'
@@ -85,7 +86,7 @@ def main():
 		network.stim_freq_teach = 300*Hz 	# Teacher pop. - 200*Hz/0*Hz
 	else:
 		network.stim_freq_teach = 0*Hz
-		network.stim_freq_i = 250*Hz			# Inhib. pop. - 5*Hz
+		network.stim_freq_i = 400*Hz			# Inhib. pop. - 5*Hz
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)

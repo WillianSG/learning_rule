@@ -30,12 +30,6 @@ import matplotlib.colors as mcolors
 
 helper_dir = 'helper_functions'
 
-# get run id as seed for random gens
-try:
-	job_seed = int(sys.argv[1])
-except:
-	job_seed = int(0)
-
 # Parent directory
 parent_dir = os.path.dirname(os.getcwd())
 
@@ -78,10 +72,10 @@ int_meth_syn = 'euler' # Synaptic integration method
 
 # 1.1 ========== Rule's parameters
 
-plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
+plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2', 'LR3'
 
 bistability = True
-stoplearning = False
+stoplearning = True
 
 [tau_xpre,
 	tau_xpost,
@@ -103,14 +97,13 @@ stoplearning = False
 	xpre_min,
 	xpost_min,
 	xpost_max,
-	xpre_max] = load_rule_params(plasticity_rule, parameter_set)
-
-tau_xstop = 300*ms
-xstop_jump = 0.09
-xstop_max = 1
-xstop_min = 0
-thr_stop_h = 0.6
-thr_stop_l = 0.55
+	xpre_max,
+	tau_xstop,
+	xstop_jump,
+	xstop_max,
+	xstop_min,
+	thr_stop_h,
+	thr_stop_l] = load_rule_params(plasticity_rule, parameter_set)
 
 # ==== stop-learning parameter A
 # tau_xstop = 260*ms
@@ -311,10 +304,27 @@ if stoplearning:
 # ============================ statistics ================================
 
 fig0 = plt.figure(constrained_layout = True)
-spec2 = gridspec.GridSpec(ncols = 2, nrows = 2, figure = fig0)
+
+widths = [8, 8]
+heights = [8, 8]
+
+spec2 = gridspec.GridSpec(
+	ncols = 2, 
+	nrows = 2, 
+	width_ratios = widths,
+	height_ratios = heights,
+	figure = fig0)
 
 if stoplearning:
-	spec2 = gridspec.GridSpec(ncols = 2, nrows = 3, figure = fig0)
+	widths = [8, 8]
+	heights = [8, 8, 8]
+
+	spec2 = gridspec.GridSpec(
+		ncols = 2, 
+		nrows = 3, 
+		width_ratios = widths,
+		height_ratios = heights,
+		figure = fig0)
 
 fig0.suptitle('Param. set ' + parameter_set, fontsize = 8)
 
@@ -331,6 +341,8 @@ plt.hlines(rho_all[0][0], 0, StateMon.t[-1], color = 'k', linestyle = '--', labe
 f2_ax1.legend(prop = {'size': 5})
 
 f2_ax1.set_ylim([0.0, 1.0])
+
+plt.yticks(np.arange(0.0, 1.2, step = 0.2))
 
 plt.ylabel('rho (a.u.)', size = 6)
 plt.xlabel('time (sec)', size = 6)
@@ -360,6 +372,9 @@ plt.xlabel('time (sec)', size = 6)
 plt.title('$Ca^{2+}_{pre}$ evolution (' + str(pre_rate) + 'Hz)', size = 8)
 
 f2_ax3.set_ylim([0.0, 1.0])
+
+plt.yticks(np.arange(0.0, 1.2, step=0.2))
+
 f2_ax3.legend(prop = {'size': 5})
 
 # avg Ca post
@@ -377,6 +392,9 @@ plt.xlabel('time (sec)', size = 6)
 plt.title('$Ca^{2+}_{post}$ evolution (' + str(post_rate) + 'Hz)', size = 8)
 
 f2_ax4.set_ylim([0.0, 1.0])
+
+plt.yticks(np.arange(0.0, 1.2, step=0.2))
+
 f2_ax4.legend(prop = {'size': 5})
 
 # plot_name = sim_id + '_statistics_' + str(num_sim) + '_' + plasticity_rule + '_' + parameter_set.replace('.', '-') + '_bist' + str(bistability) + '_stopl' + str(stoplearning) + '_pre' + str(pre_rate) + '_post' + str(post_rate)
@@ -403,6 +421,9 @@ if stoplearning:
 	plt.title('$Ca^{stop}$ evolution (' + str(post_rate) + 'Hz)', size = 8)
 
 	f2_ax5.set_ylim([0.0, 1.0])
+
+	plt.yticks(np.arange(0.0, 1.2, step=0.2))
+
 	f2_ax5.legend(prop = {'size': 5})
 
 

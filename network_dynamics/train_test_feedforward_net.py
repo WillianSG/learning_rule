@@ -66,6 +66,7 @@ def main():
 	network.plasticity_rule = 'LR3'
 	network.parameter_set = '1.C'
 	network.bistability = True
+	network.stoplearning = True
 
 	# Neurons
 	network.neuron_type = 'LIF'
@@ -83,7 +84,7 @@ def main():
 	network.stim_freq_Ninp = 130*Hz 	# Input pop.
 	network.stim_freq_teach = 300*Hz 	# Teacher pop.
 	network.stim_freq_spont = 1*Hz 		# Spontaneous pop.
-	network.stim_freq_i = 250*Hz		# Inhib. pop.
+	network.stim_freq_i = 400*Hz		# Inhib. pop.
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
@@ -195,7 +196,7 @@ def main():
 
 			opt_counter += 1
 
-			# network.export_syn_matrix(name = 'training', opt = '_' + str(opt_counter) + '_', class1 = reshaped_c1, class2 = reshaped_c2)
+			network.export_syn_matrix(name = 'training', opt = '_' + str(opt_counter) + '_')
 
 	# ----------- Finalizing Training (saving network state) -----------
 
