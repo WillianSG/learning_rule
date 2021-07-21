@@ -61,7 +61,7 @@ def main():
 
 	# Learning Rule
 	network.plasticity_rule = 'LR3'
-	network.parameter_set = '1.0'
+	network.parameter_set = '1.C'
 	network.bistability = True
 
 	# Neurons
@@ -77,12 +77,12 @@ def main():
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 100*Hz 		# Input pop. - 60*Hz
+	network.stim_freq_Ninp = 130*Hz 		# Input pop. - 60*Hz
 	network.stim_freq_spont = 1*Hz 	# Spontaneous pop. - 1*Hz
 	network.stim_freq_i = 0*Hz			# Inhib. pop. - 5*Hz
 
 	if int(sys.argv[3]) == 1:
-		network.stim_freq_teach = 250*Hz 	# Teacher pop. - 200*Hz/0*Hz
+		network.stim_freq_teach = 300*Hz 	# Teacher pop. - 200*Hz/0*Hz
 	else:
 		network.stim_freq_teach = 0*Hz
 		network.stim_freq_i = 250*Hz			# Inhib. pop. - 5*Hz
@@ -117,9 +117,9 @@ def main():
 
 	# ----------- Loading dataset -----------
 
-	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/01Jun2021_17-32-36_dataset_Fusi-size_100.pickle'
+	sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_11-21-57_dataset_Fusi-size_4.pickle'
 
-	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
+	# sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
@@ -160,7 +160,7 @@ def main():
 
 		network.Input_to_Output.plastic = True
 
-		network.randomize_synaptic_weights() # ATTENTION - make sure r random
+		network.randomize_synaptic_weights()
 
 		# virtual input drives only active neurons
 		network.update_input_connectivity()

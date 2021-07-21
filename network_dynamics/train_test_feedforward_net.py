@@ -64,7 +64,7 @@ def main():
 
 	# Learning Rule
 	network.plasticity_rule = 'LR3'
-	network.parameter_set = '1.0'
+	network.parameter_set = '1.C'
 	network.bistability = True
 
 	# Neurons
@@ -80,8 +80,8 @@ def main():
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 100*Hz 	# Input pop.
-	network.stim_freq_teach = 250*Hz 	# Teacher pop.
+	network.stim_freq_Ninp = 130*Hz 	# Input pop.
+	network.stim_freq_teach = 300*Hz 	# Teacher pop.
 	network.stim_freq_spont = 1*Hz 		# Spontaneous pop.
 	network.stim_freq_i = 250*Hz		# Inhib. pop.
 
@@ -119,8 +119,8 @@ def main():
 
 	# ----------- Loading dataset -----------
 
-	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/12Jul2021_12-40-29_dataset_Fusi-size_2.pickle'
-	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
+	sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_13-09-12_dataset_Fusi-size_10.pickle'
+	# sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
@@ -130,7 +130,8 @@ def main():
 
 	patterns_avg_filename = meta_data['timestamp'] +  '_dataset_size_' + str(meta_data['dataset_size']) + '_summed_patterns.pickle'
 
-	dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
+	# dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
+	dataset_patterns_avg = '/home/p302242/PhD_codes/learning_rule/dataset_F/' + patterns_avg_filename
 
 	with open(dataset_patterns_avg,'rb') as f:(
 		reshaped_c1,
@@ -162,6 +163,7 @@ def main():
 
 	network.Input_to_Output.plastic = True
 
+	opt_counter = 0
 	for epoch in range(1, num_epochs+1):
 		
 		epoch_ids_list = make_ids_traning_list(
@@ -191,12 +193,18 @@ def main():
 
 			total_sim_t += network.t_run
 
+			opt_counter += 1
+
+			# network.export_syn_matrix(name = 'training', opt = '_' + str(opt_counter) + '_', class1 = reshaped_c1, class2 = reshaped_c2)
+
 	# ----------- Finalizing Training (saving network state) -----------
 
 	# 6 - binarize weights based on synaptic internal state variable
 	network.binarize_syn_matrix()
 
-	network.export_syn_matrix(name = 'trained', class1 = reshaped_c1, class2 = reshaped_c2)
+	network.export_syn_matrix(name = 'trained_withClasses_', class1 = reshaped_c1, class2 = reshaped_c2)
+
+	network.export_syn_matrix(name = 'trained')
 
 	# 6.1 - turning plasticity OFF for testing
 	network.Input_to_Output.plastic = False
@@ -213,6 +221,8 @@ def main():
 	out_winning_response_per_pattern = []
 
 	presentation_time = float(sys.argv[1])*second
+	# presentation_time = 2*second
+	# network.t_run = 2*second
 
 	correct_response = 0
 	wrong_response = 0

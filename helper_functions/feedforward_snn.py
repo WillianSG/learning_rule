@@ -642,9 +642,9 @@ class FeedforwardNetwork:
 		plt.yticks([])
 
 		if len(class1) != 0:
-			plt.imshow(class1, cmap = 'Greys', interpolation = 'none')
+			plt.imshow(class1, cmap = 'Greens', interpolation = 'none')
 
-			plt.imshow(np.array(out_syn[0]).reshape(20, 20), cmap = 'Blues', interpolation = 'none', alpha = 0.3)
+			plt.imshow(np.array(out_syn[0]).reshape(20, 20), cmap = 'Reds', interpolation = 'none', alpha = 0.3)
 		else:
 			plt.imshow(np.array(out_syn[0]).reshape(20, 20), cmap = 'Greys', interpolation = 'none')
 
@@ -658,7 +658,7 @@ class FeedforwardNetwork:
 		plt.yticks([])
 
 		if len(class2) != 0:
-			plt.imshow(class2, cmap = 'Greys', interpolation = 'none')
+			plt.imshow(class2, cmap = 'Greens', interpolation = 'none')
 
 			plt.imshow(np.array(out_syn[1]).reshape(20, 20), cmap = 'Reds', interpolation = 'none', alpha = 0.3)
 		else:
@@ -667,6 +667,8 @@ class FeedforwardNetwork:
 		# ----------- Saving -----------
 
 		plt.savefig(file_name, bbox_inches = 'tight', dpi = 200)
+
+		plt.close()
 
 		print('\n[ synaptic matrix exported ]\n')
 

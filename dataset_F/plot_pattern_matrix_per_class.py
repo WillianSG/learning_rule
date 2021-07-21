@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import pickle, os
 
-with open('12Jul2021_18-25-21_dataset_Fusi-size_10.pickle','rb') as f:(
+with open('21Jul2021_13-09-12_dataset_Fusi-size_10.pickle','rb') as f:(
 	meta_data,
 	full_dataset) = pickle.load(f)
 
@@ -56,7 +56,7 @@ f2_ax1 = fig0.add_subplot(spec2[0, 0])
 
 reshaped_c1 = class1_patterns_sum.reshape(20, 20)
 
-plt.title('Class 1', size = 10)
+plt.title('Class 1 | even IDs', size = 10)
 
 plt.xticks([])
 plt.yticks([])
@@ -68,7 +68,7 @@ f2_ax2 = fig0.add_subplot(spec2[1, 0])
 
 reshaped_c2 = class2_patterns_sum.reshape(20, 20)
 
-plt.title('Class 2', size = 10)
+plt.title('Class 2| odd IDs', size = 10)
 
 plt.imshow(reshaped_c2, cmap = 'Greys', interpolation = 'none')
 

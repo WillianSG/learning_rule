@@ -2,6 +2,12 @@
 """
 @author: wgirao
 @based-on: asonntag
+
+Comments:
+- pre_rate = int(sys.argv[1])
+- post_rate = int(sys.argv[2])
+- num_sim = int(sys.argv[3])
+- parameter_set = str(sys.argv[4])
 """
 import setuptools
 import os, sys, pickle
@@ -64,7 +70,7 @@ parameter_set = str(sys.argv[4])
 exp_type = 'rates' # 'showcase', 'rates'
 
 # Simulation run variables
-dt_resolution = 0.01 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
+dt_resolution = 0.001 # = 0.0001 sconds (0.1ms) | step of simulation time step resolution
 
 t_run = 1 # simulation time (seconds)
 
@@ -74,8 +80,8 @@ int_meth_syn = 'euler' # Synaptic integration method
 
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2'
 
-bistability = False
-stoplearning = True
+bistability = True
+stoplearning = False
 
 [tau_xpre,
 	tau_xpost,
@@ -173,6 +179,8 @@ Pre_Post = Synapses(
 	name = 'Pre_Post')
 
 Pre_Post.connect(j = 'i')
+
+Pre_Post.plastic = True
 
 Pre_Post.rho = rho_init
 Pre_Post.w = w_init

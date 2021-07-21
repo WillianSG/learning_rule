@@ -6,8 +6,8 @@ barWidth = 0.25
 fig = plt.subplots(figsize =(12, 8))
  
 # set height of bar
-correct = [5, 5, 1, 11]
-wrong = [5, 5, 1, 9]
+correct = [10, , , ]
+wrong = [10, , , ]
  
 # Set position of bar on X axis
 br1 = np.arange(len(correct))
