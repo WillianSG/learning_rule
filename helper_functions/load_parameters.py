@@ -71,39 +71,7 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5, max_w 
 			thr_post = 0.4 # threshold for x_post
 			thr_pre = 0.2 # threshold for x_pre
 			rho_neg = -0.05 # negative efficacy change
-			rho_neg2 = rho_neg # additional negative efficacy change 
-		elif parameter_set =='2.2':
-			tau_xpre = 13*ms # time constant x_pre 
-			tau_xpost = 33*ms # time constant x_post
-			xpre_factor = 0.013 # scaling factor positive efficacy change
-			thr_post = 0.4 #0.4# threshold for x_post
-			thr_pre = 0.5 # threshold for x_pre
-			rho_neg = -0.0008 # -0.008
-			rho_neg2 = rho_neg 
-		elif parameter_set =='2.3':
-			tau_xpre = 13*ms # time constant x_pre 
-			tau_xpost = 33*ms # time constant x_post
-			xpre_factor = 0.017 # scaling factor positive efficacy change
-			thr_post = 0.4 #0.4# threshold for x_post
-			thr_pre = 0.5 # threshold for x_pre
-			rho_neg = -0.00055 # negative efficacy change
-			rho_neg2 = rho_neg*10 # additional negative efficacy change 
-		elif parameter_set =='2.4':
-			tau_xpre = 13*ms # time constant x_pre 
-			tau_xpost = 33*ms # time constant x_post
-			xpre_factor = 0.21 # scaling factor positive efficacy change
-			thr_post = 0.4 #0.4# threshold for x_post
-			thr_pre = 0.5 # threshold for x_pre
-			rho_neg = -0.008 # negative efficacy change
-			rho_neg2 = rho_neg*10 # additional negative efficacy change
-		elif parameter_set =='2.5':
-			tau_xpre = 13*ms # time constant x_pre 
-			tau_xpost = 33*ms # time constant x_post
-			xpre_factor = 0.08 # scaling factor positive efficacy change
-			thr_post = 0.4 #0.4# threshold for x_post
-			thr_pre = 0.5 # threshold for x_pre
-			rho_neg = -0.008 # -0.008
-			rho_neg2 = rho_neg
+			rho_neg2 = rho_neg # additional negative efficacy change
 	elif plasticity_rule == 'LR1':
 		if parameter_set == '1.1':
 			tau_xpre = 22*ms
@@ -164,12 +132,12 @@ def load_rule_params(plasticity_rule, parameter_set, efficacy_init = 0.5, max_w 
 			xpre_factor = 0.01 #
 			w_max = 2.5*mV
 			# Stop-learning parameters
-			tau_xstop = 300*ms
-			xstop_jump = 0.09
+			tau_xstop = 450*ms
+			xstop_jump = 0.1
 			xstop_max = 1.0
 			xstop_min = 0.0
-			thr_stop_h = 0.6
-			thr_stop_l = 0.25
+			thr_stop_h = 0.7
+			thr_stop_l = 0.2
 		elif parameter_set == '1.1':
 			tau_xpre = 30*ms 
 			tau_xpost = 45*ms 
