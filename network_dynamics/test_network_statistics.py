@@ -71,23 +71,25 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.teacher_to_Eout_w = 40*mV 	# Teacher to Output - 20*mV
-	network.I_to_Eout_w = 40*mV			# Inhibitory to Output - 30*mV
+	network.teacher_to_Eout_w = 10*mV 	# Teacher to Output - 20*mV
+	network.I_to_Eout_w = 30*mV			# Inhibitory to Output - 30*mV
 
 	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input - 100*mV
 	network.Input_to_I_w = 20*mV 		# 'virtual inh.' to Inhibitory - 100*mV
 	network.spont_to_input_w = 100*mV 	# Spontaneous to Input - 100*mV
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 130*Hz 		# Input pop. - 60*Hz
-	network.stim_freq_spont = 1*Hz 	# Spontaneous pop. - 1*Hz
+	network.stim_freq_Ninp = 75*Hz 		# Input pop. - 60*Hz
+	network.stim_freq_spont = 3*Hz 	# Spontaneous pop. - 1*Hz
 	network.stim_freq_i = 0*Hz			# Inhib. pop. - 5*Hz
 
 	if int(sys.argv[3]) == 1:
-		network.stim_freq_teach = 300*Hz 	# Teacher pop. - 200*Hz/0*Hz
+		network.stim_freq_teach = 0*Hz 	# Teacher pop. - 200*Hz/0*Hz
+	elif int(sys.argv[3]) == 2:
+		network.stim_freq_teach = 600*Hz 	# Teacher pop. - 200*Hz/0*Hz
 	else:
 		network.stim_freq_teach = 0*Hz
-		network.stim_freq_i = 400*Hz			# Inhib. pop. - 5*Hz
+		network.stim_freq_i = 600*Hz			# Inhib. pop. - 5*Hz
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
@@ -119,9 +121,9 @@ def main():
 
 	# ----------- Loading dataset -----------
 
-	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_11-21-57_dataset_Fusi-size_4.pickle'
+	sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_11-21-57_dataset_Fusi-size_4.pickle'
 
-	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
+	# sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
@@ -154,8 +156,10 @@ def main():
 	print('spont. input (Hz/w) : ', network.stim_freq_spont, '/', network.w_max)
 	print('teacher (Hz/w)      : ', network.stim_freq_teach, '/', network.teacher_to_Eout_w)
 	print('inhibition (Hz/w)   : ', network.stim_freq_i, '/', network.I_to_Eout_w)
-	print('\nnetwork w_max     : ', network.w_max, '\n')
-	print('\nt run             : ', network.t_run, '\n')
+	print('\nnetwork w_max       : ', network.w_max, '\n')
+	print('\nt run               : ', network.t_run, '\n')
+
+	print('\nstop- jump          :', network.xstop_jump)
 	print('======================================================\n')
 
 	for exposure_n in range(0, sim_repetitions):
@@ -268,14 +272,19 @@ def main():
 
 	# pot/dep change magnitudes percentage
 	active_pot_magni_avg = np.round((active_pot_magni_avg/active_pot_magni_counter), 1)
-	active_dep_magni_avg = np.round((active_dep_magni_avg/active_dep_magni_counter), 1)
+
+	if active_dep_magni_counter > 0:
+		active_dep_magni_avg = np.round((active_dep_magni_avg/active_dep_magni_counter), 1)
+	else:
+		active_dep_magni_avg = 0
+
 	spont_pot_magni_avg = np.round((spont_pot_magni_avg/spont_pot_magni_counter), 1)
 	spont_dep_magni_avg = np.round((spont_dep_magni_avg/spont_dep_magni_counter), 1)
 
-	active_pot_magni_avg = active_pot_magni_avg/sim_repetitions
-	active_dep_magni_avg = active_dep_magni_avg/sim_repetitions
-	spont_pot_magni_avg = spont_pot_magni_avg/sim_repetitions
-	spont_dep_magni_avg = spont_dep_magni_avg/sim_repetitions
+	active_pot_magni_avg = np.round(active_pot_magni_avg/sim_repetitions, 1)
+	active_dep_magni_avg = np.round(active_dep_magni_avg/sim_repetitions, 1)
+	spont_pot_magni_avg = np.round(spont_pot_magni_avg/sim_repetitions, 1)
+	spont_dep_magni_avg = np.round(spont_dep_magni_avg/sim_repetitions, 1)
 
 
 	# active
@@ -454,7 +463,9 @@ def main():
 	xpre_inactive_avg = np.zeros(len(xpre_all[0][0]))
 	
 	xpost_avg = np.zeros(len(xpost_all[0][0]))
-	xstop_avg = np.zeros(len(xstop_all[0][0]))
+
+	if network.stoplearning:
+		xstop_avg = np.zeros(len(xstop_all[0][0]))
 
 	for a in range(0, sim_repetitions):
 
@@ -477,7 +488,8 @@ def main():
 
 	# avg Ca of (single) output neuron
 	xpost_avg = xpost_avg/sim_repetitions
-	xstop_avg = xstop_avg/sim_repetitions
+	if network.stoplearning:
+		xstop_avg = xstop_avg/sim_repetitions
 
 	# ----------- misc -----------
 
@@ -676,7 +688,7 @@ def main():
 	if network.stoplearning:
 		f2_ax11 = fig0.add_subplot(spec2[5, 1])
 
-		plt.plot(sim_t_array, xpost_avg, color = 'lightblue', linestyle = 'solid', label = r'$Ca^{2+}_{stop}$')
+		plt.plot(sim_t_array, xstop_avg, color = 'lightblue', linestyle = 'solid', label = r'$Ca^{2+}_{stop}$')
 
 		plt.hlines(network.thr_stop_h, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{stop}^{h}$')
 
