@@ -272,6 +272,11 @@ def main():
 	spont_pot_magni_avg = np.round((spont_pot_magni_avg/spont_pot_magni_counter), 1)
 	spont_dep_magni_avg = np.round((spont_dep_magni_avg/spont_dep_magni_counter), 1)
 
+	active_pot_magni_avg = active_pot_magni_avg/sim_repetitions
+	active_dep_magni_avg = active_dep_magni_avg/sim_repetitions
+	spont_pot_magni_avg = spont_pot_magni_avg/sim_repetitions
+	spont_dep_magni_avg = spont_dep_magni_avg/sim_repetitions
+
 
 	# active
 	active_pot_syn_start_avg = active_pot_syn_start_avg/sim_repetitions
