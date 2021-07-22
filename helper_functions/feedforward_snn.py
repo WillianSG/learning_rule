@@ -436,12 +436,21 @@ class FeedforwardNetwork:
 			dt = self.mon_dt,
 			name = 'I_stamon')
 
-		self.Input_to_Output_stamon = StateMonitor(
-			source = self.Input_to_Output,
-			variables = ('w', 'rho', 'xpre', 'xpost'),
-			record = True,
-			dt = self.mon_dt,
-			name = 'Input_to_Output_stamon')
+		if self.stoplearning:
+			self.Input_to_Output_stamon = StateMonitor(
+				source = self.Input_to_Output,
+				variables = ('w', 'rho', 'xpre', 'xpost', 'xstop'),
+				record = True,
+				dt = self.mon_dt,
+				name = 'Input_to_Output_stamon')
+		else:
+			self.Input_to_Output_stamon = StateMonitor(
+				source = self.Input_to_Output,
+				variables = ('w', 'rho', 'xpre', 'xpost'),
+				record = True,
+				dt = self.mon_dt,
+				name = 'Input_to_Output_stamon')
+
 
 		self.I_Eout_stamon = StateMonitor(
 			source = self.I_Eout,
