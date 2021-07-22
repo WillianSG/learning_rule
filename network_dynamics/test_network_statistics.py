@@ -36,6 +36,7 @@ sys.path.append(os.path.join(parent_dir, dataset_dir))
 from feedforward_snn import FeedforwardNetwork
 from histograms_firing_rate import *
 from separate_ids_tpoints_active_spont import *
+from magnitude_change_percentage import *
 
 def main():
 	sim_repetitions = int(sys.argv[2])
@@ -118,9 +119,9 @@ def main():
 
 	# ----------- Loading dataset -----------
 
-	sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_11-21-57_dataset_Fusi-size_4.pickle'
+	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_11-21-57_dataset_Fusi-size_4.pickle'
 
-	# sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
+	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
@@ -133,6 +134,7 @@ def main():
 	# arrays for avgs
 	rho_all = []
 	xpost_all = []
+	xstop_all = []
 	xpre_all = []
 
 	s_tpoints_input_all = []
@@ -171,6 +173,8 @@ def main():
 		# ----------- Storing simulation data -----------
 		rho_all.append(network.Input_to_Output_stamon.rho)
 		xpost_all.append(network.Input_to_Output_stamon.xpost)
+		if network.stoplearning:
+			xstop_all.append(network.Input_to_Output_stamon.xstop)
 		xpre_all.append(network.Input_to_Output_stamon.xpre)
 
 		# input layer (spk times/ids)
@@ -197,16 +201,24 @@ def main():
 	# active
 	active_pot_syn_start_avg = 0
 	active_pot_syn_end_avg = 0
+	active_pot_magni_avg = 0
+	active_pot_magni_counter = 0
 
 	active_dep_syn_start_avg = 0
 	active_dep_syn_end_avg = 0
+	active_dep_magni_avg = 0
+	active_dep_magni_counter = 0
 
 	# spontaneous
 	spont_pot_syn_start_avg = 0
 	spont_pot_syn_end_avg = 0
+	spont_pot_magni_avg = 0
+	spont_pot_magni_counter = 0
 
 	spont_dep_syn_start_avg = 0
 	spont_dep_syn_end_avg = 0
+	spont_dep_magni_avg = 0
+	spont_dep_magni_counter = 0
 
 	for i in range(0, sim_repetitions):
 		for j in range(0, network.N_e):
@@ -218,8 +230,18 @@ def main():
 
 				if rho_all[i][j][-1] > 0.5:
 					active_pot_syn_end_avg += 1
+
+					active_pot_magni_counter += 1
+					active_pot_magni_avg += magnitude_change_percentage(
+						initial_val = rho_all[i][j][0],
+						final_val = rho_all[i][j][-1])
 				else:
 					active_dep_syn_end_avg += 1
+
+					active_dep_magni_counter += 1
+					active_dep_magni_avg += magnitude_change_percentage(
+						initial_val = rho_all[i][j][0],
+						final_val = rho_all[i][j][-1])
 			else:
 				if rho_all[i][j][0] > 0.5:
 					spont_pot_syn_start_avg += 1
@@ -228,11 +250,28 @@ def main():
 
 				if rho_all[i][j][-1] > 0.5:
 					spont_pot_syn_end_avg += 1
+
+					spont_pot_magni_counter += 1
+					spont_pot_magni_avg += magnitude_change_percentage(
+						initial_val = rho_all[i][j][0],
+						final_val = rho_all[i][j][-1])
 				else:
 					spont_dep_syn_end_avg += 1
 
+					spont_dep_magni_counter += 1
+					spont_dep_magni_avg += magnitude_change_percentage(
+						initial_val = rho_all[i][j][0],
+						final_val = rho_all[i][j][-1])
+
 	active_num = len(network.stimulus_ids_Ninp)
 	spont_num = network.N_e - active_num
+
+	# pot/dep change magnitudes percentage
+	active_pot_magni_avg = np.round((active_pot_magni_avg/active_pot_magni_counter), 1)
+	active_dep_magni_avg = np.round((active_dep_magni_avg/active_dep_magni_counter), 1)
+	spont_pot_magni_avg = np.round((spont_pot_magni_avg/spont_pot_magni_counter), 1)
+	spont_dep_magni_avg = np.round((spont_dep_magni_avg/spont_dep_magni_counter), 1)
+
 
 	# active
 	active_pot_syn_start_avg = active_pot_syn_start_avg/sim_repetitions
@@ -410,10 +449,14 @@ def main():
 	xpre_inactive_avg = np.zeros(len(xpre_all[0][0]))
 	
 	xpost_avg = np.zeros(len(xpost_all[0][0]))
+	xstop_avg = np.zeros(len(xstop_all[0][0]))
 
 	for a in range(0, sim_repetitions):
 
 		xpost_avg += xpost_all[a][0]
+		
+		if network.stoplearning:
+			xstop_avg += xstop_all[a][0]
 
 		for b in range(0, network.N_e):
 			if b in network.stimulus_ids_Ninp:
@@ -429,6 +472,7 @@ def main():
 
 	# avg Ca of (single) output neuron
 	xpost_avg = xpost_avg/sim_repetitions
+	xstop_avg = xstop_avg/sim_repetitions
 
 	# ----------- misc -----------
 
@@ -437,8 +481,28 @@ def main():
 
 	# ============ plotting simulations results ============
 
-	fig0 = plt.figure(constrained_layout = True)
-	spec2 = gridspec.GridSpec(ncols = 2, nrows = 5, figure = fig0)
+	fig0 = plt.figure(constrained_layout = True, figsize = (8, 10))
+
+	if network.stoplearning:
+		widths = [8, 8]
+		heights = [8, 8, 8, 8, 8, 8]
+
+		spec2 = gridspec.GridSpec(
+			ncols = 2, 
+			nrows = 6, 
+			width_ratios = widths,
+			height_ratios = heights,
+			figure = fig0)
+	else:
+		widths = [8, 8]
+		heights = [8, 8, 8, 8, 8]
+
+		spec2 = gridspec.GridSpec(
+			ncols = 2, 
+			nrows = 5, 
+			width_ratios = widths,
+			height_ratios = heights,
+			figure = fig0)
 
 	fig0.suptitle('rule ' + network.plasticity_rule + '/param. ' + network.parameter_set, fontsize = 8)
 
@@ -519,20 +583,31 @@ def main():
 	# ----------- avg pot/dep percentages / active (start) -----------
 	f2_ax5 = fig0.add_subplot(spec2[2, 0])
 
-	f2_ax5.pie([active_pot_syn_start_perc, active_dep_syn_start_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['orangered', 'royalblue'])
+	f2_ax5.pie(
+		[active_pot_syn_start_perc, active_dep_syn_start_perc], 
+		autopct = '%1.1f%%', 
+		shadow = True, 
+		startangle = 90, 
+		colors = ['orangered', 'royalblue'])
 
 	f2_ax5.axis('equal')
 
-	plt.title('Pot. vs Dep. / active (start)', size = 8)
+	plt.title('Pot. vs Dep. | active (start)', size = 8)
 
 	# ----------- avg pot/dep percentages / active (end) -----------
 	f2_ax6 = fig0.add_subplot(spec2[2, 1])
 
-	f2_ax6.pie([active_pot_syn_end_perc, active_dep_syn_end_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['orangered', 'royalblue'])
+	f2_ax6.pie(
+		[active_pot_syn_end_perc, active_dep_syn_end_perc], 
+		autopct = '%1.1f%%', 
+		shadow = True, 
+		startangle = 90, 
+		colors = ['orangered', 'royalblue'],
+		labels = ['+ (' + str(active_pot_magni_avg) + '%)', '- (' + str(active_dep_magni_avg) + '%)'])
 
 	f2_ax6.axis('equal')
 
-	plt.title('Pot. vs Dep. / active (end)', size = 8)
+	plt.title('Pot. vs Dep. | active (end)', size = 8)
 
 	# ----------- avg pot/dep percentages / spont (start) -----------
 	f2_ax7 = fig0.add_subplot(spec2[3, 0])
@@ -541,16 +616,22 @@ def main():
 
 	f2_ax7.axis('equal')
 
-	plt.title('Pot. vs Dep. / spont (start)', size = 8)
+	plt.title('Pot. vs Dep. | spont (start)', size = 8)
 
 	# ----------- avg pot/dep percentages / spont (end) -----------
 	f2_ax8 = fig0.add_subplot(spec2[3, 1])
 
-	f2_ax8.pie([spont_pot_syn_end_perc, spont_dep_syn_end_perc], autopct = '%1.1f%%', shadow = True, startangle = 90, colors = ['orangered', 'royalblue'])
+	f2_ax8.pie(
+		[spont_pot_syn_end_perc, spont_dep_syn_end_perc], 
+		autopct = '%1.1f%%', 
+		shadow = True, 
+		startangle = 90, 
+		colors = ['orangered', 'royalblue'],
+		labels = ['+ (' + str(spont_pot_magni_avg) + '%)', '- (' + str(spont_dep_magni_avg) + '%)'])
 
 	f2_ax8.axis('equal')
 
-	plt.title('Pot. vs Dep. / spont (end)', size = 8)
+	plt.title('Pot. vs Dep. | spont (end)', size = 8)
 
 	# ----------- avg firing frequency inhibitory -----------
 	f2_ax9 = fig0.add_subplot(spec2[4, 0])
@@ -585,6 +666,23 @@ def main():
 
 	plt.ylabel('freq (Hz)', size = 6)
 	plt.xlabel('time (s)', size = 6)
+
+	# ----------- avg Ca2+ post stop-learning -----------
+	if network.stoplearning:
+		f2_ax11 = fig0.add_subplot(spec2[5, 1])
+
+		plt.plot(sim_t_array, xpost_avg, color = 'lightblue', linestyle = 'solid', label = r'$Ca^{2+}_{stop}$')
+
+		plt.hlines(network.thr_stop_h, 0, sim_t_array[-1], color = 'k', linestyle = '--', label = '$\\theta_{stop}^{h}$')
+
+		plt.hlines(network.thr_stop_l, 0, sim_t_array[-1], color = 'k', linestyle = '-.', label = '$\\theta_{stop}^{l}$')
+
+		f2_ax11.legend(prop = {'size': 8})
+
+		f2_ax11.set_ylim([0.0, 1.0])
+
+		plt.ylabel(r'$Ca^{2+}$' + ' (a.u.)', size = 6)
+		plt.xlabel('time (s)', size = 6)
 
 	# --------------------------------------------
 
