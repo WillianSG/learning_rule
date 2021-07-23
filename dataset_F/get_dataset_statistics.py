@@ -89,19 +89,22 @@ freq_class2_xticks = np.round(
 	1.0-(np.mean(frequency_class2_unique)/frequency_class2_unique[-1]),
 	1)
 
-# ----------- Avg matrix IDs freq normalized -----------
-# class1_patterns_sum = class1_patterns_sum/max(frequency_class1)
-# class2_patterns_sum = class2_patterns_sum/max(frequency_class2)
+# ----------- IDs shared by both classes -----------
+shared_IDs_between_classes = np.intersect1d(unique_class1, unique_class2)
+
+total = (len(unique_class1) + len(unique_class2))/2
+
+shared_percentage = np.round(((len(shared_IDs_between_classes)*100)/total), 1)
 
 # ========================== plotting ==========================
 
-fig0 = plt.figure(constrained_layout = True, figsize = (10, 6))
+fig0 = plt.figure(constrained_layout = True, figsize = (12, 6))
 
-widths = [8, 8, 8]
+widths = [8, 8, 8, 8]
 heights = [8, 8]
 
 spec2 = gridspec.GridSpec(
-	ncols = 3, 
+	ncols = 4, 
 	nrows = 2, 
 	width_ratios = widths,
 	height_ratios = heights,
@@ -247,5 +250,19 @@ plt.xticks(np.arange(
 
 plt.xlabel('Frequency', size = 8)
 plt.ylabel('IDs count', size = 8)
+
+# ----------- test -----------
+
+f2_ax6 = fig0.add_subplot(spec2[:, 3])
+
+plt.title('Shared IDs among classes', size = 8)
+
+f2_ax6.pie(
+	[shared_percentage, np.round((100 - shared_percentage), 1)], 
+	autopct = '%1.1f%%', 
+	shadow = True, 
+	startangle = 90, 
+	colors = ['orange', 'lightgray'],
+	labels = ['shared', 'unique'])
 
 plt.show()
