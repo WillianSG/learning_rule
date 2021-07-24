@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import pickle, os, sys
 import pylab as plab
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 helper_dir = 'helper_functions'
 
@@ -53,7 +54,7 @@ for pattern in full_dataset:
 		class1_patterns_sum += np.array(pattern)
 	else:
 		class2_IDs_list = np.concatenate(
-			(class1_IDs_list, get_ids_from_binary_pattern(binarized_pattern = pattern)), 
+			(class2_IDs_list, get_ids_from_binary_pattern(binarized_pattern = pattern)), 
 			axis = None)
 
 
@@ -96,72 +97,125 @@ total = (len(unique_class1) + len(unique_class2))/2
 
 shared_percentage = np.round(((len(shared_IDs_between_classes)*100)/total), 1)
 
+sharedIDs_matrix = np.zeros(len(full_dataset[0]))
+
+# matrix of shared IDs between classes
+for x in range(0, len(sharedIDs_matrix)):
+	if x in shared_IDs_between_classes:
+		# ---- find ID index
+		idx_c1 = np.where(unique_class1 == x)[0][0]
+		idx_c2 = np.where(unique_class2 == x)[0][0]
+
+		sharedIDs_matrix[x] = frequency_class1[idx_c1] + frequency_class2[idx_c2]
+
+# ----------- Patterns with shared/non-shared IDs per class -----------
+class1_patterns_sum_sharedIDs = np.zeros(len(full_dataset[0]))
+class2_patterns_sum_sharedIDs = np.zeros(len(full_dataset[0]))
+
+class1_patterns_sum_nonSharedIDs = np.zeros(len(full_dataset[0]))
+class2_patterns_sum_nonSharedIDs = np.zeros(len(full_dataset[0]))
+
+pattern_id = 0
+for pattern in full_dataset:
+	if (pattern_id % 2) == 0:
+		IDs_temp = get_ids_from_binary_pattern(binarized_pattern = pattern)
+
+		if len(np.intersect1d(IDs_temp, class2_IDs_list)) == 0:
+			class1_patterns_sum_nonSharedIDs += np.array(pattern)
+	else:
+		IDs_temp = get_ids_from_binary_pattern(binarized_pattern = pattern)
+
+		if len(np.intersect1d(IDs_temp, class1_IDs_list)) == 0:
+			class2_patterns_sum_nonSharedIDs += np.array(pattern)
+
+
+	pattern_id += 1
+
 # ========================== plotting ==========================
 
-fig0 = plt.figure(constrained_layout = True, figsize = (12, 6))
+plot_title_size = 8
 
-widths = [8, 8, 8, 8]
+fig0 = plt.figure(constrained_layout = True, figsize = (13, 6))
+
+widths = [8, 8, 8, 8, 8]
 heights = [8, 8]
 
 spec2 = gridspec.GridSpec(
-	ncols = 4, 
+	ncols = 5, 
 	nrows = 2, 
 	width_ratios = widths,
 	height_ratios = heights,
 	figure = fig0)
 
-fig0.suptitle('Avg Pattern Matrices | dataset size ' + str(meta_data['dataset_size']), fontsize = 8)
+fig0.suptitle('Dataset Metadata Summary | size: ' + str(meta_data['dataset_size']) + ', ID: ' + str(meta_data['timestamp']), fontsize = 10)
 
 # ----------- Class 1 | avg matrix -----------
 f2_ax1 = fig0.add_subplot(spec2[0, 0])
 
 reshaped_c1 = class1_patterns_sum.reshape(20, 20)
 
-plt.title('Class 1 | even IDs', size = 10)
+plt.title('Class 1 (even IDs)', size = plot_title_size)
 
 plt.xticks([])
 plt.yticks([])
 
 shw_c1 = plt.imshow(reshaped_c1, cmap = 'Greys', interpolation = 'none')
 
-cbar_c1 = plt.colorbar(shw_c1)
+divider = make_axes_locatable(f2_ax1)
+cax = divider.new_vertical(size = '5%', pad = 0.1, pack_start = True)
+fig0.add_axes(cax)
+cbar_c1 = plt.colorbar(shw_c1, cax = cax, orientation = 'horizontal')
 
-cbar_c1_labels = np.arange(
-	0.0, 
-	max(class1_patterns_sum)+1.0,
-	step = 1.0)
+# cbar_c1 = plt.colorbar(shw_c1)
+
+# cbar_c1_labels = np.arange(
+# 	0.0, 
+# 	max(class1_patterns_sum)+1.0,
+# 	step = 1.0)
+
+cbar_c1_labels = np.unique(
+	class1_patterns_sum, 
+	return_counts = False)
 
 cbar_c1.set_ticks(cbar_c1_labels)
-
-plt.grid(True, color = 'red', linestyle = '-.', linewidth = 2)
 
 # ----------- Class 2 | avg matrix -----------
 f2_ax2 = fig0.add_subplot(spec2[1, 0])
 
 reshaped_c2 = class2_patterns_sum.reshape(20, 20)
 
-plt.title('Class 2| odd IDs', size = 10)
+plt.title('Class 2 (odd IDs)', size = plot_title_size)
 
 plt.xticks([])
 plt.yticks([])
 
 shw_c2 = plt.imshow(reshaped_c2, cmap = 'Greys', interpolation = 'none')
-cbar_c2 = plt.colorbar(shw_c2)
 
-cbar_c2_labels = np.arange(
-	0.0, 
-	max(class2_patterns_sum)+1.0,
-	step = 1.0)
+divider = make_axes_locatable(f2_ax2)
+cax = divider.new_vertical(size = '5%', pad = 0.1, pack_start = True)
+fig0.add_axes(cax)
+cbar_c2 = plt.colorbar(shw_c2, cax = cax, orientation = 'horizontal')
+
+# cbar_c2 = plt.colorbar(shw_c2)
+
+# cbar_c2_labels = np.arange(
+# 	0.0, 
+# 	max(class2_patterns_sum)+1.0,
+# 	step = 1.0)
+
+cbar_c2_labels = np.unique(
+	class2_patterns_sum, 
+	return_counts = False)
 
 cbar_c2.set_ticks(cbar_c2_labels)
-
-plt.grid(True, color = 'red', linestyle = '-', linewidth = 1)
 
 # ----------- Class 1 | IDs histogram -----------
 
 f2_ax3 = fig0.add_subplot(spec2[0, 1])
 
 counts, bins = np.histogram(unique_class1, bins = num_bins)
+
+plt.title('Class 1 (even IDs)', size = plot_title_size)
 
 plt.hist(
 	unique_class1,
@@ -184,6 +238,8 @@ f2_ax4 = fig0.add_subplot(spec2[1, 1])
 
 counts, bins = np.histogram(unique_class2, bins = num_bins)
 
+plt.title('Class 2 (odd IDs)', size = plot_title_size)
+
 plt.hist(
 	unique_class2,
 	align = 'mid',
@@ -204,6 +260,8 @@ plt.ylabel('Frequency count', size = 8)
 f2_ax5 = fig0.add_subplot(spec2[0, 2])
 
 counts, bins = np.histogram(frequency_class1, bins = num_bins)
+
+plt.title('Class 1 (even IDs)', size = plot_title_size)
 
 plt.hist(
 	frequency_class1,
@@ -231,6 +289,8 @@ f2_ax6 = fig0.add_subplot(spec2[1, 2])
 
 counts, bins = np.histogram(frequency_class2, bins = num_bins)
 
+plt.title('Class 2 (odd IDs)', size = plot_title_size)
+
 plt.hist(
 	frequency_class2,
 	align = 'mid',
@@ -251,18 +311,55 @@ plt.xticks(np.arange(
 plt.xlabel('Frequency', size = 8)
 plt.ylabel('IDs count', size = 8)
 
-# ----------- test -----------
+# ----------- Shared IDs percentage -----------
 
 f2_ax6 = fig0.add_subplot(spec2[:, 3])
 
-plt.title('Shared IDs among classes', size = 8)
+plt.title('Shared IDs among classes', size = plot_title_size)
 
-f2_ax6.pie(
+patches, texts, a = f2_ax6.pie(
 	[shared_percentage, np.round((100 - shared_percentage), 1)], 
 	autopct = '%1.1f%%', 
 	shadow = True, 
-	startangle = 90, 
-	colors = ['orange', 'lightgray'],
-	labels = ['shared', 'unique'])
+	startangle = 140,
+	colors = ['mediumpurple', 'orchid'],
+	explode = (0.1, 0))
 
-plt.show()
+labels = ['shared', 'unique']
+
+plt.legend(patches, labels, loc = 'best')
+
+# ----------- Class 1 + 2 | avg matrix shared IDs -----------
+f2_ax7 = fig0.add_subplot(spec2[:, 4])
+
+plt.title('Shared IDs', size = plot_title_size)
+
+plt.xticks([])
+plt.yticks([])
+
+matrix = sharedIDs_matrix.reshape(20, 20)
+
+shw_s = plt.imshow(matrix, cmap = 'Greys', interpolation = 'none')
+
+divider = make_axes_locatable(f2_ax7)
+cax = divider.new_vertical(size = '5%', pad = 0.1, pack_start = True)
+fig0.add_axes(cax)
+cbar_s = plt.colorbar(shw_s, cax = cax, orientation = 'horizontal')
+
+cbar_s_labels = np.unique(
+	sharedIDs_matrix, 
+	return_counts = False)
+
+# cbar_s_labels = np.arange(
+# 	2.0, 
+# 	max(sharedIDs_matrix)+1.0,
+# 	step = 1.0)
+
+cbar_s.set_ticks(cbar_s_labels)
+
+fig0.suptitle('Dataset Metadata Summary | size: ' + str(meta_data['dataset_size']) + ', ID: ' + str(meta_data['timestamp']), fontsize = 10)
+
+plt.savefig(
+	str(meta_data['timestamp']) + '_s' + str(meta_data['dataset_size']) + '.png',
+	bbox_inches = 'tight', 
+	dpi = 200)
