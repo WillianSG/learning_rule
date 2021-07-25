@@ -162,7 +162,7 @@ def main():
 
 	print('\n====================== training ======================')
 
-	network.Input_to_Output.plastic = False
+	network.Input_to_Output.plastic = True
 
 	opt_counter = 0
 	for epoch in range(1, num_epochs+1):
@@ -172,8 +172,6 @@ def main():
 			epoch = epoch)
 
 		print(' \nepoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
-
-		epoch_ids_list = [0] # REMOVE
 		
 		for pattern_id in epoch_ids_list:
 			# 1 - select next pattern to be presented
@@ -192,7 +190,7 @@ def main():
 			network.update_input_connectivity()
 
 			# 2.1 - potentiate active ids and depresse spont. - FOR TESTING
-			network.set_active_input_w_potentiated()
+			# network.set_active_input_w_potentiated()
 
 			# 3 - simulate
 			network.run_net(report = None)
@@ -206,7 +204,7 @@ def main():
 			network.plot_MI_input_output(
 				start = 0*second,
 				binned_spks_t_windos = 5,
-				name = 'training', 
+				name = 'trainingMI', 
 				opt = '_' + str(opt_counter) + '_')
 
 	# # ----------- Finalizing Training (saving network state) -----------

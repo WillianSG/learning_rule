@@ -793,7 +793,10 @@ class FeedforwardNetwork:
 
 		plt.imshow(np.array(input_out_mi[1]).reshape(20, 20), cmap = 'Greys', interpolation = 'none')
 
-		plt.show()
+		file_name = os.path.join(self.simulation_path, 'out__Mmi_' + name + opt + '.png')
+
+		plt.savefig(file_name, bbox_inches = 'tight', dpi = 200)
+
 		plt.close()
 
 	def export_syn_matrix(self, name = 'none', opt = '', 
