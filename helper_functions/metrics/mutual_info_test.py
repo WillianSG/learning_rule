@@ -1,4 +1,4 @@
-# from pyentropy import DiscreteSystem
+from pyentropy import DiscreteSystem
 import numpy as np
 from brian2 import *
 import matplotlib.pyplot as plt
@@ -15,7 +15,7 @@ sys.path.append(parent_dir)
 
 from histograms_firing_rate_t_window import *
 
-def add_noise(spkts_array, low, high, max_time, shift = 'random'):
+def add_noise(spkts_array, low, high, max_time, noise_amount = 0.1, shift = 'random'):
 	altered_array = [0]*len(spkts_array)
 
 	if low == 0 and high == 0:
@@ -25,19 +25,27 @@ def add_noise(spkts_array, low, high, max_time, shift = 'random'):
 			rand_perc = np.random.uniform(low = low, high = high)
 			decision = np.random.uniform(low = 0.0, high = 1.0)
 
+			decision2 = np.round(np.random.uniform(low = 0.0, high = 1.0), 3)
+
 			target = spkts_array[x]
 			perc = np.round((target*rand_perc)/100, 3)
 
 			if shift == 'random':
-				if decision > 0.5:
-					altered_array[x] = np.round((spkts_array[x] + perc), 3)
-				else:
-					altered_array[x] = np.round((spkts_array[x] - perc), 3)
+				if decision2 <= noise_amount:
+					if decision > 0.5:
+						altered_array[x] = np.round((spkts_array[x] + perc), 3)
+					else:
+						altered_array[x] = np.round((spkts_array[x] - perc), 3)
 
-				if (altered_array[x] > max_time) or (altered_array[x] < 0):
+					if (altered_array[x] > max_time) or (altered_array[x] < 0):
+						altered_array[x] = spkts_array[x]
+				else:
 					altered_array[x] = spkts_array[x]
 			elif shift == 'positive':
-				altered_array[x] = np.round((spkts_array[x] + perc), 3)
+				if decision2 <= noise_amount:
+					altered_array[x] = np.round((spkts_array[x] + perc), 3)
+				else:
+					altered_array[x] = spkts_array[x]
 
 		final_array = np.unique(np.array(sorted(altered_array)))
 
@@ -45,9 +53,9 @@ def add_noise(spkts_array, low, high, max_time, shift = 'random'):
 
 # =========== generating spk times ===========
 
-sim_time_s = 1.0
+sim_time_s = float(sys.argv[1])
 
-binned_spks_t_windos = 10 # ms
+binned_spks_t_windos = int(sys.argv[2]) # ms
 
 start_scope()
 
@@ -57,7 +65,7 @@ input_neurons = NeuronGroup(
 	threshold = 'rand()<rates*dt', 
 	name = 'Input_to_I')
 
-input_neurons.rates[range(0, 2)] = 200*Hz
+input_neurons.rates[range(0, 2)] = 150*Hz
 
 spikemon = SpikeMonitor(input_neurons)
 
@@ -77,9 +85,10 @@ neuron2_spkts = np.array(neuron2_spkts)
 
 out_neuron_spkts = add_noise(
 	spkts_array = neuron1_spkts,
-	low = 0, 
-	high = 0, 
+	low = float(sys.argv[3]), 
+	high = float(sys.argv[4]), 
 	max_time = spikemon.t[x]/second,
+	noise_amount = float(sys.argv[5]),
 	shift = 'positive')
 
 # =========== generating histograms ===========
@@ -148,7 +157,7 @@ axis_label_size = 6
 
 fig0 = plt.figure(constrained_layout = True, figsize = (10, 4))
 
-widths = [8, 8]
+widths = [8, 2]
 heights = [0.1, 0.2, 0.1, 0.2, 0.1, 0.2]
 
 spec2 = gridspec.GridSpec(
@@ -321,9 +330,15 @@ mi_array = [ds_n1_no.I(), ds_n2_no.I()]
 
 barlist = plt.bar(labels_array, mi_array)
 
-barlist[0].set_color('r')
+barlist[1].set_color('r')
 
 plt.ylabel('MI (bits)', size = axis_label_size)
-plt.xlabel('Input neuron', size = axis_label_size)
+
+f2_ax7.set_ylim([0.0, 1.0])
+
+plt.yticks(np.arange(
+	0.0, 
+	1.2,
+	step = 0.2))
 
 plt.show()
