@@ -156,7 +156,7 @@ def main():
 		print(key, ':', value)
 	print('======================================================\n')
 
-	network.export_syn_matrix(name = 'initial')
+	# network.export_syn_matrix(name = 'initial')
 
 	# ----------- Training -----------
 
