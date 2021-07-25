@@ -22,6 +22,7 @@ from matplotlib import gridspec
 from load_parameters import *
 from load_synapse_model import *
 from load_stimulus_Ninp import *
+from histograms_firing_rate_t_window import *
 
 prefs.codegen.target = 'numpy'
 
@@ -351,6 +352,15 @@ class FeedforwardNetwork:
 
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
 
+	def set_active_input_w_potentiated(self):
+		for pre_id in range(0, len(self.E_inp)):
+			for post_id in range(0, len(self.E_outp)):
+				if isnan(self.M_syn[pre_id][post_id]) == False:
+					if pre_id in self.stimulus_ids_Ninp:
+						self.Input_to_Output.rho[pre_id, post_id] = 1.0
+					else:
+						self.Input_to_Output.rho[pre_id, post_id] = 0.0
+
 	def binarize_syn_matrix(self):
 		for pre_id in range(0, len(self.E_inp)):
 			for post_id in range(0, len(self.E_outp)):
@@ -614,6 +624,177 @@ class FeedforwardNetwork:
 			self.thr_stop_h,
 			self.thr_stop_l] = load_rule_params(self.plasticity_rule, 
 				self.parameter_set, max_w = self.w_max)
+
+	"""
+	start - must be *second
+	"""
+	def get_input_layer_spks_t_no_unit(self, start):
+		counter = 0 # marks where in the ids array the valid spk times start
+		for i in self.E_inp_spkmon.t[:]:
+			if i >= start:
+				break
+			counter += 1
+
+		temp_input_spks_t = [ [] for j in range(self.self.E_inp)]
+
+		# print('\n', self.E_inp_spkmon.t[:])
+		# print(self.E_inp_spkmon.i[:])
+
+		input_spks_t = self.E_inp_spkmon.t[:][self.E_inp_spkmon.t[:]>=start]
+		input_spks_ids = self.E_inp_spkmon.i[counter:]
+
+		index_counter = 0
+		for input_n_id in input_spks_ids:
+			temp_input_spks_t[input_n_id].append(
+				input_spks_t[index_counter]/second)
+
+			index_counter += 1
+
+		return temp_input_spks_t
+
+	"""
+	start - must be *second
+	"""
+	def get_out_neurons_spks_t_no_unit(self, start):
+		counter = 0 # marks where in the ids array the valid spk times start
+		for i in self.E_outp_spkmon.t[:]:
+			if i >= start:
+				break
+			counter += 1
+
+		temp_out_spks_t = [ [] for j in range(self.N_e_outp)]
+
+		# print('\n', self.E_outp_spkmon.t[:])
+		# print(self.E_outp_spkmon.i[:])
+
+		out_spks_t = self.E_outp_spkmon.t[:][self.E_outp_spkmon.t[:]>=start]
+		out_spks_ids = self.E_outp_spkmon.i[counter:]
+
+		index_counter = 0
+		for out_id in out_spks_ids:
+			temp_out_spks_t[out_id].append(out_spks_t[index_counter]/second)
+
+			index_counter += 1
+
+		return temp_out_spks_t
+
+	def get_MI(
+		self,
+		binary_binned_spk_count_X,
+		binary_binned_spk_count_Y):
+
+		ds_entropies = DiscreteSystem(
+			binary_binned_spk_count_X,
+			(1, 2), 
+			binary_binned_spk_count_Y,
+			(1, 2))
+
+		ds_entropies.calculate_entropies(
+			method = 'plugin', 
+			calc = ['HX', 'HXY'])
+
+		return ds_entropies.I()
+	
+	"""
+	binned_spks_t_windos - must be int desbring time window in ms
+	"""
+	def get_binarized_binned_spk_count(
+		self, 
+		spk_tarray,
+		binned_spks_t_windos):
+
+		hist_spkt, bins_spkt = histograms_firing_rate_t_window(
+			t_points = np.array(spk_tarray),
+			sim_t = sim_time_s,
+			t_window = binned_spks_t_windos)
+
+		binary_binned_spk_t_count = []
+		for x in range(0, len(hist_spkt)):
+			if hist_spkt[x] > 0:
+				binary_binned_spk_t_count.append(1)
+			else:
+				binary_binned_spk_t_count.append(0)
+
+	"""
+	binned_spks_t_windos - must be int desbring time window in ms
+	input_out_mi[n][m] - n outout, m inputs
+	start - must be *second
+	"""
+	def plot_MI_input_output(
+		self, 
+		start, 
+		binned_spks_t_windos,
+		name = 'none', 
+		opt = ''):
+
+		# ----------- Getting spk times as arrays of arrays -----------
+		input_spks_t_array = self.get_input_layer_spks_t_no_unit(start = start)
+		print('\nhere 0: ', len(input_spks_t_array))
+
+		output_spks_t_array = self.get_out_neurons_spks_t_no_unit(start = start)
+		print('\nhere 1: ', len(output_spks_t_array))
+
+		# ----------- Looping over pre i (input) / post j (output) -----------
+		input_out_mi = [ [ -1.0 for x in range(self.self.E_inp)] for y in range(self.N_e_outp)]
+
+		for j in range(0, self.self.N_e_outp):
+			out_bin_spks_Y = inputself.get_binarized_binned_spk_count(
+					spk_tarray = output_spks_t_array[j],
+					binned_spks_t_windos = binned_spks_t_windos)
+
+			for i in range(0, self.E_inp):
+				inp_bin_spks_X = inputself.get_binarized_binned_spk_count(
+					spk_tarray = input_spks_t_array[i],
+					binned_spks_t_windos = binned_spks_t_windos)
+
+				ij_mi = self.get_MI(
+					binary_binned_spk_count_X = inp_bin_spks_X,
+					binary_binned_spk_count_Y = out_bin_spks_Y)
+
+				input_out_mi[j][i] = ij_mi
+
+		# ----------- plotting -----------
+
+		fig0 = plt.figure(constrained_layout = True)
+
+		widths = [8]
+		heights = [8, 8]
+
+		spec2 = gridspec.GridSpec(
+			ncols = 1, 
+			nrows = 2, 
+			width_ratios = widths,
+			height_ratios = heights,
+			figure = fig0)
+
+		fig0.suptitle('Output Neuron\'s MI Matrix', fontsize = 8)
+
+		file_name = os.path.join(self.simulation_path, 'outNeurons__Msyn_' + name + opt + '.png')
+
+		# ----------- Output Neuron 0 -----------
+
+		f2_ax1 = fig0.add_subplot(spec2[0, 0])
+
+		plt.title('Output neuron 0', size = 10)
+
+		plt.xticks([])
+		plt.yticks([])
+
+		plt.imshow(np.array(input_out_mi[0]).reshape(20, 20), cmap = 'Greys', interpolation = 'none')
+
+		# ----------- Output Neuron 1 -----------
+
+		f2_ax2 = fig0.add_subplot(spec2[1, 0])
+
+		plt.title('Output neuron 1', size = 10)
+
+		plt.xticks([])
+		plt.yticks([])
+
+		plt.imshow(np.array(input_out_mi[1]).reshape(20, 20), cmap = 'Greys', interpolation = 'none')
+
+		plt.show()
+		plt.close()
 
 	def export_syn_matrix(self, name = 'none', opt = '', 
 		class1 = [], 
