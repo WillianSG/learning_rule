@@ -17,6 +17,7 @@ import numpy as np
 from time import localtime
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
+from pyentropy import DiscreteSystem
 
 # Helper Modules
 from load_parameters import *
@@ -635,7 +636,7 @@ class FeedforwardNetwork:
 				break
 			counter += 1
 
-		temp_input_spks_t = [ [] for j in range(self.self.E_inp)]
+		temp_input_spks_t = [ [] for j in range(self.N_e)]
 
 		# print('\n', self.E_inp_spkmon.t[:])
 		# print(self.E_inp_spkmon.i[:])
@@ -705,7 +706,7 @@ class FeedforwardNetwork:
 
 		hist_spkt, bins_spkt = histograms_firing_rate_t_window(
 			t_points = np.array(spk_tarray),
-			sim_t = sim_time_s,
+			sim_t = self.t_run/second,
 			t_window = binned_spks_t_windos)
 
 		binary_binned_spk_t_count = []
@@ -714,6 +715,8 @@ class FeedforwardNetwork:
 				binary_binned_spk_t_count.append(1)
 			else:
 				binary_binned_spk_t_count.append(0)
+
+		return binary_binned_spk_t_count
 
 	"""
 	binned_spks_t_windos - must be int desbring time window in ms
@@ -729,21 +732,19 @@ class FeedforwardNetwork:
 
 		# ----------- Getting spk times as arrays of arrays -----------
 		input_spks_t_array = self.get_input_layer_spks_t_no_unit(start = start)
-		print('\nhere 0: ', len(input_spks_t_array))
 
 		output_spks_t_array = self.get_out_neurons_spks_t_no_unit(start = start)
-		print('\nhere 1: ', len(output_spks_t_array))
 
 		# ----------- Looping over pre i (input) / post j (output) -----------
-		input_out_mi = [ [ -1.0 for x in range(self.self.E_inp)] for y in range(self.N_e_outp)]
+		input_out_mi = [ [ -1.0 for x in range(self.N_e)] for y in range(self.N_e_outp)]
 
-		for j in range(0, self.self.N_e_outp):
-			out_bin_spks_Y = inputself.get_binarized_binned_spk_count(
+		for j in range(0, self.N_e_outp):
+			out_bin_spks_Y = self.get_binarized_binned_spk_count(
 					spk_tarray = output_spks_t_array[j],
 					binned_spks_t_windos = binned_spks_t_windos)
 
-			for i in range(0, self.E_inp):
-				inp_bin_spks_X = inputself.get_binarized_binned_spk_count(
+			for i in range(0, self.N_e):
+				inp_bin_spks_X = self.get_binarized_binned_spk_count(
 					spk_tarray = input_spks_t_array[i],
 					binned_spks_t_windos = binned_spks_t_windos)
 
