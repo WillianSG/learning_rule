@@ -120,8 +120,8 @@ def main():
 
 	# ----------- Loading dataset -----------
 
-	sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_13-09-12_dataset_Fusi-size_10.pickle'
-	# sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
+	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_13-09-12_dataset_Fusi-size_10.pickle'
+	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
@@ -131,8 +131,8 @@ def main():
 
 	patterns_avg_filename = meta_data['timestamp'] +  '_dataset_size_' + str(meta_data['dataset_size']) + '_summed_patterns.pickle'
 
-	# dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
-	dataset_patterns_avg = '/home/p302242/PhD_codes/learning_rule/dataset_F/' + patterns_avg_filename
+	dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
+	# dataset_patterns_avg = '/home/p302242/PhD_codes/learning_rule/dataset_F/' + patterns_avg_filename
 
 	with open(dataset_patterns_avg,'rb') as f:(
 		reshaped_c1,
@@ -199,7 +199,7 @@ def main():
 
 			opt_counter += 1
 
-			network.export_syn_matrix(name = 'training', opt = '_' + str(opt_counter) + '_')
+			# network.export_syn_matrix(name = 'training', opt = '_' + str(opt_counter) + '_')
 
 			network.plot_MI_input_output(
 				start = 0*second,
@@ -266,7 +266,8 @@ def main():
 		network.update_dict_array_mi_array_all(
 			start = total_sim_t,
 			binned_spks_t_windos = 5,
-			pattern_id = pattern_id)
+			pattern_id = pattern_id,
+			test = False)
 
 		total_sim_t += network.t_run
 

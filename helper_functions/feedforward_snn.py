@@ -729,22 +729,22 @@ class FeedforwardNetwork:
 		for i in range(0, self.N_e):
 			for j in range(0, self.N_e_outp):
 				dict_mi = {
-			    'pre_i': i, 
-			    'post_j': j,
-			    'rho': 0.0,
-			    'num_patterns_c1': -1.0,
-			    'num_patterns_c2': -1.0,
-			    'mi_per_pattern_c1': [],
-			    'pattern_c1_ids': [],
-			    'mi_per_pattern_c2': [],
-			    'pattern_c2_ids': [],
-			    'avg_mi_c1': 0.0,
-			    'avg_mi_c2': 0.0,
-			    'std_mi_c1': 0.0,
-			    'std_mi_c2': 0.0
-			    }
+				'pre_i': i, 
+				'post_j': j,
+				'rho': 0.0,
+				'num_patterns_c1': -1.0,
+				'num_patterns_c2': -1.0,
+				'mi_per_pattern_c1': [],
+				'pattern_c1_ids': [],
+				'mi_per_pattern_c2': [],
+				'pattern_c2_ids': [],
+				'avg_mi_c1': 0.0,
+				'avg_mi_c2': 0.0,
+				'std_mi_c1': 0.0,
+				'std_mi_c2': 0.0
+				}
 
-			    self.dict_array_mi.append(dict_mi)
+				self.dict_array_mi.append(dict_mi)
 
 	def update_dict_array_keys(
 		self, 
@@ -765,35 +765,35 @@ class FeedforwardNetwork:
 				if rho != None:
 					dict_item['rho'] = rho
 
-			    if num_patterns_c1 != None:
-			    	dict_item['num_patterns_c1'] = num_patterns_c1
+				if num_patterns_c1 != None:
+					dict_item['num_patterns_c1'] = num_patterns_c1
 
-			    if num_patterns_c2 != None:
-			    	dict_item['num_patterns_c2'] = num_patterns_c2
+				if num_patterns_c2 != None:
+					dict_item['num_patterns_c2'] = num_patterns_c2
 
-			    if mi_per_pattern_c1 != None:
-			    	dict_item['mi_per_pattern_c1'].append(mi_per_pattern_c1)
+				if mi_per_pattern_c1 != None:
+					dict_item['mi_per_pattern_c1'].append(mi_per_pattern_c1)
 
-			    if pattern_c1_ids != None:
-			    	dict_item['pattern_c1_ids'].append(pattern_c1_ids)
+				if pattern_c1_ids != None:
+					dict_item['pattern_c1_ids'].append(pattern_c1_ids)
 
-			    if mi_per_pattern_c2 != None:
-			    	dict_item['mi_per_pattern_c2'].append(mi_per_pattern_c2)
+				if mi_per_pattern_c2 != None:
+					dict_item['mi_per_pattern_c2'].append(mi_per_pattern_c2)
 
-			    if pattern_c2_ids != None:
-			    	dict_item['pattern_c2_ids'].append(pattern_c2_ids)
+				if pattern_c2_ids != None:
+					dict_item['pattern_c2_ids'].append(pattern_c2_ids)
 
-			    if avg_mi_c1:
-			    	dict_item['avg_mi_c1'] = np.mean(
-			    		dict_item['mi_per_pattern_c1'])
-			    	dict_item['std_mi_c1'] = np.std(
-			    		dict_item['mi_per_pattern_c1'])
+				if avg_mi_c1:
+					dict_item['avg_mi_c1'] = np.mean(
+						dict_item['mi_per_pattern_c1'])
+					dict_item['std_mi_c1'] = np.std(
+						dict_item['mi_per_pattern_c1'])
 
-			    if avg_mi_c2:
-			    	dict_item['avg_mi_c2'] = np.mean(
-			    		dict_item['mi_per_pattern_c2'])
-			    	dict_item['std_mi_c2'] = np.mean(
-			    		dict_item['mi_per_pattern_c2'])
+				if avg_mi_c2:
+					dict_item['avg_mi_c2'] = np.mean(
+						dict_item['mi_per_pattern_c2'])
+					dict_item['std_mi_c2'] = np.mean(
+						dict_item['mi_per_pattern_c2'])
 
 	"""
 	binned_spks_t_windos - must be int desbring time window in ms
@@ -819,7 +819,8 @@ class FeedforwardNetwork:
 		self, 
 		start, 
 		binned_spks_t_windos,
-		pattern_id):
+		pattern_id,
+		test = False):
 
 		# ----------- Getting spk times as arrays of arrays -----------
 		input_spks_t_array = self.get_input_layer_spks_t_no_unit(start = start)
@@ -836,9 +837,12 @@ class FeedforwardNetwork:
 					spk_tarray = input_spks_t_array[i],
 					binned_spks_t_windos = binned_spks_t_windos)
 
-				ij_mi = self.get_MI(
-					binary_binned_spk_count_X = inp_bin_spks_X,
-					binary_binned_spk_count_Y = out_bin_spks_Y)
+				if test:
+					ij_mi = -9.0
+				else:
+					ij_mi = self.get_MI(
+						binary_binned_spk_count_X = inp_bin_spks_X,
+						binary_binned_spk_count_Y = out_bin_spks_Y)
 
 				if (pattern_id % 2) == 0:
 					self.update_dict_array_keys(
@@ -859,14 +863,14 @@ class FeedforwardNetwork:
 		fn =  self.network_id +  '_dict_array_mi_plus_metadata.pickle'
 
 		populations_biasing_dict = {
-		'teacher_to_Eout_w': self.teacher_to_Eout_w
-		'I_to_Eout_w': self.I_to_Eout_w
-		'Input_to_Einp_w': self.Input_to_Einp_w
-		'Input_to_I_w': self.Input_to_I_w
-		'spont_to_input_w': self.spont_to_input_w
-		'stim_freq_Ninp': self.stim_freq_Ninp
-		'stim_freq_teach': self.stim_freq_teach
-		'stim_freq_spont': self.stim_freq_spont
+		'teacher_to_Eout_w': self.teacher_to_Eout_w,
+		'I_to_Eout_w': self.I_to_Eout_w,
+		'Input_to_Einp_w': self.Input_to_Einp_w,
+		'Input_to_I_w': self.Input_to_I_w,
+		'spont_to_input_w': self.spont_to_input_w,
+		'stim_freq_Ninp': self.stim_freq_Ninp,
+		'stim_freq_teach': self.stim_freq_teach,
+		'stim_freq_spont': self.stim_freq_spont,
 		'stim_freq_i': self.stim_freq_i
 		}
 
