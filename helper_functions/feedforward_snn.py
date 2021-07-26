@@ -357,7 +357,9 @@ class FeedforwardNetwork:
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
 
 	def get_preI_postJ_rho(self, pre_i, post_j):
-		return self.Input_to_Output.rho[pre_i, post_j]
+		rho = self.Input_to_Output.rho[pre_i, post_j]
+		
+		return rho[0]
 
 	def set_active_input_w_potentiated(self):
 		for pre_id in range(0, len(self.E_inp)):
