@@ -847,13 +847,13 @@ class FeedforwardNetwork:
 				if (pattern_id % 2) == 0:
 					self.update_dict_array_keys(
 						pre_i = i, 
-						post_i = j,
+						post_j = j,
 						mi_per_pattern_c1 = ij_mi,
 						pattern_c1_ids = pattern_id)
 				else:
 					self.update_dict_array_keys(
 						pre_i = i, 
-						post_i = j,
+						post_j = j,
 						mi_per_pattern_c2 = ij_mi,
 						pattern_c2_ids = pattern_id)
 
