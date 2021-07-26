@@ -120,8 +120,8 @@ def main():
 
 	# ----------- Loading dataset -----------
 
-	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_13-09-12_dataset_Fusi-size_10.pickle'
-	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
+	sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_13-09-12_dataset_Fusi-size_10.pickle'
+	# sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
@@ -131,8 +131,8 @@ def main():
 
 	patterns_avg_filename = meta_data['timestamp'] +  '_dataset_size_' + str(meta_data['dataset_size']) + '_summed_patterns.pickle'
 
-	dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
-	# dataset_patterns_avg = '/home/p302242/PhD_codes/learning_rule/dataset_F/' + patterns_avg_filename
+	# dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
+	dataset_patterns_avg = '/home/p302242/PhD_codes/learning_rule/dataset_F/' + patterns_avg_filename
 
 	with open(dataset_patterns_avg,'rb') as f:(
 		reshaped_c1,
@@ -201,19 +201,25 @@ def main():
 
 			# network.export_syn_matrix(name = 'training', opt = '_' + str(opt_counter) + '_')
 
-			network.plot_MI_input_output(
-				start = 0*second,
-				binned_spks_t_windos = 5,
-				name = 'trainingMI', 
-				opt = '_' + str(opt_counter) + '_')
+			# network.plot_MI_input_output(
+			# 	start = 0*second,
+			# 	binned_spks_t_windos = 5,
+			# 	name = 'trainingMI', 
+			# 	opt = '_' + str(opt_counter) + '_')
 
 	# ----------- Finalizing Training (saving network state) -----------
 	
 	# 0 - Initializing dict array for MI metric
 	network.initi_dict_array_for_MI_calc()
-	network.update_dict_array_keys(
-		num_patterns_c1 = meta_data['dataset_size']/2,
-		num_patterns_c2 = meta_data['dataset_size']/2)
+
+	for i in range(0, network.E_e):
+			for j in range(0, network.N_e_outp):
+				network.update_dict_array_keys(
+					pre_i = i,
+					post_j = j,
+					num_patterns_c1 = meta_data['dataset_size']/2,
+					num_patterns_c2 = meta_data['dataset_size']/2)
+
 	network.update_dict_array_rho_all()
 
 	# 6 - binarize weights based on synaptic internal state variable
@@ -323,7 +329,14 @@ def main():
 	print('wrong responses: ', wrong_response)
 
 	print('\n====================== exporting MI plust metadata =======================')
-	network.update_dict_array_keys(avg_mi_c1 = True, avg_mi_c2 = True)
+
+	for i in range(0, network.E_e):
+		for j in range(0, network.N_e_outp):
+			network.update_dict_array_keys(
+				pre_i = i,
+				pre_j = j,
+				avg_mi_c1 = True, 
+				avg_mi_c2 = True)
 
 	network.export_dict_array_mi_plus_metadata(
 			dataset_metadata = meta_data)
