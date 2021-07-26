@@ -330,7 +330,7 @@ def main():
 
 	print('\n====================== exporting MI plust metadata =======================')
 
-	for i in range(0, network.E_e):
+	for i in range(0, network.N_e):
 		for j in range(0, network.N_e_outp):
 			network.update_dict_array_keys(
 				pre_i = i,
