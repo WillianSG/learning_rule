@@ -851,23 +851,17 @@ class FeedforwardNetwork:
 						binary_binned_spk_count_X = inp_bin_spks_X,
 						binary_binned_spk_count_Y = out_bin_spks_Y)
 
-				if len(input_spks_t_array[i]) > 50:
-					print(out_bin_spks_Y)
-					print(inp_bin_spks_X)
-					print(ij_mi)
-					print('\n')
-
 				if (pattern_id % 2) == 0:
 					self.update_dict_array_keys(
 						pre_i = i, 
 						post_j = j,
-						mi_per_pattern_c1 = ij_mi,
+						mi_per_pattern_c1 = np.round(ij_mi, 2),
 						pattern_c1_ids = pattern_id)
 				else:
 					self.update_dict_array_keys(
 						pre_i = i, 
 						post_j = j,
-						mi_per_pattern_c2 = ij_mi,
+						mi_per_pattern_c2 = np.round(ij_mi, 2),
 						pattern_c2_ids = pattern_id)
 
 	def export_dict_array_mi_plus_metadata(self, dataset_metadata):
