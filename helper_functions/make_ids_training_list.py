@@ -20,6 +20,6 @@ def make_ids_traning_list(dataset_size, epoch):
 	for i in range(0, epoch):
 		final_ids_list += original_ids_list
 
-	# random.shuffle(final_ids_list)
+	random.shuffle(final_ids_list)
 
 	return final_ids_list
