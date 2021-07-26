@@ -877,9 +877,9 @@ class FeedforwardNetwork:
 				self.dict_array_mi,
 				dataset_metadata,
 				self.plasticity_rule,
-				network.parameter_set,
-				network.bistability,
-				network.stoplearning,
+				self.parameter_set,
+				self.bistability,
+				self.stoplearning,
 				populations_biasing_dict
 				), f)
 
