@@ -858,9 +858,7 @@ class FeedforwardNetwork:
 						pattern_c2_ids = pattern_id)
 
 	def export_dict_array_mi_plus_metadata(self, dataset_metadata):
-		file_name = os.path.join(self.simulation_path, 'dict_array_mi_' + name + opt + '.png')
-
-		fn =  self.network_id +  '_dict_array_mi_plus_metadata.pickle'
+		fn =  os.path.join(self.simulation_path, self.network_id +  '_dict_array_mi_plus_metadata.pickle')
 
 		populations_biasing_dict = {
 		'teacher_to_Eout_w': self.teacher_to_Eout_w,
@@ -873,16 +871,6 @@ class FeedforwardNetwork:
 		'stim_freq_spont': self.stim_freq_spont,
 		'stim_freq_i': self.stim_freq_i
 		}
-
-		self.teacher_to_Eout_w
-		self.I_to_Eout_w
-		self.Input_to_Einp_w
-		self.Input_to_I_w
-		self.spont_to_input_w
-		self.stim_freq_Ninp
-		self.stim_freq_teach
-		self.stim_freq_spont
-		self.stim_freq_i
 
 		with open(fn, 'wb') as f:
 			pickle.dump((
