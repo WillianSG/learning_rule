@@ -334,7 +334,7 @@ def main():
 		for j in range(0, network.N_e_outp):
 			network.update_dict_array_keys(
 				pre_i = i,
-				pre_j = j,
+				post_j = j,
 				avg_mi_c1 = True, 
 				avg_mi_c2 = True)
 
