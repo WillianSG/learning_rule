@@ -207,107 +207,125 @@ def main():
 				name = 'trainingMI', 
 				opt = '_' + str(opt_counter) + '_')
 
-	# # ----------- Finalizing Training (saving network state) -----------
+	# ----------- Finalizing Training (saving network state) -----------
+	
+	# 0 - Initializing dict array for MI metric
+	network.initi_dict_array_for_MI_calc()
+	network.update_dict_array_keys(
+		num_patterns_c1 = meta_data['dataset_size']/2,
+		num_patterns_c2 = meta_data['dataset_size']/2)
+	network.update_dict_array_rho_all()
 
-	# # 6 - binarize weights based on synaptic internal state variable
-	# network.binarize_syn_matrix()
+	# 6 - binarize weights based on synaptic internal state variable
+	network.binarize_syn_matrix()
 
-	# network.export_syn_matrix(name = 'trained_withClasses_', class1 = reshaped_c1, class2 = reshaped_c2)
+	network.export_syn_matrix(name = 'trained_withClasses_', class1 = reshaped_c1, class2 = reshaped_c2)
 
-	# network.export_syn_matrix(name = 'trained')
+	network.export_syn_matrix(name = 'trained')
 
-	# # 6.1 - turning plasticity OFF for testing
-	# network.Input_to_Output.plastic = False
+	# 6.1 - turning plasticity OFF for testing
+	network.Input_to_Output.plastic = False
 
-	# # 7 - save trained network state
-	# network.net.store(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
+	# 7 - save trained network state
+	network.net.store(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
 
-	# print('======================================================\n')
+	print('======================================================\n')
 
-	# # ----------- Testing trained network -----------
-	# print('\n====================== testing =======================')
+	# ----------- Testing trained network -----------
+	print('\n====================== testing =======================')
 
-	# # 0 - index represents pattern id, value represents output active neuron
-	# out_winning_response_per_pattern = []
+	# 0 - index represents pattern id, value represents output active neuron
+	out_winning_response_per_pattern = []
 
-	# presentation_time = float(sys.argv[1])*second
-	# # presentation_time = 2*second
-	# # network.t_run = 2*second
+	presentation_time = float(sys.argv[1])*second
+	# presentation_time = 2*second
+	# network.t_run = 2*second
 
-	# correct_response = 0
-	# wrong_response = 0
+	correct_response = 0
+	wrong_response = 0
 
-	# # 1 - restoring trained network state
-	# network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
+	# 1 - restoring trained network state
+	network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
 
-	# # 2 - silencing auxiliary populations
-	# network.silince_for_testing()
+	# 2 - silencing auxiliary populations
+	network.silince_for_testing()
 
-	# # 3 - testing learned patterns
-	# for pattern_id in range(0, meta_data['dataset_size']):
-	# 	print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
+	# 3 - testing learned patterns
+	for pattern_id in range(0, meta_data['dataset_size']):
+		print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
 		
-	# 	# setting stimulus to be presented
-	# 	network.set_stimulus_dataset(full_dataset[pattern_id])
+		# setting stimulus to be presented
+		network.set_stimulus_dataset(full_dataset[pattern_id])
 
-	# 	# update who's active/spontaneous in the input layer
-	# 	network.update_input_connectivity()
+		# update who's active/spontaneous in the input layer
+		network.update_input_connectivity()
 
-	# 	# simulating
-	# 	network.run_net(report = None)
+		# simulating
+		network.run_net(report = None)
 
-	# 	total_sim_t += network.t_run
+		network.update_dict_array_mi_array_all(
+			start = total_sim_t,
+			binned_spks_t_windos = 5,
+			pattern_id = pattern_id)
 
-	# 	# ----------- saving output neuron responding to pattern -----------
+		total_sim_t += network.t_run
 
-	# 	# =============================================================
+		# ----------- saving output neuron responding to pattern -----------
 
-	# 	# 1 - Where in spkmon current stimulus response starts
-	# 	t_start = total_sim_t - presentation_time
+		# =============================================================
 
-	# 	# 2 - Gets spikes times for each of the output neurons
-	# 	"""
-	# 	output_spks_t[0] = spikes times of output neuron 0
-	# 	output_spks_t[1] = spikes times of output neuron 1
-	# 	...
-	# 	"""
-	# 	output_spks_t = network.get_out_neurons_spks_t(start = t_start)
+		# 1 - Where in spkmon current stimulus response starts
+		t_start = total_sim_t - presentation_time
 
-	# 	mean_activity_output_neurons = []
+		# 2 - Gets spikes times for each of the output neurons
+		"""
+		output_spks_t[0] = spikes times of output neuron 0
+		output_spks_t[1] = spikes times of output neuron 1
+		...
+		"""
+		output_spks_t = network.get_out_neurons_spks_t(start = t_start)
 
-	# 	# 3 - Calc. outputs firing freqs.
-	# 	for out_n in range(0, network.N_e_outp):
-	# 		[t_hist_edges,
-	# 		t_hist_freq, 
-	# 		t_hist_bin_widths] = histograms_firing_rate(
-	# 			t_points = output_spks_t[out_n], 
-	# 			pop_size = 1)
+		mean_activity_output_neurons = []
 
-	# 		mean_freq = np.mean(t_hist_freq)
+		# 3 - Calc. outputs firing freqs.
+		for out_n in range(0, network.N_e_outp):
+			[t_hist_edges,
+			t_hist_freq, 
+			t_hist_bin_widths] = histograms_firing_rate(
+				t_points = output_spks_t[out_n], 
+				pop_size = 1)
 
-	# 		# 3.1 - saving mean activity
-	# 		mean_activity_output_neurons.append(mean_freq)
+			mean_freq = np.mean(t_hist_freq)
 
-	# 	# 4 - Who's firing the most
-	# 	max_freq = max(mean_activity_output_neurons)
-	# 	max_neuro_id = mean_activity_output_neurons.index(max_freq)
+			# 3.1 - saving mean activity
+			mean_activity_output_neurons.append(mean_freq)
 
-	# 	# 5 - Saving winning neuron
-	# 	out_winning_response_per_pattern.append(max_neuro_id)
+		# 4 - Who's firing the most
+		max_freq = max(mean_activity_output_neurons)
+		max_neuro_id = mean_activity_output_neurons.index(max_freq)
 
-	# 	if ((pattern_id % 2) == 0) and (max_neuro_id == 0):
-	# 			correct_response += 1
-	# 	elif ((pattern_id % 2) != 0) and (max_neuro_id == 1):
-	# 		correct_response += 1
-	# 	else:
-	# 		wrong_response += 1
+		# 5 - Saving winning neuron
+		out_winning_response_per_pattern.append(max_neuro_id)
 
-	# 	# =============================================================
+		if ((pattern_id % 2) == 0) and (max_neuro_id == 0):
+				correct_response += 1
+		elif ((pattern_id % 2) != 0) and (max_neuro_id == 1):
+			correct_response += 1
+		else:
+			wrong_response += 1
 
-	# print('======================================================\n')
+		# =============================================================
 
-	# print('\n\ncorrect responses: ', correct_response)
-	# print('wrong responses: ', wrong_response)
+	print('======================================================\n')
+
+	print('\n\ncorrect responses: ', correct_response)
+	print('wrong responses: ', wrong_response)
+
+	print('\n====================== exporting MI plust metadata =======================')
+	network.update_dict_array_keys(avg_mi_c1 = True, avg_mi_c2 = True)
+
+	network.export_dict_array_mi_plus_metadata(
+			dataset_metadata = meta_data)
 
 if __name__ == "__main__":
 	main()

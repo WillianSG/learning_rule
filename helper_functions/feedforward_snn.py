@@ -34,6 +34,9 @@ class FeedforwardNetwork:
 		self.network_id = ''
 		self.simulation_path = ''
 
+		# Metrics related
+		self.dict_array_mi = []
+
 		# Learning Rule
 		self.plasticity_rule = 'user-defined'
 		self.parameter_set = 'user-defined'
@@ -352,6 +355,9 @@ class FeedforwardNetwork:
 					# self.Input_to_Output.rho[pre_id, post_id] = 1.0
 
 		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
+
+	def get_preI_postJ_rho(self, pre_i, post_j):
+		return self.Input_to_Output.rho[pre_i, post_j]
 
 	def set_active_input_w_potentiated(self):
 		for pre_id in range(0, len(self.E_inp)):
@@ -718,6 +724,174 @@ class FeedforwardNetwork:
 
 		return binary_binned_spk_t_count
 
+	def initi_dict_array_for_MI_calc(self):
+		# ----------- Looping over pre i (input) / post j (output) -----------
+		for i in range(0, self.N_e):
+			for j in range(0, self.N_e_outp):
+				dict_mi = {
+			    'pre_i': i, 
+			    'post_j': j,
+			    'rho': 0.0,
+			    'num_patterns_c1': -1.0,
+			    'num_patterns_c2': -1.0,
+			    'mi_per_pattern_c1': [],
+			    'pattern_c1_ids': [],
+			    'mi_per_pattern_c2': [],
+			    'pattern_c2_ids': [],
+			    'avg_mi_c1': 0.0,
+			    'avg_mi_c2': 0.0,
+			    'std_mi_c1': 0.0,
+			    'std_mi_c2': 0.0
+			    }
+
+			    self.dict_array_mi.append(dict_mi)
+
+	def update_dict_array_keys(
+		self, 
+		pre_i, 
+		post_j,
+		rho = None,
+		num_patterns_c1 = None,
+		num_patterns_c2 = None,
+		mi_per_pattern_c1 = None,
+		pattern_c1_ids = None,
+		mi_per_pattern_c2 = None,
+		pattern_c2_ids = None,
+		avg_mi_c1 = False,
+		avg_mi_c2 = False):
+
+		for dict_item in self.dict_array_mi:
+			if dict_item['pre_i'] == pre_i and dict_item['post_j'] == post_j:
+				if rho != None:
+					dict_item['rho'] = rho
+
+			    if num_patterns_c1 != None:
+			    	dict_item['num_patterns_c1'] = num_patterns_c1
+
+			    if num_patterns_c2 != None:
+			    	dict_item['num_patterns_c2'] = num_patterns_c2
+
+			    if mi_per_pattern_c1 != None:
+			    	dict_item['mi_per_pattern_c1'].append(mi_per_pattern_c1)
+
+			    if pattern_c1_ids != None:
+			    	dict_item['pattern_c1_ids'].append(pattern_c1_ids)
+
+			    if mi_per_pattern_c2 != None:
+			    	dict_item['mi_per_pattern_c2'].append(mi_per_pattern_c2)
+
+			    if pattern_c2_ids != None:
+			    	dict_item['pattern_c2_ids'].append(pattern_c2_ids)
+
+			    if avg_mi_c1:
+			    	dict_item['avg_mi_c1'] = np.mean(
+			    		dict_item['mi_per_pattern_c1'])
+			    	dict_item['std_mi_c1'] = np.std(
+			    		dict_item['mi_per_pattern_c1'])
+
+			    if avg_mi_c2:
+			    	dict_item['avg_mi_c2'] = np.mean(
+			    		dict_item['mi_per_pattern_c2'])
+			    	dict_item['std_mi_c2'] = np.mean(
+			    		dict_item['mi_per_pattern_c2'])
+
+	"""
+	binned_spks_t_windos - must be int desbring time window in ms
+	input_out_mi[n][m] - n outout, m inputs
+	start - must be *second
+	"""
+	def update_dict_array_rho_all(self):
+		for i in range(0, self.N_e):
+			for j in range(0, self.N_e_outp):
+				self.update_dict_array_keys(
+						pre_i = i, 
+						post_i = j,
+						rho = self.get_preI_postJ_rho(
+							pre_i = i, 
+							post_j = j)
+						)
+	"""
+	binned_spks_t_windos - must be int desbring time window in ms
+	input_out_mi[n][m] - n outout, m inputs
+	start - must be *second
+	"""
+	def update_dict_array_mi_array_all(
+		self, 
+		start, 
+		binned_spks_t_windos,
+		pattern_id):
+
+		# ----------- Getting spk times as arrays of arrays -----------
+		input_spks_t_array = self.get_input_layer_spks_t_no_unit(start = start)
+
+		output_spks_t_array = self.get_out_neurons_spks_t_no_unit(start = start)
+
+		for j in range(0, self.N_e_outp):
+			out_bin_spks_Y = self.get_binarized_binned_spk_count(
+					spk_tarray = output_spks_t_array[j],
+					binned_spks_t_windos = binned_spks_t_windos)
+
+			for i in range(0, self.N_e):
+				inp_bin_spks_X = self.get_binarized_binned_spk_count(
+					spk_tarray = input_spks_t_array[i],
+					binned_spks_t_windos = binned_spks_t_windos)
+
+				ij_mi = self.get_MI(
+					binary_binned_spk_count_X = inp_bin_spks_X,
+					binary_binned_spk_count_Y = out_bin_spks_Y)
+
+				if (pattern_id % 2) == 0:
+					self.update_dict_array_keys(
+						pre_i = i, 
+						post_i = j,
+						mi_per_pattern_c1 = ij_mi,
+						pattern_c1_ids = pattern_id)
+				else:
+					self.update_dict_array_keys(
+						pre_i = i, 
+						post_i = j,
+						mi_per_pattern_c2 = ij_mi,
+						pattern_c2_ids = pattern_id)
+
+	def export_dict_array_mi_plus_metadata(self, dataset_metadata):
+		file_name = os.path.join(self.simulation_path, 'dict_array_mi_' + name + opt + '.png')
+
+		fn =  self.network_id +  '_dict_array_mi_plus_metadata.pickle'
+
+		populations_biasing_dict = {
+		'teacher_to_Eout_w': self.teacher_to_Eout_w
+		'I_to_Eout_w': self.I_to_Eout_w
+		'Input_to_Einp_w': self.Input_to_Einp_w
+		'Input_to_I_w': self.Input_to_I_w
+		'spont_to_input_w': self.spont_to_input_w
+		'stim_freq_Ninp': self.stim_freq_Ninp
+		'stim_freq_teach': self.stim_freq_teach
+		'stim_freq_spont': self.stim_freq_spont
+		'stim_freq_i': self.stim_freq_i
+		}
+
+		self.teacher_to_Eout_w
+		self.I_to_Eout_w
+		self.Input_to_Einp_w
+		self.Input_to_I_w
+		self.spont_to_input_w
+		self.stim_freq_Ninp
+		self.stim_freq_teach
+		self.stim_freq_spont
+		self.stim_freq_i
+
+		with open(fn, 'wb') as f:
+			pickle.dump((
+				self.dict_array_mi,
+				dataset_metadata,
+				self.plasticity_rule,
+				network.parameter_set,
+				network.bistability,
+				network.stoplearning,
+				populations_biasing_dict
+				), f)
+
+
 	"""
 	binned_spks_t_windos - must be int desbring time window in ms
 	input_out_mi[n][m] - n outout, m inputs
@@ -736,7 +910,7 @@ class FeedforwardNetwork:
 		output_spks_t_array = self.get_out_neurons_spks_t_no_unit(start = start)
 
 		# ----------- Looping over pre i (input) / post j (output) -----------
-		input_out_mi = [ [ -1.0 for x in range(self.N_e)] for y in range(self.N_e_outp)]
+		input_out_mi = [ [ 0.0 for x in range(self.N_e)] for y in range(self.N_e_outp)]
 
 		for j in range(0, self.N_e_outp):
 			out_bin_spks_Y = self.get_binarized_binned_spk_count(
