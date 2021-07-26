@@ -273,7 +273,8 @@ def main():
 			start = total_sim_t,
 			binned_spks_t_windos = 5,
 			pattern_id = pattern_id,
-			test = False)
+			test = False,
+			t_start = total_sim_t/second)
 
 		total_sim_t += network.t_run
 

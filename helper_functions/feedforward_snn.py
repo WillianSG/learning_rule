@@ -358,7 +358,7 @@ class FeedforwardNetwork:
 
 	def get_preI_postJ_rho(self, pre_i, post_j):
 		rho = self.Input_to_Output.rho[pre_i, post_j]
-		
+
 		return rho[0]
 
 	def set_active_input_w_potentiated(self):
@@ -710,12 +710,14 @@ class FeedforwardNetwork:
 	def get_binarized_binned_spk_count(
 		self, 
 		spk_tarray,
-		binned_spks_t_windos):
+		binned_spks_t_windos,
+		t_start = 0.0):
 
 		hist_spkt, bins_spkt = histograms_firing_rate_t_window(
 			t_points = np.array(spk_tarray),
 			sim_t = self.t_run/second,
-			t_window = binned_spks_t_windos)
+			t_window = binned_spks_t_windos,
+			t_start = t_start)
 
 		binary_binned_spk_t_count = []
 		for x in range(0, len(hist_spkt)):
@@ -822,7 +824,8 @@ class FeedforwardNetwork:
 		start, 
 		binned_spks_t_windos,
 		pattern_id,
-		test = False):
+		test = False,
+		t_start = 0.0):
 
 		# ----------- Getting spk times as arrays of arrays -----------
 		input_spks_t_array = self.get_input_layer_spks_t_no_unit(start = start)
@@ -832,12 +835,14 @@ class FeedforwardNetwork:
 		for j in range(0, self.N_e_outp):
 			out_bin_spks_Y = self.get_binarized_binned_spk_count(
 					spk_tarray = output_spks_t_array[j],
-					binned_spks_t_windos = binned_spks_t_windos)
+					binned_spks_t_windos = binned_spks_t_windos,
+					t_start = t_start)
 
 			for i in range(0, self.N_e):
 				inp_bin_spks_X = self.get_binarized_binned_spk_count(
 					spk_tarray = input_spks_t_array[i],
-					binned_spks_t_windos = binned_spks_t_windos)
+					binned_spks_t_windos = binned_spks_t_windos,
+					t_start = t_start)
 
 				if test:
 					ij_mi = -9.0
@@ -845,6 +850,12 @@ class FeedforwardNetwork:
 					ij_mi = self.get_MI(
 						binary_binned_spk_count_X = inp_bin_spks_X,
 						binary_binned_spk_count_Y = out_bin_spks_Y)
+
+				if len(input_spks_t_array[i]) > 50:
+					print(out_bin_spks_Y)
+					print(inp_bin_spks_X)
+					print(ij_mi)
+					print('\n')
 
 				if (pattern_id % 2) == 0:
 					self.update_dict_array_keys(
@@ -909,7 +920,7 @@ class FeedforwardNetwork:
 		for j in range(0, self.N_e_outp):
 			out_bin_spks_Y = self.get_binarized_binned_spk_count(
 					spk_tarray = output_spks_t_array[j],
-					binned_spks_t_windos = binned_spks_t_windos)
+					binned_spks_t_windos = binned_spks_t_windos,)
 
 			for i in range(0, self.N_e):
 				inp_bin_spks_X = self.get_binarized_binned_spk_count(

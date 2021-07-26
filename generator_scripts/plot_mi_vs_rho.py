@@ -21,6 +21,9 @@ with open(
 	stoplearning,
 	populations_biasing_dict) = pickle.load(f)
 
+for item in dict_array_mi:
+	print(item['mi_per_pattern_c1'])
+
 # print('================== dataset metadata ==================')
 for key, value in dict_array_mi[1].items():
 	print(key, ':', value)
