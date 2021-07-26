@@ -37,10 +37,17 @@ with open(
 	stoplearning,
 	populations_biasing_dict) = pickle.load(f)
 
-for item in dict_array_mi:
-	print(item['mi_per_pattern_c1'])
+rho_array_c1 = []
+mi_array_c1 = []
+rho_array_c2 = []
+mi_array_c2 = []
 
-# print('================== dataset metadata ==================')
-for key, value in dict_array_mi[1].items():
-	print(key, ':', value)
-# print('======================================================\n')
+for item in dict_array_mi:
+	if item['post_j'] == 0:
+		rho_array_c1.append(item['rho'])
+		mi_array_c1.append(item['avg_mi_c1'])
+
+plt.scatter(rho_array_c1, mi_array_c1)
+plt.xlabel('rho (a.u.)')
+plt.ylabel('MI (bits)')
+plt.show()
