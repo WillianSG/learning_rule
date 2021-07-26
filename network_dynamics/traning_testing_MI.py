@@ -212,7 +212,7 @@ def main():
 	# 0 - Initializing dict array for MI metric
 	network.initi_dict_array_for_MI_calc()
 
-	for i in range(0, network.E_e):
+	for i in range(0, network.N_e):
 			for j in range(0, network.N_e_outp):
 				network.update_dict_array_keys(
 					pre_i = i,
