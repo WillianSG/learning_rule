@@ -805,7 +805,7 @@ class FeedforwardNetwork:
 			for j in range(0, self.N_e_outp):
 				self.update_dict_array_keys(
 						pre_i = i, 
-						post_i = j,
+						post_j = j,
 						rho = self.get_preI_postJ_rho(
 							pre_i = i, 
 							post_j = j)
