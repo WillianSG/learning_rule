@@ -851,6 +851,9 @@ class FeedforwardNetwork:
 						binary_binned_spk_count_X = inp_bin_spks_X,
 						binary_binned_spk_count_Y = out_bin_spks_Y)
 
+					if ij_mi < 0:
+						ij_mi = 0.0
+
 				if (pattern_id % 2) == 0:
 					self.update_dict_array_keys(
 						pre_i = i, 
