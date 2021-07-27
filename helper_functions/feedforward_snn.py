@@ -17,7 +17,9 @@ import numpy as np
 from time import localtime
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
-from pyentropy import DiscreteSystem
+
+if sys.platform == 'linux':
+	from pyentropy import DiscreteSystem
 
 # Helper Modules
 from load_parameters import *
@@ -692,17 +694,23 @@ class FeedforwardNetwork:
 		binary_binned_spk_count_X,
 		binary_binned_spk_count_Y):
 
-		ds_entropies = DiscreteSystem(
-			binary_binned_spk_count_X,
-			(1, 2), 
-			binary_binned_spk_count_Y,
-			(1, 2))
+		if sys.platform == 'linux':
+			ds_entropies = DiscreteSystem(
+				binary_binned_spk_count_X,
+				(1, 2), 
+				binary_binned_spk_count_Y,
+				(1, 2))
 
-		ds_entropies.calculate_entropies(
-			method = 'plugin', 
-			calc = ['HX', 'HXY'])
+			ds_entropies.calculate_entropies(
+				method = 'plugin', 
+				calc = ['HX', 'HXY'])
 
-		return ds_entropies.I()
+			return ds_entropies.I()
+		else:
+			try:
+				from pyentropy import DiscreteSystem
+			except ModuleNotFoundError:
+				sys.exit('\nERROR - could not import module \'pyentropy\'')
 	
 	"""
 	binned_spks_t_windos - must be int desbring time window in ms
