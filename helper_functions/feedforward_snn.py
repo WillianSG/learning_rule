@@ -979,7 +979,11 @@ class FeedforwardNetwork:
 				populations_biasing_dict
 				), f)
 
-	def export_dict_array_snr(self, dataset_metadata):
+	def export_dict_array_snr(
+		self, 
+		dataset_metadata,
+		correct_response,
+		wrong_response):
 		fn =  os.path.join(self.simulation_path, self.network_id +  '_dict_array_snr.pickle')
 
 		populations_biasing_dict = {
@@ -997,6 +1001,9 @@ class FeedforwardNetwork:
 		with open(fn, 'wb') as f:
 			pickle.dump((
 				self.dict_array_snr,
+				self.M_syn,
+				correct_response,
+				wrong_response,
 				dataset_metadata,
 				self.plasticity_rule,
 				self.parameter_set,

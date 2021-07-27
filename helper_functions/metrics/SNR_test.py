@@ -46,7 +46,7 @@ def main():
 	
 	network = FeedforwardNetwork()
 
-	snr_sim_run_n = 2
+	snr_sim_run_n = 1
 	binned_spks_t_windos = 20
 
 	# populations sizes
@@ -182,12 +182,11 @@ def main():
 				dataset_size = meta_data['dataset_size'],
 				epoch = epoch)
 
-			epoch_ids_list = [0]
-
 			print(' \nepoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
 			
+			# ----------- 0 - training network -----------
 			for pattern_id in epoch_ids_list:
-				network.Input_to_Output.plastic = False
+				network.Input_to_Output.plastic = True
 
 				# 1 - select next pattern to be presented
 				network.set_stimulus_dataset(full_dataset[pattern_id])
@@ -205,9 +204,7 @@ def main():
 				network.update_input_connectivity()
 
 				# 2.1 - potentiate active ids and depresse spont. - FOR TESTING
-				network.set_wPot_active_input(pattern_id = pattern_id)
-
-				# network.show_syn_matrix()
+				# network.set_wPot_active_input(pattern_id = pattern_id)
 
 				if str(sys.argv[5]) == 'True':
 					# 3 - simulate
@@ -217,6 +214,7 @@ def main():
 
 					opt_counter += 1
 
+					# ----------- 3.1 - calculating SNR metrics -----------
 					for out_id in range(0, network.N_e_outp):
 						avg_ffrq_avg = 0.0
 						std_ffrq_avg = 0.0
@@ -241,13 +239,9 @@ def main():
 							std_ffrq_avg += std_ffrq
 							snr_ffrq_avg += snr_ffrq
 
-							print('\nsnr: ', snr_ffrq)
-
 						avg_ffrq_avg = np.round((avg_ffrq_avg/snr_sim_run_n), 2)
 						std_ffrq_avg = np.round((std_ffrq_avg/snr_sim_run_n), 2)
 						snr_ffrq_avg = np.round((snr_ffrq_avg/snr_sim_run_n), 2)
-
-						print('\navg snr: ', snr_ffrq_avg)
 
 						if out_id == 0:
 							network.set_array_SNR_key_value(
@@ -268,7 +262,95 @@ def main():
 								snr_ffrq_out1 = None,
 								snr_ffrq_out2 = snr_ffrq_avg)
 
-	network.export_dict_array_snr(dataset_metadata = meta_data)
+	if str(sys.argv[3]) == 'True':
+		network.export_syn_matrix(name = 'trained')
+
+	# 6.1 - turning plasticity OFF for testing
+	network.Input_to_Output.plastic = False
+
+	# 7 - save trained network state
+	network.net.store(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
+
+	print('\n====================== testing =======================')
+
+	# 0 - index represents pattern id, value represents output active neuron
+	out_winning_response_per_pattern = []
+	presentation_time = float(sys.argv[1])*second
+	correct_response = 0
+	wrong_response = 0
+
+	# 1 - restoring trained network state
+	network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
+
+	# 2 - silencing auxiliary populations
+	network.silince_for_testing()
+
+	# ----------- 3 - testing learned patterns -----------
+	for pattern_id in range(0, meta_data['dataset_size']):
+		print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
+		
+		# setting stimulus to be presented
+		network.set_stimulus_dataset(full_dataset[pattern_id])
+
+		# update who's active/spontaneous in the input layer
+		network.update_input_connectivity()
+
+		# simulating
+		network.run_net(report = None)
+
+		total_sim_t += network.t_run
+
+		# ----------- 3.1 - validating correct output -----------
+		# 1 - Where in spkmon current stimulus response starts
+		t_start = total_sim_t - presentation_time
+
+		# 2 - Gets spikes times for each of the output neurons
+		"""
+		output_spks_t[0] = spikes times of output neuron 0
+		output_spks_t[1] = spikes times of output neuron 1
+		...
+		"""
+		output_spks_t = network.get_out_neurons_spks_t(start = t_start)
+
+		mean_activity_output_neurons = []
+
+		# 3 - Calc. outputs firing freqs.
+		for out_n in range(0, network.N_e_outp):
+			[t_hist_edges,
+			t_hist_freq, 
+			t_hist_bin_widths] = histograms_firing_rate(
+				t_points = output_spks_t[out_n], 
+				pop_size = 1)
+
+			mean_freq = np.mean(t_hist_freq)
+
+			# 3.1 - saving mean activity
+			mean_activity_output_neurons.append(mean_freq)
+
+		# 4 - Who's firing the most
+		max_freq = max(mean_activity_output_neurons)
+		max_neuro_id = mean_activity_output_neurons.index(max_freq)
+
+		# 5 - Saving winning neuron
+		out_winning_response_per_pattern.append(max_neuro_id)
+
+		if ((pattern_id % 2) == 0) and (max_neuro_id == 0):
+				correct_response += 1
+		elif ((pattern_id % 2) != 0) and (max_neuro_id == 1):
+			correct_response += 1
+		else:
+			wrong_response += 1
+
+	print('\n====================== Correct Rate =======================')
+
+	print('\ncorrect responses: ', correct_response)
+	print('wrong responses: ', wrong_response)
+	print('correct rate: ', correct_response/meta_data['dataset_size'])
+
+	network.export_dict_array_snr(
+		dataset_metadata = meta_data,
+		correct_response = correct_response,
+		wrong_response = wrong_response)
 
 if __name__ == "__main__":
 	main()
