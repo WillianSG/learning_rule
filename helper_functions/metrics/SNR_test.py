@@ -169,6 +169,8 @@ def main():
 
 	print('\n====================== training ======================')
 
+	network.initi_dict_array_for_SNR(dataset_size = meta_data['dataset_size'])
+
 	if str(sys.argv[4]) == 'True':
 		network.Input_to_Output.plastic = False
 
@@ -215,17 +217,33 @@ def main():
 
 					opt_counter += 1
 
-					network.get_output_SNR_data(
-						output_id = 0,
-						binned_spks_t_windos = int(sys.argv[6]),
-						t_start = total_sim_t - network.t_run, 
-						t_end = total_sim_t)
+					for out_id in range(0, network.N_e_outp):
+						avg_ffrq, std_ffrq, snr_ffrq = network.get_output_SNR_data(
+							output_id = out_id,
+							binned_spks_t_windos = int(sys.argv[6]),
+							t_start = total_sim_t - network.t_run, 
+							t_end = total_sim_t)
 
-					network.show_output_activity(
-						binned_spks_t_windos = int(sys.argv[6]),
-						pattern_id = pattern_id,
-						t_start = total_sim_t - network.t_run, 
-						t_end = total_sim_t)
+						if out_id == 0:
+							network.set_array_SNR_key_value(
+								pattern_id = pattern_id,
+								avg_ffrq_out1 = avg_ffrq,
+								avg_ffrq_out2 = None,
+								std_ffrq_out1 = std_ffrq,
+								std_ffrq_out2 = None,
+								snr_ffrq_out1 = snr_ffrq,
+								snr_ffrq_out2 = None)
+						else:
+							network.set_array_SNR_key_value(
+								pattern_id = pattern_id,
+								avg_ffrq_out1 = None,
+								avg_ffrq_out2 = avg_ffrq,
+								std_ffrq_out1 = None,
+								std_ffrq_out2 = std_ffrq,
+								snr_ffrq_out1 = None,
+								snr_ffrq_out2 = snr_ffrq)
+
+	network.export_dict_array_snr(dataset_metadata = meta_data)
 
 if __name__ == "__main__":
 	main()

@@ -40,6 +40,7 @@ class FeedforwardNetwork:
 
 		# Metrics related
 		self.dict_array_mi = []
+		self.dict_array_snr = []
 
 		# Learning Rule
 		self.plasticity_rule = 'user-defined'
@@ -796,6 +797,45 @@ class FeedforwardNetwork:
 
 				self.dict_array_mi.append(dict_mi)
 
+	def initi_dict_array_for_SNR(self, dataset_size):
+		for pattern_id in range(0, dataset_size):
+			dict_snr = {
+			'pattern_id': pattern_id,
+			'avg_ffrq_out1': [],
+			'avg_ffrq_out2': [],
+			'std_ffrq_out1': [],
+			'std_ffrq_out2': [],
+			'snr_ffrq_out1': [],
+			'snr_ffrq_out2': []
+			}
+
+			self.dict_array_snr.append(dict_snr)
+
+	def set_array_SNR_key_value(
+		self,
+		pattern_id,
+		avg_ffrq_out1 = None,
+		avg_ffrq_out2 = None,
+		std_ffrq_out1 = None,
+		std_ffrq_out2 = None,
+		snr_ffrq_out1 = None,
+		snr_ffrq_out2 = None):
+
+		for item in self.dict_array_snr:
+			if item['pattern_id'] == pattern_id:
+				if avg_ffrq_out1 != None:
+					item['avg_ffrq_out1'].append(avg_ffrq_out1)
+				if avg_ffrq_out2 != None:
+					item['avg_ffrq_out2'].append(avg_ffrq_out2)
+				if std_ffrq_out1 != None:
+					item['std_ffrq_out1'].append(std_ffrq_out1)
+				if std_ffrq_out2 != None:
+					item['std_ffrq_out2'].append(std_ffrq_out2)
+				if snr_ffrq_out1 != None:
+					item['snr_ffrq_out1'].append(snr_ffrq_out1)
+				if snr_ffrq_out2 != None:
+					item['snr_ffrq_out2'].append(snr_ffrq_out2)
+
 	def update_dict_array_keys(
 		self, 
 		pre_i, 
@@ -939,6 +979,31 @@ class FeedforwardNetwork:
 				populations_biasing_dict
 				), f)
 
+	def export_dict_array_snr(self, dataset_metadata):
+		fn =  os.path.join(self.simulation_path, self.network_id +  '_dict_array_snr.pickle')
+
+		populations_biasing_dict = {
+		'teacher_to_Eout_w': self.teacher_to_Eout_w,
+		'I_to_Eout_w': self.I_to_Eout_w,
+		'Input_to_Einp_w': self.Input_to_Einp_w,
+		'Input_to_I_w': self.Input_to_I_w,
+		'spont_to_input_w': self.spont_to_input_w,
+		'stim_freq_Ninp': self.stim_freq_Ninp,
+		'stim_freq_teach': self.stim_freq_teach,
+		'stim_freq_spont': self.stim_freq_spont,
+		'stim_freq_i': self.stim_freq_i
+		}
+
+		with open(fn, 'wb') as f:
+			pickle.dump((
+				self.dict_array_snr,
+				dataset_metadata,
+				self.plasticity_rule,
+				self.parameter_set,
+				self.bistability,
+				self.stoplearning,
+				populations_biasing_dict
+				), f)
 
 	"""
 	binned_spks_t_windos - must be int desbring time window in ms
@@ -1301,11 +1366,22 @@ class FeedforwardNetwork:
 
 		avg_ffrq = np.round(np.mean(t_hist_freq), 2)
 		std_ffrq = np.round(np.std(t_hist_freq), 2)
-		snr_ffrq = np.round((avg_ffrq/std_ffrq), 2)
+		
+		if std_ffrq > 0:
+			snr_ffrq = np.round((avg_ffrq/std_ffrq), 2)
+		else:
+			snr_ffrq = 0.00
 
-		print('\n\navg_ffrq: ', avg_ffrq)
-		print('std_ffrq: ', std_ffrq)
-		print('snr_ffrq: ', snr_ffrq, '\n\n')
+		if avg_ffrq < 0 or isnan(avg_ffrq):
+			avg_ffrq = 0.0
+
+		if std_ffrq < 0 or isnan(std_ffrq):
+			std_ffrq = 0.0
+
+		if snr_ffrq < 0 or isnan(snr_ffrq):
+			snr_ffrq = 0.0
+
+		return avg_ffrq, std_ffrq, snr_ffrq
 
 	"""
 	binned_spks_t_windos - must be int desbring time window in ms
