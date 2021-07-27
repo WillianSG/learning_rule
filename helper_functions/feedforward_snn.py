@@ -17,6 +17,7 @@ import numpy as np
 from time import localtime
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
+import scipy.stats as st
 
 if sys.platform == 'linux':
 	from pyentropy import DiscreteSystem
@@ -26,6 +27,7 @@ from load_parameters import *
 from load_synapse_model import *
 from load_stimulus_Ninp import *
 from histograms_firing_rate_t_window import *
+from histograms_firing_rate2 import *
 
 prefs.codegen.target = 'numpy'
 
@@ -731,16 +733,17 @@ class FeedforwardNetwork:
 	
 	"""
 	binned_spks_t_windos - must be int desbring time window in ms
+	t_start - must be float seconds
 	"""
 	def get_binarized_binned_spk_count(
 		self, 
 		spk_tarray,
 		binned_spks_t_windos,
-		t_start = 0.0):
+		t_start = 0.0*second):
 
 		hist_spkt, bins_spkt = histograms_firing_rate_t_window(
 			t_points = np.array(spk_tarray),
-			sim_t = self.t_run/second,
+			sim_t = self.t_run,
 			t_window = binned_spks_t_windos,
 			t_start = t_start)
 
@@ -752,6 +755,24 @@ class FeedforwardNetwork:
 				binary_binned_spk_t_count.append(0)
 
 		return binary_binned_spk_t_count
+
+	"""
+	binned_spks_t_windos - must be int desbring time window in ms
+	t_start - must be float seconds
+	"""
+	def get_binned_spk_count(
+		self, 
+		spk_tarray,
+		binned_spks_t_windos,
+		t_start = 0.0*second):
+
+		hist_spkt, bins_spkt = histograms_firing_rate_t_window(
+			t_points = np.array(spk_tarray),
+			sim_t = self.t_run,
+			t_window = binned_spks_t_windos,
+			t_start = t_start)
+
+		return hist_spkt, bins_spkt
 
 	def initi_dict_array_for_MI_calc(self):
 		# ----------- Looping over pre i (input) / post j (output) -----------
@@ -1236,6 +1257,184 @@ class FeedforwardNetwork:
 			self.Input_to_Output_stamon,
 			self.I_Eout_stamon,
 			name = 'net')
+
+	"""
+	binned_spks_t_windos - must be int desbring time window in ms
+	t_start - must be *second
+	t_end - must be *second
+	"""
+	def show_output_activity(
+		self, 
+		binned_spks_t_windos,
+		pattern_id,
+		t_start = -1.0*second,
+		t_end = -1.0*second):
+
+		if t_start == -1.0*second:
+			sys.exit('\nERROR - method \'self.show_output_activity()\' expects \'t_start\' (float*second) to be specified')
+
+		if binned_spks_t_windos <= 1:
+			sys.exit('\nERROR - method \'self.show_output_activity()\' expects \'binned_spks_t_windos\' (int) to be bigger than 1')
+
+		if t_end <= t_start:
+			sys.exit('\nERROR - method \'self.show_output_activity()\' expects \'t_end\' (float*second) to be bigger than \'t_start\'')
+
+		# ----------- Getting spk times as arrays of arrays -----------
+		output_spks_t_array = self.get_out_neurons_spks_t_no_unit(
+			start = t_start)
+
+		input_spks_t_array = self.get_input_layer_spks_t_no_unit(
+			start = t_start)
+
+		# print('\n', output_spks_t_array[0])
+
+		# ----------- binned spk count -----------
+		# for j in range(0, self.N_e_outp):
+		hist_spkt, bins_spkt = self.get_binned_spk_count(
+			spk_tarray = input_spks_t_array[self.stimulus_ids_Ninp[0]],
+			binned_spks_t_windos = binned_spks_t_windos,
+			t_start = t_start)
+
+		hist_spkt2, bins_spkt2 = self.get_binned_spk_count(
+			spk_tarray = output_spks_t_array[0],
+			binned_spks_t_windos = binned_spks_t_windos,
+			t_start = t_start)
+
+		# ============================ plotting =============================
+		axis_label_size = 6
+
+		fig0 = plt.figure(constrained_layout = True, figsize = (10, 4))
+
+		widths = [8]
+		heights = [0.1, 0.2, 0.1, 0.2]
+
+		spec2 = gridspec.GridSpec(
+			ncols = 1, 
+			nrows = 4, 
+			width_ratios = widths,
+			height_ratios = heights,
+			figure = fig0)
+
+		# ----------------- input neuron | spks -----------------
+		f2_ax1 = fig0.add_subplot(spec2[0, 0])
+
+		y = [0]*len(input_spks_t_array[self.stimulus_ids_Ninp[0]])
+
+		plt.plot(input_spks_t_array[self.stimulus_ids_Ninp[0]], y, '|', color = 'lightblue')
+
+		plt.ylabel('Neuron 1', size = axis_label_size)
+
+		plt.yticks([])
+
+		plt.xticks(np.arange(
+			(t_start/second), 
+			(t_end/second)+0.2,
+			step = 0.2))
+
+		plt.xlim((t_start/second), (t_end/second))
+
+		ax = plt.gca()
+		ax.axes.xaxis.set_ticklabels([])
+
+		# ----------------- input neuron | histogram -----------------
+		f2_ax2 = fig0.add_subplot(spec2[1, 0])
+
+		[t_hist_edges,
+		t_hist_freq, 
+		t_hist_bin_widths] = histograms_firing_rate2(
+			t_points = input_spks_t_array[self.stimulus_ids_Ninp[0]],
+			pop_size = 1,
+			bins_edges = bins_spkt)
+
+		plt.bar(
+			x = t_hist_edges,
+			height = t_hist_freq,
+			width = t_hist_bin_widths,
+			color = 'lightblue',
+			label = '---',
+			edgecolor = 'k',
+			linewidth = 0.5)
+
+		avg_frq = int(np.mean(t_hist_freq))
+		plt.axhline(y = avg_frq, linestyle = '--', color = 'k', label = 'avg freq. ' + str(avg_frq))
+
+		f2_ax2.legend(prop = {'size': 8})
+
+		plt.xticks(np.arange(
+			(t_start/second), 
+			(t_end/second)+0.2,
+			step = 0.2))
+
+		plt.xlim((t_start/second), (t_end/second))
+
+		ax = plt.gca()
+		ax.axes.xaxis.set_ticklabels([])
+
+		plt.ylabel('freq (Hz)', size = 6)
+		plt.xlabel('time (s)', size = 6)
+
+		# ----------------- output neuron | spks -----------------
+		f2_ax3 = fig0.add_subplot(spec2[2, 0])
+
+		y = [0]*len(output_spks_t_array[0])
+
+		plt.plot(output_spks_t_array[0], y, '|', color = 'tomato')
+
+		plt.ylabel('out', size = axis_label_size)
+
+		plt.yticks([])
+
+		plt.xticks(np.arange(
+			(t_start/second), 
+			(t_end/second)+0.2,
+			step = 0.2))
+
+		plt.xlim((t_start/second), (t_end/second))
+
+		ax = plt.gca()
+		ax.axes.xaxis.set_ticklabels([])
+
+		# ----------------- output neuron | histogram -----------------
+		f2_ax4 = fig0.add_subplot(spec2[3, 0])
+
+		[t_hist_edges,
+		t_hist_freq, 
+		t_hist_bin_widths] = histograms_firing_rate2(
+			t_points = output_spks_t_array[0],
+			pop_size = 1,
+			bins_edges = bins_spkt2)
+
+		plt.bar(
+			x = t_hist_edges,
+			height = t_hist_freq,
+			width = t_hist_bin_widths,
+			color = 'tomato',
+			label = '---',
+			edgecolor = 'k',
+			linewidth = 0.5)
+
+		avg_frq = int(np.mean(t_hist_freq))
+		plt.axhline(y = avg_frq, linestyle = '--', color = 'k', label = 'avg freq. ' + str(avg_frq))
+
+		f2_ax4.legend(prop = {'size': 8})
+
+		plt.xticks(np.arange(
+			(t_start/second), 
+			(t_end/second)+0.2,
+			step = 0.2))
+
+		plt.xlim((t_start/second), (t_end/second))
+
+		# ax = plt.gca()
+		# ax.axes.xaxis.set_ticklabels([])
+
+		plt.ylabel('freq (Hz)', size = 6)
+		plt.xlabel('time (s)', size = 6)
+
+		plt.show()
+		plt.close()
+
+
 			
 
 

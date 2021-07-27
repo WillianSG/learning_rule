@@ -8,6 +8,7 @@ Comments:
 - sys.argv[3] = create results folder/save net states (True/False)
 - sys.argv[4] = train network (True/False)
 - sys.argv[5] = run network (True/False)
+- sys.argv[6] = binned spk count t window (int -> ms)
 """
 import setuptools
 import os, sys, pickle, shutil
@@ -99,8 +100,8 @@ def main():
 	# ----------- Results Directories -----------
 
 	# Results Directories
-	if sys.argv[3] == 'True':
-		results_dir = os.path.join(dir_one_up, 'network_results')
+	if str(sys.argv[3]) == 'True':
+		results_dir = os.path.join(dir_two_up, 'network_results')
 		if not(os.path.isdir(results_dir)):
 			os.mkdir(results_dir)
 
@@ -161,13 +162,14 @@ def main():
 		print(key, ':', value)
 	print('======================================================\n')
 
-	network.export_syn_matrix(name = 'initial')
+	if str(sys.argv[3]) == 'True':
+		network.export_syn_matrix(name = 'initial')
 
 	# ----------- Training -----------
 
 	print('\n====================== training ======================')
 
-	if sys.argv[4] == 'True':
+	if str(sys.argv[4]) == 'True':
 		network.Input_to_Output.plastic = False
 
 		opt_counter = 0
@@ -198,17 +200,26 @@ def main():
 				network.update_input_connectivity()
 
 				# 2.1 - potentiate active ids and depresse spont. - FOR TESTING
-				network.set_wPot_active_input(pattern_id = pattern_id)
+				# network.set_wPot_active_input(pattern_id = pattern_id)
 
-				network.show_syn_matrix()
+				# network.show_syn_matrix()
 
-				if sys.argv[5] == 'True':
+				if str(sys.argv[5]) == 'True':
+					# 2 - silencing auxiliary populations
+					network.silince_for_testing()
+
 					# 3 - simulate
 					network.run_net(report = None)
 
 					total_sim_t += network.t_run
 
 					opt_counter += 1
+
+					network.show_output_activity(
+						binned_spks_t_windos = int(sys.argv[6]),
+						pattern_id = pattern_id,
+						t_start = total_sim_t - network.t_run, 
+						t_end = total_sim_t)
 
 if __name__ == "__main__":
 	main()
