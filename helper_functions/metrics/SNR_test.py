@@ -46,6 +46,9 @@ def main():
 	
 	network = FeedforwardNetwork()
 
+	snr_sim_run_n = 2
+	binned_spks_t_windos = 20
+
 	# populations sizes
 	network.N_e = 400
 	network.N_e_outp = 2
@@ -172,8 +175,6 @@ def main():
 	network.initi_dict_array_for_SNR(dataset_size = meta_data['dataset_size'])
 
 	if str(sys.argv[4]) == 'True':
-		network.Input_to_Output.plastic = False
-
 		opt_counter = 0
 		for epoch in range(1, num_epochs+1):
 			
@@ -186,6 +187,8 @@ def main():
 			print(' \nepoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
 			
 			for pattern_id in epoch_ids_list:
+				network.Input_to_Output.plastic = False
+
 				# 1 - select next pattern to be presented
 				network.set_stimulus_dataset(full_dataset[pattern_id])
 
@@ -207,9 +210,6 @@ def main():
 				# network.show_syn_matrix()
 
 				if str(sys.argv[5]) == 'True':
-					# 2 - silencing auxiliary populations
-					network.silince_for_testing()
-
 					# 3 - simulate
 					network.run_net(report = None)
 
@@ -218,30 +218,55 @@ def main():
 					opt_counter += 1
 
 					for out_id in range(0, network.N_e_outp):
-						avg_ffrq, std_ffrq, snr_ffrq = network.get_output_SNR_data(
-							output_id = out_id,
-							binned_spks_t_windos = int(sys.argv[6]),
-							t_start = total_sim_t - network.t_run, 
-							t_end = total_sim_t)
+						avg_ffrq_avg = 0.0
+						std_ffrq_avg = 0.0
+						snr_ffrq_avg = 0.0
+
+						for i in range(0, snr_sim_run_n):
+							# 0 - silencing auxiliary populations
+							network.silince_for_testing()
+							network.Input_to_Output.plastic = False
+
+							network.run_net(report = None)
+
+							total_sim_t += network.t_run
+
+							avg_ffrq, std_ffrq, snr_ffrq = network.get_output_SNR_data(
+								output_id = out_id,
+								binned_spks_t_windos = binned_spks_t_windos,
+								t_start = total_sim_t - network.t_run, 
+								t_end = total_sim_t)
+
+							avg_ffrq_avg += avg_ffrq
+							std_ffrq_avg += std_ffrq
+							snr_ffrq_avg += snr_ffrq
+
+							print('\nsnr: ', snr_ffrq)
+
+						avg_ffrq_avg = np.round((avg_ffrq_avg/snr_sim_run_n), 2)
+						std_ffrq_avg = np.round((std_ffrq_avg/snr_sim_run_n), 2)
+						snr_ffrq_avg = np.round((snr_ffrq_avg/snr_sim_run_n), 2)
+
+						print('\navg snr: ', snr_ffrq_avg)
 
 						if out_id == 0:
 							network.set_array_SNR_key_value(
 								pattern_id = pattern_id,
-								avg_ffrq_out1 = avg_ffrq,
+								avg_ffrq_out1 = avg_ffrq_avg,
 								avg_ffrq_out2 = None,
-								std_ffrq_out1 = std_ffrq,
+								std_ffrq_out1 = std_ffrq_avg,
 								std_ffrq_out2 = None,
-								snr_ffrq_out1 = snr_ffrq,
+								snr_ffrq_out1 = snr_ffrq_avg,
 								snr_ffrq_out2 = None)
 						else:
 							network.set_array_SNR_key_value(
 								pattern_id = pattern_id,
 								avg_ffrq_out1 = None,
-								avg_ffrq_out2 = avg_ffrq,
+								avg_ffrq_out2 = avg_ffrq_avg,
 								std_ffrq_out1 = None,
-								std_ffrq_out2 = std_ffrq,
+								std_ffrq_out2 = std_ffrq_avg,
 								snr_ffrq_out1 = None,
-								snr_ffrq_out2 = snr_ffrq)
+								snr_ffrq_out2 = snr_ffrq_avg)
 
 	network.export_dict_array_snr(dataset_metadata = meta_data)
 
