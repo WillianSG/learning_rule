@@ -1262,6 +1262,55 @@ class FeedforwardNetwork:
 	binned_spks_t_windos - must be int desbring time window in ms
 	t_start - must be *second
 	t_end - must be *second
+
+	Comments:
+	- method calculates for out neuron 'output_id' its avg. firing frequency, standard deviation and singnal-to-noise ratio.
+	"""
+	def get_output_SNR_data(
+		self,
+		output_id,
+		binned_spks_t_windos,
+		t_start = -1.0*second,
+		t_end = -1.0*second):
+
+		if t_start == -1.0*second:
+			sys.exit('\nERROR - method \'self.show_output_activity()\' expects \'t_start\' (float*second) to be specified')
+
+		if binned_spks_t_windos <= 1:
+			sys.exit('\nERROR - method \'self.show_output_activity()\' expects \'binned_spks_t_windos\' (int) to be bigger than 1')
+
+		if t_end <= t_start:
+			sys.exit('\nERROR - method \'self.show_output_activity()\' expects \'t_end\' (float*second) to be bigger than \'t_start\'')
+
+		# ----------- Getting spk times as arrays of arrays -----------
+		output_spks_t_array = self.get_out_neurons_spks_t_no_unit(
+			start = t_start)
+
+		# ----------- binned spk count -----------
+		hist_spkt, bins_spkt = self.get_binned_spk_count(
+			spk_tarray = output_spks_t_array[output_id],
+			binned_spks_t_windos = binned_spks_t_windos,
+			t_start = t_start)
+
+		[t_hist_edges,
+		t_hist_freq, 
+		t_hist_bin_widths] = histograms_firing_rate2(
+			t_points = output_spks_t_array[output_id],
+			pop_size = 1,
+			bins_edges = bins_spkt)
+
+		avg_ffrq = np.round(np.mean(t_hist_freq), 2)
+		std_ffrq = np.round(np.std(t_hist_freq), 2)
+		snr_ffrq = np.round((avg_ffrq/std_ffrq), 2)
+
+		print('\n\navg_ffrq: ', avg_ffrq)
+		print('std_ffrq: ', std_ffrq)
+		print('snr_ffrq: ', snr_ffrq, '\n\n')
+
+	"""
+	binned_spks_t_windos - must be int desbring time window in ms
+	t_start - must be *second
+	t_end - must be *second
 	"""
 	def show_output_activity(
 		self, 

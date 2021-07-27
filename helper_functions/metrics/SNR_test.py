@@ -200,7 +200,7 @@ def main():
 				network.update_input_connectivity()
 
 				# 2.1 - potentiate active ids and depresse spont. - FOR TESTING
-				# network.set_wPot_active_input(pattern_id = pattern_id)
+				network.set_wPot_active_input(pattern_id = pattern_id)
 
 				# network.show_syn_matrix()
 
@@ -214,6 +214,12 @@ def main():
 					total_sim_t += network.t_run
 
 					opt_counter += 1
+
+					network.get_output_SNR_data(
+						output_id = 0,
+						binned_spks_t_windos = int(sys.argv[6]),
+						t_start = total_sim_t - network.t_run, 
+						t_end = total_sim_t)
 
 					network.show_output_activity(
 						binned_spks_t_windos = int(sys.argv[6]),
