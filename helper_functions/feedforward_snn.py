@@ -372,6 +372,23 @@ class FeedforwardNetwork:
 					else:
 						self.Input_to_Output.rho[pre_id, post_id] = 0.0
 
+	def set_wPot_active_input(self, pattern_id):
+		if (pattern_id % 2) == 0:
+			post_id_tr = 0 # target output neuron
+			post_id_nt = 1 # non-target output neuron
+		else:
+			post_id_tr = 1
+			post_id_nt = 0
+
+		for pre_id in range(0, len(self.E_inp)):
+			if isnan(self.M_syn[pre_id][post_id_tr]) == False:
+				if pre_id in self.stimulus_ids_Ninp:
+					self.Input_to_Output.rho[pre_id, post_id_tr] = 1.0
+					self.Input_to_Output.rho[pre_id, post_id_nt] = 0.0
+				else:
+					self.Input_to_Output.rho[pre_id, post_id_tr] = 0.0
+					self.Input_to_Output.rho[pre_id, post_id_nt] = 0.0
+
 	def binarize_syn_matrix(self):
 		for pre_id in range(0, len(self.E_inp)):
 			for post_id in range(0, len(self.E_outp)):
@@ -1057,6 +1074,63 @@ class FeedforwardNetwork:
 		plt.close()
 
 		print('\n[ synaptic matrix exported ]\n')
+
+	def show_syn_matrix(self):
+
+		self.M_syn = np.full((len(self.E_inp), len(self.E_outp)), np.nan)
+		
+		self.M_syn[self.Input_to_Output.i[:], self.Input_to_Output.j[:]] = self.Input_to_Output.rho[:]
+
+		out_syn = [ [] for j in range(self.N_e_outp)]
+
+		for synapse_row in self.M_syn:
+			out_neuron_id = 0
+			for w in synapse_row:
+				out_syn[out_neuron_id].append(w)
+				out_neuron_id += 1
+
+		# ====================== plotting ======================
+
+		fig0 = plt.figure(constrained_layout = True)
+
+		widths = [8]
+		heights = [8, 8]
+
+		spec2 = gridspec.GridSpec(
+			ncols = 1, 
+			nrows = 2, 
+			width_ratios = widths,
+			height_ratios = heights,
+			figure = fig0)
+
+		fig0.suptitle('Output Neuron\'s Synaptic Matrix', fontsize = 8)
+
+		# ----------- Output Neuron 0 -----------
+
+		f2_ax1 = fig0.add_subplot(spec2[0, 0])
+
+		plt.title('Output neuron 0', size = 10)
+
+		plt.xticks([])
+		plt.yticks([])
+
+		plt.imshow(np.array(out_syn[0]).reshape(20, 20), cmap = 'Greys', interpolation = 'none')
+
+		# ----------- Output Neuron 1 -----------
+
+		f2_ax2 = fig0.add_subplot(spec2[1, 0])
+
+		plt.title('Output neuron 1', size = 10)
+
+		plt.xticks([])
+		plt.yticks([])
+
+		plt.imshow(np.array(out_syn[1]).reshape(20, 20), cmap = 'Greys', interpolation = 'none')
+
+		# ----------- Saving -----------
+
+		plt.show()
+		plt.close()
 
 	def get_out_neurons_spks_t(self, start):
 		counter = 0 # marks where in the ids array the valid spk times start

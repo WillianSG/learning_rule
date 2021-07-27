@@ -7,7 +7,7 @@ Comments:
 - sys.argv[2] = total training epochs
 - sys.argv[3] = create results folder/save net states (True/False)
 - sys.argv[4] = train network (True/False)
-- sys.argv[5] = test treined network (True/False)
+- sys.argv[5] = run network (True/False)
 """
 import setuptools
 import os, sys, pickle, shutil
@@ -24,9 +24,6 @@ dataset_dir = 'dataset_F'
 dir_one_up = os.path.dirname(os.getcwd())
 dir_two_up = os.path.abspath(os.path.join(os.getcwd() , '../..'))
 
-print(dir_one_up)
-print(dir_two_up)
-
 # Adding parent dir to list of dirs that the interpreter will search in
 sys.path.append(dir_one_up)
 sys.path.append(os.path.join(dir_two_up, plotting_funcs_dir))
@@ -39,8 +36,6 @@ from plot_feedforwad_net import *
 from feedforward_plot_activity import *
 from make_ids_training_list import *
 from histograms_firing_rate import *
-
-print('\nsys platform: ', sys.platform)
 
 def main():
 	# ----------- Simulation parameters -----------
@@ -172,8 +167,8 @@ def main():
 
 	print('\n====================== training ======================')
 
-	if sys.argv[4] == True:
-		network.Input_to_Output.plastic = True
+	if sys.argv[4] == 'True':
+		network.Input_to_Output.plastic = False
 
 		opt_counter = 0
 		for epoch in range(1, num_epochs+1):
@@ -181,6 +176,8 @@ def main():
 			epoch_ids_list = make_ids_traning_list(
 				dataset_size = meta_data['dataset_size'],
 				epoch = epoch)
+
+			epoch_ids_list = [0]
 
 			print(' \nepoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
 			
@@ -201,124 +198,19 @@ def main():
 				network.update_input_connectivity()
 
 				# 2.1 - potentiate active ids and depresse spont. - FOR TESTING
-				# network.set_active_input_w_potentiated()
+				network.set_wPot_active_input(pattern_id = pattern_id)
 
-				# 3 - simulate
-				network.run_net(report = None)
+				network.show_syn_matrix()
 
-				total_sim_t += network.t_run
+				if sys.argv[5] == 'True':
+					# 3 - simulate
+					network.run_net(report = None)
 
-				opt_counter += 1
+					total_sim_t += network.t_run
 
-	# ----------- Finalizing Training (saving network state) -----------
-	# 6 - binarize weights based on synaptic internal state variable
-	network.binarize_syn_matrix()
-
-	network.export_syn_matrix(name = 'trained')
-
-	# 6.1 - turning plasticity OFF for testing
-	network.Input_to_Output.plastic = False
-
-	if sys.argv[3] == 'True':
-		# 7 - save trained network state
-		network.net.store(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
-
-	print('======================================================\n')
-
-	# ----------- Testing trained network -----------
-	if sys.argv[5] == True:
-		print('\n====================== testing =======================')
-
-		# 0 - index represents pattern id, value represents output active neuron
-		out_winning_response_per_pattern = []
-
-		presentation_time = float(sys.argv[1])*second
-		# presentation_time = 2*second
-		# network.t_run = 2*second
-
-		correct_response = 0
-		wrong_response = 0
-
-		# 1 - restoring trained network state
-		network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
-
-		# 2 - silencing auxiliary populations
-		network.silince_for_testing()
-
-		# 3 - testing learned patterns
-		for pattern_id in range(0, meta_data['dataset_size']):
-			print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
-			
-			# setting stimulus to be presented
-			network.set_stimulus_dataset(full_dataset[pattern_id])
-
-			# update who's active/spontaneous in the input layer
-			network.update_input_connectivity()
-
-			# simulating
-			network.run_net(report = None)
-
-			network.update_dict_array_mi_array_all(
-				start = total_sim_t,
-				binned_spks_t_windos = 5,
-				pattern_id = pattern_id,
-				test = False,
-				t_start = total_sim_t/second)
-
-			total_sim_t += network.t_run
-
-			# ----------- saving output neuron responding to pattern -----------
-
-			# =============================================================
-
-			# 1 - Where in spkmon current stimulus response starts
-			t_start = total_sim_t - presentation_time
-
-			# 2 - Gets spikes times for each of the output neurons
-			"""
-			output_spks_t[0] = spikes times of output neuron 0
-			output_spks_t[1] = spikes times of output neuron 1
-			...
-			"""
-			output_spks_t = network.get_out_neurons_spks_t(start = t_start)
-
-			mean_activity_output_neurons = []
-
-			# 3 - Calc. outputs firing freqs.
-			for out_n in range(0, network.N_e_outp):
-				[t_hist_edges,
-				t_hist_freq, 
-				t_hist_bin_widths] = histograms_firing_rate(
-					t_points = output_spks_t[out_n], 
-					pop_size = 1)
-
-				mean_freq = np.mean(t_hist_freq)
-
-				# 3.1 - saving mean activity
-				mean_activity_output_neurons.append(mean_freq)
-
-			# 4 - Who's firing the most
-			max_freq = max(mean_activity_output_neurons)
-			max_neuro_id = mean_activity_output_neurons.index(max_freq)
-
-			# 5 - Saving winning neuron
-			out_winning_response_per_pattern.append(max_neuro_id)
-
-			if ((pattern_id % 2) == 0) and (max_neuro_id == 0):
-					correct_response += 1
-			elif ((pattern_id % 2) != 0) and (max_neuro_id == 1):
-				correct_response += 1
-			else:
-				wrong_response += 1
-
-			# =============================================================
-
-		print('======================================================\n')
-
-		print('\n\ncorrect responses: ', correct_response)
-		print('wrong responses: ', wrong_response)
+					opt_counter += 1
 
 if __name__ == "__main__":
 	main()
 
-	print("\nfeedforward_net.py - END\n")
+	print("\nSNR_test.py - END\n")
