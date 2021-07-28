@@ -11,6 +11,7 @@ import os, sys, pickle, shutil
 from brian2 import *
 from numpy import *
 from time import localtime, strftime
+from progress.bar import Bar
 
 prefs.codegen.target = 'numpy'
 
@@ -31,7 +32,7 @@ from feedforward_snn import FeedforwardNetwork
 from visualise_connectivity import visualise_connectivity
 from plot_feedforwad_net import *
 from feedforward_plot_activity import *
-from make_ids_training_list import *
+from make_ids_training_list2 import *
 from histograms_firing_rate import *
 
 def main():
@@ -64,7 +65,7 @@ def main():
 
 	# Learning Rule
 	network.plasticity_rule = 'LR3'
-	network.parameter_set = '1.C'
+	network.parameter_set = '1.D'
 	network.bistability = True
 	network.stoplearning = True
 
@@ -73,18 +74,18 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.teacher_to_Eout_w = 40*mV 	# Teacher to Output
-	network.I_to_Eout_w = 40*mV			# Inhibitory to Output
+	network.teacher_to_Eout_w = 10*mV 	# Teacher to Output (10*mV)
+	network.I_to_Eout_w = 30*mV			# Inhibitory to Output (30*mV)
 
-	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input
-	network.Input_to_I_w = 100*mV 		# 'virtual inh.' to Inhibitory
-	network.spont_to_input_w = 100*mV 	# Spontaneous to Input
+	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input (100*mV)
+	network.Input_to_I_w = 20*mV 		# 'virtual inh.' to Inhibitory (20*mV )
+	network.spont_to_input_w = 100*mV 	# Spontaneous to Input (100*mV)
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 130*Hz 	# Input pop.
-	network.stim_freq_teach = 300*Hz 	# Teacher pop.
-	network.stim_freq_spont = 1*Hz 		# Spontaneous pop.
-	network.stim_freq_i = 400*Hz		# Inhib. pop.
+	network.stim_freq_Ninp = 75*Hz 		# Input pop. (75*Hz)
+	network.stim_freq_teach = 800*Hz 	# Teacher pop. (600*Hz)
+	network.stim_freq_spont = 3*Hz 		# Spontaneous pop. (3*Hz)
+	network.stim_freq_i = 600*Hz		# Inhib. pop. (600*Hz)
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
@@ -113,15 +114,15 @@ def main():
 	network.simulation_path = sim_resul_final_path
 
 	# Storing network initial state
-	network.net.store(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
+	# network.net.store(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
 
 	total_sim_t = 0*second
 	t_start = 0*second
 
 	# ----------- Loading dataset -----------
 
-	sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_13-09-12_dataset_Fusi-size_10.pickle'
-	# sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
+	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_13-09-12_dataset_Fusi-size_10.pickle'
+	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,
@@ -131,25 +132,25 @@ def main():
 
 	patterns_avg_filename = meta_data['timestamp'] +  '_dataset_size_' + str(meta_data['dataset_size']) + '_summed_patterns.pickle'
 
-	# dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
-	dataset_patterns_avg = '/home/p302242/PhD_codes/learning_rule/dataset_F/' + patterns_avg_filename
+	dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
+	# dataset_patterns_avg = '/home/p302242/PhD_codes/learning_rule/dataset_F/' + patterns_avg_filename
 
-	with open(dataset_patterns_avg,'rb') as f:(
-		reshaped_c1,
-		reshaped_c2) = pickle.load(f)
+	# with open(dataset_patterns_avg,'rb') as f:(
+	# 	reshaped_c1,
+	# 	reshaped_c2) = pickle.load(f)
 
 	# ----------- Simulation summary -----------
 
-	print('\n================== network metadata ==================')
-	print('active input (Hz/w) : ', network.stim_freq_Ninp, '/', network.w_max)
-	print('spont. input (Hz/w) : ', network.stim_freq_spont, '/', network.w_max)
-	print('teacher (Hz/w)      : ', network.stim_freq_teach, '/', network.teacher_to_Eout_w)
-	print('inhibition (Hz/w)   : ', network.stim_freq_i, '/', network.I_to_Eout_w)
-	print('\nmax. plastic weight : ', network.w_max)
-	print('\nnum. input neurons  : ', network.N_e)
-	print('num. output neurons : ', network.N_e_outp)
-	print('\nt run               : ', network.t_run)
-	print('======================================================\n')
+	# print('\n================== network metadata ==================')
+	# print('active input (Hz/w) : ', network.stim_freq_Ninp, '/', network.w_max)
+	# print('spont. input (Hz/w) : ', network.stim_freq_spont, '/', network.w_max)
+	# print('teacher (Hz/w)      : ', network.stim_freq_teach, '/', network.teacher_to_Eout_w)
+	# print('inhibition (Hz/w)   : ', network.stim_freq_i, '/', network.I_to_Eout_w)
+	# print('\nmax. plastic weight : ', network.w_max)
+	# print('\nnum. input neurons  : ', network.N_e)
+	# print('num. output neurons : ', network.N_e_outp)
+	# print('\nt run               : ', network.t_run)
+	# print('======================================================\n')
 
 	print('================== dataset metadata ==================')
 	for key, value in meta_data.items():
@@ -160,50 +161,54 @@ def main():
 
 	# ----------- Training -----------
 
-	print('\n====================== training ======================')
+	# print('\n====================== training ======================')
 
 	network.Input_to_Output.plastic = True
 
+	# print(network.network_id)
+	
+	bar = Bar('Learning', max = (num_epochs*2)*meta_data['dataset_size'])
 	opt_counter = 0
 	for epoch in range(1, num_epochs+1):
-		
-		epoch_ids_list = make_ids_traning_list(
-			dataset_size = meta_data['dataset_size'],
-			epoch = epoch)
+		# print('epoch: ', epoch)
+		for e in range(0, epoch):		
+			epoch_ids_list = make_ids_traning_list2(
+				dataset_size = meta_data['dataset_size'])
+			# print('epoch_ids_list: ', epoch_ids_list)
+			for pattern_id in epoch_ids_list:
+				# 1 - select next pattern to be presented
+				network.set_stimulus_dataset(full_dataset[pattern_id])
 
-		print(' \nepoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
+				if (pattern_id % 2) == 0:
+					network.update_teachers_rates(target_out = 0)
+					target_out = 0
+				else:
+					network.update_teachers_rates(target_out = 1)
+					target_out = 1
 
-		for pattern_id in epoch_ids_list:
-			# 1 - select next pattern to be presented
-			network.set_stimulus_dataset(full_dataset[pattern_id])
+				# print(' -> pattern ', pattern_id, ' (', total_sim_t, ')', ' | target output: ', target_out)
 
-			if (pattern_id % 2) == 0:
-				network.update_teachers_rates(target_out = 0)
-				target_out = 0
-			else:
-				network.update_teachers_rates(target_out = 1)
-				target_out = 1
+				# 2 - update who's active/spontaneous in the input layer
+				network.update_input_connectivity()
 
-			print(' -> pattern ', pattern_id, ' (', total_sim_t, ')', ' | target output: ', target_out)
+				# 3 - simulate
+				network.run_net(report = None)
 
-			# 2 - update who's active/spontaneous in the input layer
-			network.update_input_connectivity()
+				total_sim_t += network.t_run
 
-			# 3 - simulate
-			network.run_net(report = None)
+				opt_counter += 1
 
-			total_sim_t += network.t_run
+				# network.export_syn_matrix(name = 'training', opt = '_' + str(opt_counter) + '_')
 
-			opt_counter += 1
-
-			network.export_syn_matrix(name = 'training', opt = '_' + str(opt_counter) + '_')
+				bar.next()
+	bar.finish()
 
 	# ----------- Finalizing Training (saving network state) -----------
 
 	# 6 - binarize weights based on synaptic internal state variable
-	network.binarize_syn_matrix()
+	# network.binarize_syn_matrix()
 
-	network.export_syn_matrix(name = 'trained_withClasses_', class1 = reshaped_c1, class2 = reshaped_c2)
+	# network.export_syn_matrix(name = 'trained_withClasses_', class1 = reshaped_c1, class2 = reshaped_c2)
 
 	network.export_syn_matrix(name = 'trained')
 
@@ -211,12 +216,12 @@ def main():
 	network.Input_to_Output.plastic = False
 
 	# 7 - save trained network state
-	network.net.store(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
+	# network.net.store(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
 
-	print('======================================================\n')
+	# print('======================================================\n')
 
 	# ----------- Testing trained network -----------
-	print('\n====================== testing =======================')
+	# print('\n====================== testing =======================')
 
 	# 0 - index represents pattern id, value represents output active neuron
 	out_winning_response_per_pattern = []
@@ -229,14 +234,15 @@ def main():
 	wrong_response = 0
 
 	# 1 - restoring trained network state
-	network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
+	# network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
 
 	# 2 - silencing auxiliary populations
 	network.silince_for_testing()
 
+	bar2 = Bar('Testing', max = meta_data['dataset_size'])
 	# 3 - testing learned patterns
 	for pattern_id in range(0, meta_data['dataset_size']):
-		print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
+		# print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
 		
 		# setting stimulus to be presented
 		network.set_stimulus_dataset(full_dataset[pattern_id])
@@ -292,15 +298,34 @@ def main():
 			correct_response += 1
 		else:
 			wrong_response += 1
+	
+		bar2.next()
+	bar2.finish()
 
 		# =============================================================
 
-	print('======================================================\n')
+	# print('======================================================\n')
 
-	print('\n\ncorrect responses: ', correct_response)
-	print('wrong responses: ', wrong_response)
+	# print('\n\ncorrect responses: ', correct_response)
+	# print('wrong responses: ', wrong_response)
+
+	correct_rate = np.round((correct_response/meta_data['dataset_size']), 2)
+
+	print('correct_rate: ', correct_rate)
+
+	# fn =  os.path.join(network.simulation_path, network.network_id +  '_sim_results_cr.pickle')
+
+	# with open(fn, 'wb') as f:
+	# 	pickle.dump((
+	# 		network.network_id,
+	# 		network.t_run/second,
+	# 		num_epochs,
+	# 		correct_response,
+	# 		wrong_response,
+	# 		correct_rate
+	# 		), f)
 
 if __name__ == "__main__":
 	main()
 
-	print("\nfeedforward_net.py - END\n")
+	# print("\nfeedforward_net.py - END\n")

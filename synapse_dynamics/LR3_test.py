@@ -74,7 +74,7 @@ int_meth_syn = 'euler' # Synaptic integration method
 
 plasticity_rule = 'LR3' # 'none', 'LR1', 'LR2', 'LR3'
 
-bistability = True
+bistability = False
 stoplearning = True
 
 [tau_xpre,
@@ -429,9 +429,11 @@ if stoplearning:
 
 plot_name = sim_id + '_statistics_' + str(num_sim) + '_' + plasticity_rule + '_' + parameter_set.replace('.', '-') + '_bist' + str(bistability) + '_stopl' + str(stoplearning) + '_pre' + str(pre_rate) + '_post' + str(post_rate)
 
-plt.savefig(os.path.join(results_path, plot_name), 
-	bbox_inches = 'tight', 
-	dpi = 200)
+# plt.savefig(os.path.join(results_path, plot_name), 
+# 	bbox_inches = 'tight', 
+# 	dpi = 200)
+
+plt.show()
 
 # ============================================================
 

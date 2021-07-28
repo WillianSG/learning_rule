@@ -62,8 +62,8 @@ def main():
 
 	# Learning Rule
 	network.plasticity_rule = 'LR3'
-	network.parameter_set = '1.C'
-	network.bistability = True
+	network.parameter_set = '1.D'
+	network.bistability = False
 	network.stoplearning = True
 
 	# Neurons
@@ -86,7 +86,7 @@ def main():
 	if int(sys.argv[3]) == 1:
 		network.stim_freq_teach = 0*Hz 	# Teacher pop. - 200*Hz/0*Hz
 	elif int(sys.argv[3]) == 2:
-		network.stim_freq_teach = 600*Hz 	# Teacher pop. - 200*Hz/0*Hz
+		network.stim_freq_teach = 800*Hz 	# Teacher pop. - 200*Hz/0*Hz
 	else:
 		network.stim_freq_teach = 0*Hz
 		network.stim_freq_i = 600*Hz			# Inhib. pop. - 5*Hz
@@ -121,9 +121,9 @@ def main():
 
 	# ----------- Loading dataset -----------
 
-	sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_11-21-57_dataset_Fusi-size_4.pickle'
+	# sim_data = '/home/p302242/PhD_codes/learning_rule/dataset_F/21Jul2021_11-21-57_dataset_Fusi-size_4.pickle'
 
-	# sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
+	sim_data = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\12Jul2021_18-25-21_dataset_Fusi-size_10.pickle'
 
 	with open(sim_data,'rb') as f:(
 		meta_data,

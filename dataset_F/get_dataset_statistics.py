@@ -29,7 +29,7 @@ sys.path.append(os.path.join(parent_dir, helper_dir))
 # Helper functions
 from get_ids_from_binary_pattern import *
 
-with open('21Jul2021_13-09-12_dataset_Fusi-size_10.pickle','rb') as f:(
+with open('27Jul2021_23-41-11_dataset_Fusi-size_20.pickle','rb') as f:(
 	meta_data,
 	full_dataset) = pickle.load(f)
 
@@ -359,7 +359,9 @@ cbar_s.set_ticks(cbar_s_labels)
 
 fig0.suptitle('Dataset Metadata Summary | size: ' + str(meta_data['dataset_size']) + ', ID: ' + str(meta_data['timestamp']), fontsize = 10)
 
-plt.savefig(
-	str(meta_data['timestamp']) + '_s' + str(meta_data['dataset_size']) + '.png',
-	bbox_inches = 'tight', 
-	dpi = 200)
+# plt.savefig(
+# 	str(meta_data['timestamp']) + '_s' + str(meta_data['dataset_size']) + '.png',
+# 	bbox_inches = 'tight', 
+# 	dpi = 200)
+
+plt.show()

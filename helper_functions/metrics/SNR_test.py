@@ -46,7 +46,7 @@ def main():
 	
 	network = FeedforwardNetwork()
 
-	snr_sim_run_n = 1
+	snr_sim_run_n = 4
 	binned_spks_t_windos = 20
 
 	# populations sizes
