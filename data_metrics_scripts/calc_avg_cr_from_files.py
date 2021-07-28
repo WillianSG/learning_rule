@@ -44,7 +44,9 @@ for folder in dir_list:
 			num_epochs,
 			correct_response,
 			wrong_response,
-			correct_rate) = pickle.load(f)
+			correct_rate,
+			plasticity_rule,
+			parameter_set) = pickle.load(f)
 
 		# append all CR of same epoch in diff arrays
 		if num_epochs == 1:

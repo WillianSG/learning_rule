@@ -83,7 +83,7 @@ def main():
 
 	# Neuron populations mean frequency
 	network.stim_freq_Ninp = 75*Hz 		# Input pop. (75*Hz)
-	network.stim_freq_teach = 800*Hz 	# Teacher pop. (600*Hz)
+	network.stim_freq_teach = 800*Hz 	# Teacher pop. (800*Hz)
 	network.stim_freq_spont = 3*Hz 		# Spontaneous pop. (3*Hz)
 	network.stim_freq_i = 600*Hz		# Inhib. pop. (600*Hz)
 
@@ -152,12 +152,12 @@ def main():
 	# print('\nt run               : ', network.t_run)
 	# print('======================================================\n')
 
-	print('================== dataset metadata ==================')
-	for key, value in meta_data.items():
-		print(key, ':', value)
-	print('======================================================\n')
+	# print('================== dataset metadata ==================')
+	# for key, value in meta_data.items():
+	# 	print(key, ':', value)
+	# print('======================================================\n')
 
-	network.export_syn_matrix(name = 'initial')
+	# network.export_syn_matrix(name = 'initial')
 
 	# ----------- Training -----------
 
@@ -167,7 +167,7 @@ def main():
 
 	# print(network.network_id)
 	
-	bar = Bar('Learning', max = (num_epochs*2)*meta_data['dataset_size'])
+	# bar = Bar('Learning', max = (num_epochs*2)*meta_data['dataset_size'])
 	opt_counter = 0
 	for epoch in range(1, num_epochs+1):
 		# print('epoch: ', epoch)
@@ -200,8 +200,8 @@ def main():
 
 				# network.export_syn_matrix(name = 'training', opt = '_' + str(opt_counter) + '_')
 
-				bar.next()
-	bar.finish()
+	# 			bar.next()
+	# bar.finish()
 
 	# ----------- Finalizing Training (saving network state) -----------
 
@@ -210,7 +210,7 @@ def main():
 
 	# network.export_syn_matrix(name = 'trained_withClasses_', class1 = reshaped_c1, class2 = reshaped_c2)
 
-	network.export_syn_matrix(name = 'trained')
+	# network.export_syn_matrix(name = 'trained')
 
 	# 6.1 - turning plasticity OFF for testing
 	network.Input_to_Output.plastic = False
@@ -239,7 +239,7 @@ def main():
 	# 2 - silencing auxiliary populations
 	network.silince_for_testing()
 
-	bar2 = Bar('Testing', max = meta_data['dataset_size'])
+	# bar2 = Bar('Testing', max = meta_data['dataset_size'])
 	# 3 - testing learned patterns
 	for pattern_id in range(0, meta_data['dataset_size']):
 		# print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
@@ -299,8 +299,8 @@ def main():
 		else:
 			wrong_response += 1
 	
-		bar2.next()
-	bar2.finish()
+	# 	bar2.next()
+	# bar2.finish()
 
 		# =============================================================
 
@@ -311,19 +311,21 @@ def main():
 
 	correct_rate = np.round((correct_response/meta_data['dataset_size']), 2)
 
-	print('correct_rate: ', correct_rate)
+	# print('correct_rate: ', correct_rate)
 
-	# fn =  os.path.join(network.simulation_path, network.network_id +  '_sim_results_cr.pickle')
+	fn =  os.path.join(network.simulation_path, network.network_id +  '_sim_results_cr.pickle')
 
-	# with open(fn, 'wb') as f:
-	# 	pickle.dump((
-	# 		network.network_id,
-	# 		network.t_run/second,
-	# 		num_epochs,
-	# 		correct_response,
-	# 		wrong_response,
-	# 		correct_rate
-	# 		), f)
+	with open(fn, 'wb') as f:
+		pickle.dump((
+			network.network_id,
+			network.t_run/second,
+			num_epochs,
+			correct_response,
+			wrong_response,
+			correct_rate,
+			network.plasticity_rule,
+			network.parameter_set,
+			), f)
 
 if __name__ == "__main__":
 	main()

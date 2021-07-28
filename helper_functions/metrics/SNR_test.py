@@ -5,11 +5,8 @@
 Comments:
 - sys.argv[1] = simulation time (float)
 - sys.argv[2] = total training epochs
-- sys.argv[3] = create results folder/save net states (True/False)
-- sys.argv[4] = train network (True/False)
-- sys.argv[5] = run network (True/False)
-- sys.argv[6] = binned spk count t window (int -> ms)
 """
+
 import setuptools
 import os, sys, pickle, shutil
 from brian2 import *
@@ -35,8 +32,8 @@ from feedforward_snn import FeedforwardNetwork
 from visualise_connectivity import visualise_connectivity
 from plot_feedforwad_net import *
 from feedforward_plot_activity import *
-from make_ids_training_list import *
 from histograms_firing_rate import *
+from make_ids_training_list2 import *
 
 def main():
 	# ----------- Simulation parameters -----------
@@ -46,7 +43,8 @@ def main():
 	
 	network = FeedforwardNetwork()
 
-	snr_sim_run_n = 4
+	# metrics
+	snr_sim_run_n = 1
 	binned_spks_t_windos = 20
 
 	# populations sizes
@@ -71,7 +69,7 @@ def main():
 
 	# Learning Rule
 	network.plasticity_rule = 'LR3'
-	network.parameter_set = '1.C'
+	network.parameter_set = '1.D'
 	network.bistability = True
 	network.stoplearning = True
 
@@ -80,18 +78,18 @@ def main():
 	network.N_c = 1
 
 	# Synaptic weights (max.)
-	network.teacher_to_Eout_w = 40*mV 	# Teacher to Output
-	network.I_to_Eout_w = 40*mV			# Inhibitory to Output
+	network.teacher_to_Eout_w = 10*mV 	# Teacher to Output (10*mV)
+	network.I_to_Eout_w = 30*mV			# Inhibitory to Output (30*mV)
 
-	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input
-	network.Input_to_I_w = 100*mV 		# 'virtual inh.' to Inhibitory
-	network.spont_to_input_w = 100*mV 	# Spontaneous to Input
+	network.Input_to_Einp_w = 100*mV 	# 'virtual input' to Input (100*mV)
+	network.Input_to_I_w = 20*mV 		# 'virtual inh.' to Inhibitory (20*mV )
+	network.spont_to_input_w = 100*mV 	# Spontaneous to Input (100*mV)
 
 	# Neuron populations mean frequency
-	network.stim_freq_Ninp = 130*Hz 	# Input pop.
-	network.stim_freq_teach = 300*Hz 	# Teacher pop.
-	network.stim_freq_spont = 1*Hz 		# Spontaneous pop.
-	network.stim_freq_i = 400*Hz		# Inhib. pop.
+	network.stim_freq_Ninp = 75*Hz 		# Input pop. (75*Hz)
+	network.stim_freq_teach = 800*Hz 	# Teacher pop. (800*Hz)
+	network.stim_freq_spont = 3*Hz 		# Spontaneous pop. (3*Hz)
+	network.stim_freq_i = 600*Hz		# Inhib. pop. (600*Hz)
 
 	# Initializing network objects
 	network.network_id = network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)
@@ -103,24 +101,20 @@ def main():
 	# ----------- Results Directories -----------
 
 	# Results Directories
-	if str(sys.argv[3]) == 'True':
-		results_dir = os.path.join(dir_two_up, 'network_results')
-		if not(os.path.isdir(results_dir)):
-			os.mkdir(results_dir)
+	results_dir = os.path.join(dir_two_up, 'network_results_SNR')
+	if not(os.path.isdir(results_dir)):
+		os.mkdir(results_dir)
 
-		sim_results = os.path.join(results_dir,	network.exp_type)
-		if not(os.path.isdir(sim_results)):
-			os.mkdir(sim_results)
+	sim_results = os.path.join(results_dir,	network.exp_type)
+	if not(os.path.isdir(sim_results)):
+		os.mkdir(sim_results)
 
-		sim_resul_final_path = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run)
+	sim_resul_final_path = os.path.join(sim_results, network.exp_date + '_' + network.plasticity_rule + '_' + network.parameter_set + '_bist' + str(network.bistability)) + '_epochs' + str(num_epochs) + '_secs' + str(network.t_run/second)
 
-		if not(os.path.isdir(sim_resul_final_path)):
-			os.mkdir(sim_resul_final_path)
+	if not(os.path.isdir(sim_resul_final_path)):
+		os.mkdir(sim_resul_final_path)
 
-		network.simulation_path = sim_resul_final_path
-
-		# Storing network initial state
-		network.net.store(name = network.network_id + '_initial_state', filename = os.path.join(network.simulation_path, network.network_id + '_initial_state'))
+	network.simulation_path = sim_resul_final_path
 
 	total_sim_t = 0*second
 	t_start = 0*second
@@ -138,14 +132,12 @@ def main():
 
 	# ----------- Loading patterns matrix summary -----------
 
-	patterns_avg_filename = meta_data['timestamp'] +  '_dataset_size_' + str(meta_data['dataset_size']) + '_summed_patterns.pickle'
-
-	dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
-	# dataset_patterns_avg = '/home/p302242/PhD_codes/learning_rule/dataset_F/' + patterns_avg_filename
-
-	with open(dataset_patterns_avg,'rb') as f:(
-		reshaped_c1,
-		reshaped_c2) = pickle.load(f)
+	# patterns_avg_filename = meta_data['timestamp'] +  '_dataset_size_' + str(meta_data['dataset_size']) + '_summed_patterns.pickle'
+	
+	# if sys.platform == 'linux':
+	# 	dataset_patterns_avg = '/home/p302242/PhD_codes/learning_rule/dataset_F/' + patterns_avg_filename
+	# else:
+	# 	dataset_patterns_avg = 'C:\\Users\\willi\\PhD_Stuff\\learning_rule\\dataset_F\\' + patterns_avg_filename
 
 	# ----------- Simulation summary -----------
 
@@ -158,6 +150,7 @@ def main():
 	print('\nnum. input neurons  : ', network.N_e)
 	print('num. output neurons : ', network.N_e_outp)
 	print('\nt run               : ', network.t_run)
+	print('sim. path             : ', network.simulation_path)
 	print('======================================================\n')
 
 	print('================== dataset metadata ==================')
@@ -165,29 +158,22 @@ def main():
 		print(key, ':', value)
 	print('======================================================\n')
 
-	if str(sys.argv[3]) == 'True':
-		network.export_syn_matrix(name = 'initial')
-
 	# ----------- Training -----------
 
-	print('\n====================== training ======================')
-
+	# initializing metric's array
 	network.initi_dict_array_for_SNR(dataset_size = meta_data['dataset_size'])
 
-	if str(sys.argv[4]) == 'True':
-		opt_counter = 0
-		for epoch in range(1, num_epochs+1):
-			
-			epoch_ids_list = make_ids_traning_list(
-				dataset_size = meta_data['dataset_size'],
-				epoch = epoch)
+	network.Input_to_Output.plastic = True
+	opt_counter = 0
 
-			print(' \nepoch #', epoch, ' (', len(epoch_ids_list), ' presentations)')
+	for epoch in range(1, num_epochs+1):
+		print('\nepoch: ', epoch)
+		
+		for e in range(0, epoch):		
+			epoch_ids_list = make_ids_traning_list2(
+				dataset_size = meta_data['dataset_size'])
 			
-			# ----------- 0 - training network -----------
 			for pattern_id in epoch_ids_list:
-				network.Input_to_Output.plastic = True
-
 				# 1 - select next pattern to be presented
 				network.set_stimulus_dataset(full_dataset[pattern_id])
 
@@ -198,97 +184,87 @@ def main():
 					network.update_teachers_rates(target_out = 1)
 					target_out = 1
 
-				print(' -> pattern ', pattern_id, ' (', total_sim_t, ')', ' | target output: ', target_out)
-
 				# 2 - update who's active/spontaneous in the input layer
 				network.update_input_connectivity()
 
-				# 2.1 - potentiate active ids and depresse spont. - FOR TESTING
-				# network.set_wPot_active_input(pattern_id = pattern_id)
+				# 3 - simulate
+				network.run_net(report = None)
 
-				if str(sys.argv[5]) == 'True':
-					# 3 - simulate
-					network.run_net(report = None)
+				total_sim_t += network.t_run
 
-					total_sim_t += network.t_run
+				opt_counter += 1
 
-					opt_counter += 1
+				# ----------- 3.1 - calculating SNR metrics -----------
+				for out_id in range(0, network.N_e_outp):
+					avg_ffrq_avg = 0.0
+					std_ffrq_avg = 0.0
+					snr_ffrq_avg = 0.0
 
-					# ----------- 3.1 - calculating SNR metrics -----------
-					for out_id in range(0, network.N_e_outp):
-						avg_ffrq_avg = 0.0
-						std_ffrq_avg = 0.0
-						snr_ffrq_avg = 0.0
+					for i in range(0, snr_sim_run_n):
+						# 0 - silencing auxiliary populations
+						network.silince_for_testing()
+						network.Input_to_Output.plastic = False
 
-						for i in range(0, snr_sim_run_n):
-							# 0 - silencing auxiliary populations
-							network.silince_for_testing()
-							network.Input_to_Output.plastic = False
+						network.run_net(report = None)
 
-							network.run_net(report = None)
+						total_sim_t += network.t_run
 
-							total_sim_t += network.t_run
+						avg_ffrq, std_ffrq, snr_ffrq = network.get_output_SNR_data(
+							output_id = out_id,
+							binned_spks_t_windos = binned_spks_t_windos,
+							t_start = total_sim_t - network.t_run, 
+							t_end = total_sim_t)
 
-							avg_ffrq, std_ffrq, snr_ffrq = network.get_output_SNR_data(
-								output_id = out_id,
-								binned_spks_t_windos = binned_spks_t_windos,
-								t_start = total_sim_t - network.t_run, 
-								t_end = total_sim_t)
+						avg_ffrq_avg += avg_ffrq
+						std_ffrq_avg += std_ffrq
+						snr_ffrq_avg += snr_ffrq
 
-							avg_ffrq_avg += avg_ffrq
-							std_ffrq_avg += std_ffrq
-							snr_ffrq_avg += snr_ffrq
+					avg_ffrq_avg = np.round((avg_ffrq_avg/snr_sim_run_n), 2)
+					std_ffrq_avg = np.round((std_ffrq_avg/snr_sim_run_n), 2)
+					snr_ffrq_avg = np.round((snr_ffrq_avg/snr_sim_run_n), 2)
 
-						avg_ffrq_avg = np.round((avg_ffrq_avg/snr_sim_run_n), 2)
-						std_ffrq_avg = np.round((std_ffrq_avg/snr_sim_run_n), 2)
-						snr_ffrq_avg = np.round((snr_ffrq_avg/snr_sim_run_n), 2)
+					if out_id == 0:
+						network.set_array_SNR_key_value(
+							pattern_id = pattern_id,
+							avg_ffrq_out1 = avg_ffrq_avg,
+							avg_ffrq_out2 = None,
+							std_ffrq_out1 = std_ffrq_avg,
+							std_ffrq_out2 = None,
+							snr_ffrq_out1 = snr_ffrq_avg,
+							snr_ffrq_out2 = None)
+					else:
+						network.set_array_SNR_key_value(
+							pattern_id = pattern_id,
+							avg_ffrq_out1 = None,
+							avg_ffrq_out2 = avg_ffrq_avg,
+							std_ffrq_out1 = None,
+							std_ffrq_out2 = std_ffrq_avg,
+							snr_ffrq_out1 = None,
+							snr_ffrq_out2 = snr_ffrq_avg)
 
-						if out_id == 0:
-							network.set_array_SNR_key_value(
-								pattern_id = pattern_id,
-								avg_ffrq_out1 = avg_ffrq_avg,
-								avg_ffrq_out2 = None,
-								std_ffrq_out1 = std_ffrq_avg,
-								std_ffrq_out2 = None,
-								snr_ffrq_out1 = snr_ffrq_avg,
-								snr_ffrq_out2 = None)
-						else:
-							network.set_array_SNR_key_value(
-								pattern_id = pattern_id,
-								avg_ffrq_out1 = None,
-								avg_ffrq_out2 = avg_ffrq_avg,
-								std_ffrq_out1 = None,
-								std_ffrq_out2 = std_ffrq_avg,
-								snr_ffrq_out1 = None,
-								snr_ffrq_out2 = snr_ffrq_avg)
-
-	if str(sys.argv[3]) == 'True':
-		network.export_syn_matrix(name = 'trained')
+	# ----------- Finalizing Training (saving network state) -----------
 
 	# 6.1 - turning plasticity OFF for testing
 	network.Input_to_Output.plastic = False
 
-	# 7 - save trained network state
-	network.net.store(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
-
+	# ----------- Testing trained network -----------
 	print('\n====================== testing =======================')
 
 	# 0 - index represents pattern id, value represents output active neuron
 	out_winning_response_per_pattern = []
+
 	presentation_time = float(sys.argv[1])*second
+	# presentation_time = 2*second
+	# network.t_run = 2*second
+
 	correct_response = 0
 	wrong_response = 0
-
-	# 1 - restoring trained network state
-	network.net.restore(name = network.network_id + '_trained', filename = os.path.join(network.simulation_path, network.network_id + '_trained'))
 
 	# 2 - silencing auxiliary populations
 	network.silince_for_testing()
 
-	# ----------- 3 - testing learned patterns -----------
-	for pattern_id in range(0, meta_data['dataset_size']):
-		print(' -> pattern ', pattern_id, ' (', total_sim_t, ')')
-		
+	# 3 - testing learned patterns
+	for pattern_id in range(0, meta_data['dataset_size']):		
 		# setting stimulus to be presented
 		network.set_stimulus_dataset(full_dataset[pattern_id])
 
@@ -300,7 +276,56 @@ def main():
 
 		total_sim_t += network.t_run
 
-		# ----------- 3.1 - validating correct output -----------
+		# ----------- 3.1 - calculating SNR metrics -----------
+		for out_id in range(0, network.N_e_outp):
+			avg_ffrq_avg = 0.0
+			std_ffrq_avg = 0.0
+			snr_ffrq_avg = 0.0
+
+			for i in range(0, snr_sim_run_n):
+				# 0 - silencing auxiliary populations
+				network.silince_for_testing()
+				network.Input_to_Output.plastic = False
+
+				network.run_net(report = None)
+
+				total_sim_t += network.t_run
+
+				avg_ffrq, std_ffrq, snr_ffrq = network.get_output_SNR_data(
+					output_id = out_id,
+					binned_spks_t_windos = binned_spks_t_windos,
+					t_start = total_sim_t - network.t_run, 
+					t_end = total_sim_t)
+
+				avg_ffrq_avg += avg_ffrq
+				std_ffrq_avg += std_ffrq
+				snr_ffrq_avg += snr_ffrq
+
+			avg_ffrq_avg = np.round((avg_ffrq_avg/snr_sim_run_n), 2)
+			std_ffrq_avg = np.round((std_ffrq_avg/snr_sim_run_n), 2)
+			snr_ffrq_avg = np.round((snr_ffrq_avg/snr_sim_run_n), 2)
+
+			if out_id == 0:
+				network.set_array_SNR_key_value(
+					pattern_id = pattern_id,
+					avg_ffrq_out1 = avg_ffrq_avg,
+					avg_ffrq_out2 = None,
+					std_ffrq_out1 = std_ffrq_avg,
+					std_ffrq_out2 = None,
+					snr_ffrq_out1 = snr_ffrq_avg,
+					snr_ffrq_out2 = None)
+			else:
+				network.set_array_SNR_key_value(
+					pattern_id = pattern_id,
+					avg_ffrq_out1 = None,
+					avg_ffrq_out2 = avg_ffrq_avg,
+					std_ffrq_out1 = None,
+					std_ffrq_out2 = std_ffrq_avg,
+					snr_ffrq_out1 = None,
+					snr_ffrq_out2 = snr_ffrq_avg)
+
+		# ----------- saving output neuron responding to pattern -----------
+
 		# 1 - Where in spkmon current stimulus response starts
 		t_start = total_sim_t - presentation_time
 
@@ -341,11 +366,28 @@ def main():
 		else:
 			wrong_response += 1
 
-	print('\n====================== Correct Rate =======================')
+		# =============================================================
 
-	print('\ncorrect responses: ', correct_response)
+	print('\n\ncorrect responses: ', correct_response)
 	print('wrong responses: ', wrong_response)
-	print('correct rate: ', correct_response/meta_data['dataset_size'])
+
+	correct_rate = np.round((correct_response/meta_data['dataset_size']), 2)
+
+	print('correct_rate: ', correct_rate)
+
+	# fn =  os.path.join(network.simulation_path, network.network_id +  '_sim_results_cr.pickle')
+
+	# with open(fn, 'wb') as f:
+	# 	pickle.dump((
+	# 		network.network_id,
+	# 		network.t_run/second,
+	# 		num_epochs,
+	# 		correct_response,
+	# 		wrong_response,
+	# 		correct_rate,
+	# 		network.plasticity_rule,
+	# 		network.parameter_set,
+	# 		), f)
 
 	network.export_dict_array_snr(
 		dataset_metadata = meta_data,
@@ -355,4 +397,4 @@ def main():
 if __name__ == "__main__":
 	main()
 
-	print("\nSNR_test.py - END\n")
+	# print("\nfeedforward_net.py - END\n")
