@@ -12,6 +12,7 @@ import os, sys, pickle, shutil
 from brian2 import *
 from numpy import *
 from time import localtime, strftime
+from progress.bar import Bar
 
 prefs.codegen.target = 'numpy'
 
@@ -101,7 +102,7 @@ def main():
 	# ----------- Results Directories -----------
 
 	# Results Directories
-	results_dir = os.path.join(dir_two_up, 'network_results_SNR_w_binarized')
+	results_dir = os.path.join(dir_two_up, 'network_results_SNR_w_binarized_2nd_run')
 	if not(os.path.isdir(results_dir)):
 		os.mkdir(results_dir)
 
@@ -141,23 +142,23 @@ def main():
 
 	# ----------- Simulation summary -----------
 
-	print('\n================== network metadata ==================')
-	print('active input (Hz/w) : ', network.stim_freq_Ninp, '/', network.w_max)
-	print('spont. input (Hz/w) : ', network.stim_freq_spont, '/', network.w_max)
-	print('teacher (Hz/w)      : ', network.stim_freq_teach, '/', network.teacher_to_Eout_w)
-	print('inhibition (Hz/w)   : ', network.stim_freq_i, '/', network.I_to_Eout_w)
-	print('\nmax. plastic weight : ', network.w_max)
-	print('\nnum. input neurons  : ', network.N_e)
-	print('num. output neurons : ', network.N_e_outp)
-	print('\nt run               : ', network.t_run)
-	print('sim. path             : ', network.simulation_path)
-	print('exp date               : ', network.exp_date)
-	print('======================================================\n')
+	# print('\n================== network metadata ==================')
+	# print('active input (Hz/w) : ', network.stim_freq_Ninp, '/', network.w_max)
+	# print('spont. input (Hz/w) : ', network.stim_freq_spont, '/', network.w_max)
+	# print('teacher (Hz/w)      : ', network.stim_freq_teach, '/', network.teacher_to_Eout_w)
+	# print('inhibition (Hz/w)   : ', network.stim_freq_i, '/', network.I_to_Eout_w)
+	# print('\nmax. plastic weight : ', network.w_max)
+	# print('\nnum. input neurons  : ', network.N_e)
+	# print('num. output neurons : ', network.N_e_outp)
+	# print('\nt run               : ', network.t_run)
+	# print('sim. path             : ', network.simulation_path)
+	# print('exp date               : ', network.exp_date)
+	# print('======================================================\n')
 
-	print('================== dataset metadata ==================')
-	for key, value in meta_data.items():
-		print(key, ':', value)
-	print('======================================================\n')
+	# print('================== dataset metadata ==================')
+	# for key, value in meta_data.items():
+	# 	print(key, ':', value)
+	# print('======================================================\n')
 
 	# ----------- Training -----------
 
@@ -168,7 +169,7 @@ def main():
 	opt_counter = 0
 
 	for epoch in range(1, num_epochs+1):
-		print('\nepoch: ', epoch)
+		# print('\nepoch: ', epoch)
 		
 		for e in range(0, epoch):		
 			epoch_ids_list = make_ids_traning_list2(
@@ -252,7 +253,7 @@ def main():
 	network.Input_to_Output.plastic = False
 
 	# ----------- Testing trained network -----------
-	print('\n====================== testing =======================')
+	# print('\n====================== testing =======================')
 
 	# 0 - index represents pattern id, value represents output active neuron
 	out_winning_response_per_pattern = []
@@ -372,12 +373,12 @@ def main():
 
 		# =============================================================
 
-	print('\n\ncorrect responses: ', correct_response)
-	print('wrong responses: ', wrong_response)
+	# print('\n\ncorrect responses: ', correct_response)
+	# print('wrong responses: ', wrong_response)
 
 	correct_rate = np.round((correct_response/meta_data['dataset_size']), 2)
 
-	print('correct_rate: ', correct_rate)
+	# print('correct_rate: ', correct_rate)
 
 	# fn =  os.path.join(network.simulation_path, network.network_id +  '_sim_results_cr.pickle')
 
@@ -399,7 +400,12 @@ def main():
 		wrong_response = wrong_response)
 
 if __name__ == "__main__":
-	for x in range(0, 2):
+	bar = Bar(
+		'network training runs', 
+		max = 40)
+	for x in range(0, 40):
 		main()
+		bar.next()
+	bar.finish()
 
 	# print("\nfeedforward_net.py - END\n")
