@@ -101,7 +101,7 @@ def main():
 	# ----------- Results Directories -----------
 
 	# Results Directories
-	results_dir = os.path.join(dir_two_up, 'network_results_SNR')
+	results_dir = os.path.join(dir_two_up, 'network_results_SNR_w_binarized')
 	if not(os.path.isdir(results_dir)):
 		os.mkdir(results_dir)
 
@@ -151,6 +151,7 @@ def main():
 	print('num. output neurons : ', network.N_e_outp)
 	print('\nt run               : ', network.t_run)
 	print('sim. path             : ', network.simulation_path)
+	print('exp date               : ', network.exp_date)
 	print('======================================================\n')
 
 	print('================== dataset metadata ==================')
@@ -195,54 +196,57 @@ def main():
 				opt_counter += 1
 
 				# ----------- 3.1 - calculating SNR metrics -----------
-				for out_id in range(0, network.N_e_outp):
-					avg_ffrq_avg = 0.0
-					std_ffrq_avg = 0.0
-					snr_ffrq_avg = 0.0
+				# for out_id in range(0, network.N_e_outp):
+				# 	avg_ffrq_avg = 0.0
+				# 	std_ffrq_avg = 0.0
+				# 	snr_ffrq_avg = 0.0
 
-					for i in range(0, snr_sim_run_n):
-						# 0 - silencing auxiliary populations
-						network.silince_for_testing()
-						network.Input_to_Output.plastic = False
+				# 	for i in range(0, snr_sim_run_n):
+				# 		# 0 - silencing auxiliary populations
+				# 		network.silince_for_testing()
+				# 		network.Input_to_Output.plastic = False
 
-						network.run_net(report = None)
+				# 		network.run_net(report = None)
 
-						total_sim_t += network.t_run
+				# 		total_sim_t += network.t_run
 
-						avg_ffrq, std_ffrq, snr_ffrq = network.get_output_SNR_data(
-							output_id = out_id,
-							binned_spks_t_windos = binned_spks_t_windos,
-							t_start = total_sim_t - network.t_run, 
-							t_end = total_sim_t)
+				# 		avg_ffrq, std_ffrq, snr_ffrq = network.get_output_SNR_data(
+				# 			output_id = out_id,
+				# 			binned_spks_t_windos = binned_spks_t_windos,
+				# 			t_start = total_sim_t - network.t_run, 
+				# 			t_end = total_sim_t)
 
-						avg_ffrq_avg += avg_ffrq
-						std_ffrq_avg += std_ffrq
-						snr_ffrq_avg += snr_ffrq
+				# 		avg_ffrq_avg += avg_ffrq
+				# 		std_ffrq_avg += std_ffrq
+				# 		snr_ffrq_avg += snr_ffrq
 
-					avg_ffrq_avg = np.round((avg_ffrq_avg/snr_sim_run_n), 2)
-					std_ffrq_avg = np.round((std_ffrq_avg/snr_sim_run_n), 2)
-					snr_ffrq_avg = np.round((snr_ffrq_avg/snr_sim_run_n), 2)
+				# 	avg_ffrq_avg = np.round((avg_ffrq_avg/snr_sim_run_n), 2)
+				# 	std_ffrq_avg = np.round((std_ffrq_avg/snr_sim_run_n), 2)
+				# 	snr_ffrq_avg = np.round((snr_ffrq_avg/snr_sim_run_n), 2)
 
-					if out_id == 0:
-						network.set_array_SNR_key_value(
-							pattern_id = pattern_id,
-							avg_ffrq_out1 = avg_ffrq_avg,
-							avg_ffrq_out2 = None,
-							std_ffrq_out1 = std_ffrq_avg,
-							std_ffrq_out2 = None,
-							snr_ffrq_out1 = snr_ffrq_avg,
-							snr_ffrq_out2 = None)
-					else:
-						network.set_array_SNR_key_value(
-							pattern_id = pattern_id,
-							avg_ffrq_out1 = None,
-							avg_ffrq_out2 = avg_ffrq_avg,
-							std_ffrq_out1 = None,
-							std_ffrq_out2 = std_ffrq_avg,
-							snr_ffrq_out1 = None,
-							snr_ffrq_out2 = snr_ffrq_avg)
+				# 	if out_id == 0:
+				# 		network.set_array_SNR_key_value(
+				# 			pattern_id = pattern_id,
+				# 			avg_ffrq_out1 = avg_ffrq_avg,
+				# 			avg_ffrq_out2 = None,
+				# 			std_ffrq_out1 = std_ffrq_avg,
+				# 			std_ffrq_out2 = None,
+				# 			snr_ffrq_out1 = snr_ffrq_avg,
+				# 			snr_ffrq_out2 = None)
+				# 	else:
+				# 		network.set_array_SNR_key_value(
+				# 			pattern_id = pattern_id,
+				# 			avg_ffrq_out1 = None,
+				# 			avg_ffrq_out2 = avg_ffrq_avg,
+				# 			std_ffrq_out1 = None,
+				# 			std_ffrq_out2 = std_ffrq_avg,
+				# 			snr_ffrq_out1 = None,
+				# 			snr_ffrq_out2 = snr_ffrq_avg)
 
 	# ----------- Finalizing Training (saving network state) -----------
+
+	# 6 - binarize weights based on synaptic internal state variable
+	network.binarize_syn_matrix()
 
 	# 6.1 - turning plasticity OFF for testing
 	network.Input_to_Output.plastic = False
@@ -395,6 +399,7 @@ def main():
 		wrong_response = wrong_response)
 
 if __name__ == "__main__":
-	main()
+	for x in range(0, 2):
+		main()
 
 	# print("\nfeedforward_net.py - END\n")

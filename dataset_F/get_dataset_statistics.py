@@ -29,7 +29,7 @@ sys.path.append(os.path.join(parent_dir, helper_dir))
 # Helper functions
 from get_ids_from_binary_pattern import *
 
-with open('27Jul2021_23-41-11_dataset_Fusi-size_20.pickle','rb') as f:(
+with open('12Jul2021_18-25-21_dataset_Fusi-size_10.pickle','rb') as f:(
 	meta_data,
 	full_dataset) = pickle.load(f)
 
@@ -74,6 +74,14 @@ unique_class1, frequency_class1 = np.unique(
 	class1_IDs_list, 
 	return_counts = True)
 
+most_freq_id_c1 = []
+most_freq_id_count_c1 = []
+
+for i in range(0, len(frequency_class1)):
+	if frequency_class1[i] > 2:
+		most_freq_id_c1.append(int(unique_class1[i]))
+		most_freq_id_count_c1.append(frequency_class1[i])
+
 frequency_class1_unique = np.unique(frequency_class1)
 
 freq_class1_xticks = np.round(
@@ -83,6 +91,43 @@ freq_class1_xticks = np.round(
 unique_class2, frequency_class2 = np.unique(
 	class2_IDs_list, 
 	return_counts = True)
+
+most_freq_id_c2 = []
+most_freq_id_count_c2 = []
+
+for i in range(0, len(frequency_class2)):
+	if frequency_class2[i] > 2:
+		most_freq_id_c2.append(int(unique_class2[i]))
+		most_freq_id_count_c2.append(frequency_class2[i])
+
+#========================
+most_freq_patterns_c1 = []
+most_freq_patterns_c2 = []
+
+pattern_id = 0
+for pattern in full_dataset:
+	if (pattern_id % 2) == 0:
+		IDs_temp = get_ids_from_binary_pattern(binarized_pattern = pattern)
+		if len(np.intersect1d(most_freq_id_c1, IDs_temp)) > 0:
+			most_freq_patterns_c1.append(pattern_id)
+	else:
+		IDs_temp = get_ids_from_binary_pattern(binarized_pattern = pattern)
+		if len(np.intersect1d(most_freq_id_c2, IDs_temp)) > 0:
+			most_freq_patterns_c2.append(pattern_id)
+
+	pattern_id += 1
+
+
+print(most_freq_id_c1)
+print(most_freq_id_count_c1)
+print(most_freq_patterns_c1)
+
+print('\n')
+
+print(most_freq_id_c2)
+print(most_freq_id_count_c2)
+print(most_freq_patterns_c2)
+#========================
 
 frequency_class2_unique = np.unique(frequency_class2)
 

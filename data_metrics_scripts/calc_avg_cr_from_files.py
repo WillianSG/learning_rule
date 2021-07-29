@@ -79,5 +79,8 @@ plt.bar(x, y)
 err_bar = [cr_1_epoch_std, cr_2_epoch_std, cr_3_epoch_std, cr_4_epoch_std]
 
 plt.errorbar(x, y, yerr = err_bar, fmt = 'o', color = 'r')
+
+plt.ylabel('CR', size = 10)
+plt.xlabel('Epochs', size = 10)
   
 plt.show()

@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
  
 # Get the list of all files and directories
-sim_results_path = "C://Users//willi//PhD_Stuff//learning_rule//network_results_SNR_above0.5//feedforward_network"
+sim_results_path = "C://Users//willi//PhD_Stuff//learning_rule//network_results_SNR_w_binarized_above0.5//feedforward_network"
 
 dir_list = os.listdir(sim_results_path)
 
@@ -96,8 +96,8 @@ for x in range(0, len(dict_array_snr_summed)):
 		avg_snr_out2 = dict_array_snr_summed[x]['summed_snr_out2']/len(dir_list), 
 		dict_array = dict_array_snr_summed)
 
-	plot_data_y[0].append(dict_array_snr_summed[x]['summed_snr_out1'])
-	plot_data_y[1].append(dict_array_snr_summed[x]['summed_snr_out2'])
+	plot_data_y[0].append(dict_array_snr_summed[x]['avg_snr_out1'])
+	plot_data_y[1].append(dict_array_snr_summed[x]['avg_snr_out2'])
 
 	plot_data_x.append(dict_array_snr_summed[x]['pattern_id'])
 
@@ -137,6 +137,9 @@ plt.xticks(np.arange(
 	0, 
 	dataset_size,
 	step = 1))
+
+plt.ylabel('Average SNR', size = 10)
+plt.xlabel('Pattern ID', size = 10)
 
 # plt.xlim(0, dataset_size)
 
