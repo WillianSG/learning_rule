@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
  
 # Get the list of all files and directories
-sim_results_path = "C://Users//willi//PhD_Stuff//learning_rule//network_results//feedforward_network"
+sim_results_path = "C://Users//willi//PhD_Stuff//learning_rule//network_results_CR_varying_epoch_w_binary//feedforward_network"
 
 dir_list = os.listdir(sim_results_path)
 

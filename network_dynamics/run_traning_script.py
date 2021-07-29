@@ -1,11 +1,12 @@
 import os, sys
 from progress.bar import Bar
 
-# epochs_list = [' 1', ' 2', ' 3', ' 4']
-epochs_list = [' 4']
+epochs_list = [' 1', ' 2', ' 3', ' 4']
+# epochs_list = [' 4']
+# time_list = [' 0.5', ' 0.75', ' 1.25', ' 1.5']
 time_list = [' 1.0']
 
-num_repetitions = 5
+num_repetitions = 20
 
 bar = Bar(
 	'Training networks', 

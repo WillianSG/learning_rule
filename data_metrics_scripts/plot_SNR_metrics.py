@@ -51,180 +51,191 @@ with open(
 	stoplearning,
 	populations_biasing_dict) = pickle.load(f)
 
-print('================== dict_array_snr ==================')
-for key, value in dict_array_snr[0].items():
-	print(key, ':', value)
-print('======================================================\n')
+print(correct_response)
 
-# each pos marks how many time the prasent was presented up to that point
-x_axis = [i for i in range(1, len(dict_array_snr[0]['snr_ffrq_out1'])+1)]
+# print('================== dict_array_snr ==================')
+# for key, value in dict_array_snr[0].items():
+# 	print(key, ':', value)
+# print('======================================================\n')
 
-
-# all patterns are seen the same amount of time
-num_patterns = int(dataset_metadata['dataset_size']/2)
-
-# snr of ouput neuron 1 for both classes of patterns
-data_c1_on1 = [[] for i in range(0, num_patterns)]
-data_c2_on1 = [[] for i in range(0, num_patterns)]
-
-data_c1_on1_counter = 0
-data_c2_on1_counter = 0
-
-# snr of ouput neuron 2 for both classes of patterns
-data_c1_on2 = [[] for i in range(0, num_patterns)]
-data_c2_on2 = [[] for i in range(0, num_patterns)]
-
-data_c1_on2_counter = 0
-data_c2_on2_counter = 0
-
-pattern_ids_c1 = []
-pattern_ids_c2 = []
-
-for x in range(0, len(dict_array_snr)):
-	if (dict_array_snr[x]['pattern_id'] % 2) == 0:
-		data_c1_on1[data_c1_on1_counter] = dict_array_snr[x]['snr_ffrq_out1']
-		data_c1_on1_counter += 1
-
-		data_c1_on2[data_c1_on2_counter] = dict_array_snr[x]['snr_ffrq_out2']
-		data_c1_on2_counter += 1
-
-		pattern_ids_c1.append(dict_array_snr[x]['pattern_id'])
-	else:
-		data_c2_on2[data_c2_on2_counter] = dict_array_snr[x]['snr_ffrq_out2']
-		data_c2_on2_counter += 1
-
-		data_c2_on1[data_c2_on1_counter] = dict_array_snr[x]['snr_ffrq_out1']
-		data_c2_on1_counter += 1
-
-		pattern_ids_c2.append(dict_array_snr[x]['pattern_id'])
-
-# =============================================================
-markers = ['1', '2', '3', '4', '+']
+# # each pos marks how many time the prasent was presented up to that point
+# x_axis = [i for i in range(1, len(dict_array_snr[0]['snr_ffrq_out1'])+1)]
 
 
-axis_label_size = 10
-legend_font_size = 8
+# # all patterns are seen the same amount of time
+# num_patterns = int(dataset_metadata['dataset_size']/2)
 
-fig0 = plt.figure(constrained_layout = True, figsize = (8, 8))
+# # snr of ouput neuron 1 for both classes of patterns
+# data_c1_on1 = [[] for i in range(0, num_patterns)]
+# data_c2_on1 = [[] for i in range(0, num_patterns)]
 
-widths = [4, 4]
-heights = [4, 4]
+# data_c1_on1_counter = 0
+# data_c2_on1_counter = 0
 
-spec2 = gridspec.GridSpec(
-	ncols = 2, 
-	nrows = 2, 
-	width_ratios = widths,
-	height_ratios = heights,
-	figure = fig0)
+# # snr of ouput neuron 2 for both classes of patterns
+# data_c1_on2 = [[] for i in range(0, num_patterns)]
+# data_c2_on2 = [[] for i in range(0, num_patterns)]
 
-# ----------------- SNR out 1 | c1 -----------------
-f2_ax1 = fig0.add_subplot(spec2[0, 0])
+# data_c1_on2_counter = 0
+# data_c2_on2_counter = 0
 
-counter = 0
-for y in data_c1_on1:
-	plt.plot(
-		x_axis, 
-		y, 
-		linestyle = '-', 
-		marker = markers[counter],
-		label = str(pattern_ids_c1[counter]))
-	counter += 1
+# pattern_ids_c1 = []
+# pattern_ids_c2 = []
 
-f2_ax1.legend(prop = {'size': legend_font_size}, title = 'pattern ID')
+# for x in range(0, len(dict_array_snr)):
+# 	if (dict_array_snr[x]['pattern_id'] % 2) == 0:
+# 		data_c1_on1[data_c1_on1_counter] = dict_array_snr[x]['snr_ffrq_out1']
+# 		data_c1_on1_counter += 1
 
-plt.ylabel('SNR (c1 | out 1)', size = axis_label_size)
+# 		data_c1_on2[data_c1_on2_counter] = dict_array_snr[x]['snr_ffrq_out2']
+# 		data_c1_on2_counter += 1
 
-plt.xticks(np.arange(
-	x_axis[0], 
-	x_axis[-1]+1,
-	step = 1))
+# 		pattern_ids_c1.append(dict_array_snr[x]['pattern_id'])
+# 	else:
+# 		data_c2_on2[data_c2_on2_counter] = dict_array_snr[x]['snr_ffrq_out2']
+# 		data_c2_on2_counter += 1
 
-plt.xlim(x_axis[0], x_axis[-1])
-plt.ylim(0.0, np.max(data_c1_on1))
+# 		data_c2_on1[data_c2_on1_counter] = dict_array_snr[x]['snr_ffrq_out1']
+# 		data_c2_on1_counter += 1
 
-ax = plt.gca()
-ax.axes.xaxis.set_ticklabels([])
+# 		pattern_ids_c2.append(dict_array_snr[x]['pattern_id'])
 
-# ----------------- SNR out 1 | c2 -----------------
-f2_ax2 = fig0.add_subplot(spec2[0, 1])
+# # =============================================================
+# markers = ['1', '2', '3', '4', '+']
 
-counter = 0
-for y in data_c2_on1:
-	plt.plot(
-		x_axis, 
-		y, 
-		linestyle = '-', 
-		marker = markers[counter],
-		label = str(pattern_ids_c2[counter]))
-	counter += 1
+# #+++=================
+# # a. open snr array
+# # a.1 if len > 1 -> use arra[-1]
+# #		else use arra[0]
+# # b. sum SNR of each pattern per out neuron
+# # c. avg them out (use counter)
+# # d. plot avg SNR per pattern per out/class
+# #+++=================
 
-f2_ax2.legend(prop = {'size': legend_font_size}, title = 'pattern ID')
 
-plt.ylabel('SNR (c2 | out 1)', size = axis_label_size)
+# axis_label_size = 10
+# legend_font_size = 8
 
-plt.xticks(np.arange(
-	x_axis[0], 
-	x_axis[-1]+1,
-	step = 1))
+# fig0 = plt.figure(constrained_layout = True, figsize = (8, 8))
 
-plt.xlim(x_axis[0], x_axis[-1])
-plt.ylim(0.0, np.max(data_c2_on1))
+# widths = [4, 4]
+# heights = [4, 4]
 
-ax = plt.gca()
-ax.axes.xaxis.set_ticklabels([])
+# spec2 = gridspec.GridSpec(
+# 	ncols = 2, 
+# 	nrows = 2, 
+# 	width_ratios = widths,
+# 	height_ratios = heights,
+# 	figure = fig0)
 
-# ----------------- SNR out 2 | c2 -----------------
-f2_ax3 = fig0.add_subplot(spec2[1, 0])
+# # ----------------- SNR out 1 | c1 -----------------
+# f2_ax1 = fig0.add_subplot(spec2[0, 0])
 
-counter = 0
-for y in data_c2_on2:
-	plt.plot(
-		x_axis, 
-		y, 
-		linestyle = '-', 
-		marker = markers[counter],
-		label = str(pattern_ids_c2[counter]))
-	counter += 1
+# counter = 0
+# for y in data_c1_on1:
+# 	plt.plot(
+# 		x_axis, 
+# 		y, 
+# 		linestyle = '-', 
+# 		marker = markers[counter],
+# 		label = str(pattern_ids_c1[counter]))
+# 	counter += 1
 
-f2_ax3.legend(prop = {'size': legend_font_size}, title = 'pattern ID')
+# f2_ax1.legend(prop = {'size': legend_font_size}, title = 'pattern ID')
 
-plt.ylabel('SNR (c2 | out 2)', size = axis_label_size)
-plt.xlabel('# presentation', size = axis_label_size)
+# plt.ylabel('SNR (c1 | out 1)', size = axis_label_size)
 
-plt.xticks(np.arange(
-	x_axis[0], 
-	x_axis[-1]+1,
-	step = 1))
+# plt.xticks(np.arange(
+# 	x_axis[0], 
+# 	x_axis[-1]+1,
+# 	step = 1))
 
-plt.xlim(x_axis[0], x_axis[-1])
-plt.ylim(0.0, np.max(data_c2_on2))
+# plt.xlim(x_axis[0], x_axis[-1])
+# plt.ylim(0.0, np.max(data_c1_on1))
 
-# ----------------- SNR out 2 | c1 -----------------
-f2_ax4 = fig0.add_subplot(spec2[1, 1])
+# ax = plt.gca()
+# ax.axes.xaxis.set_ticklabels([])
 
-counter = 0
-for y in data_c1_on2:
-	plt.plot(
-		x_axis, 
-		y, 
-		linestyle = '-', 
-		marker = markers[counter],
-		label = str(pattern_ids_c1[counter]))
-	counter += 1
+# # ----------------- SNR out 1 | c2 -----------------
+# f2_ax2 = fig0.add_subplot(spec2[0, 1])
 
-f2_ax4.legend(prop = {'size': legend_font_size}, title = 'pattern ID')
+# counter = 0
+# for y in data_c2_on1:
+# 	plt.plot(
+# 		x_axis, 
+# 		y, 
+# 		linestyle = '-', 
+# 		marker = markers[counter],
+# 		label = str(pattern_ids_c2[counter]))
+# 	counter += 1
 
-plt.ylabel('SNR (c1 | out 2)', size = axis_label_size)
-plt.xlabel('# presentation', size = axis_label_size)
+# f2_ax2.legend(prop = {'size': legend_font_size}, title = 'pattern ID')
 
-plt.xticks(np.arange(
-	x_axis[0], 
-	x_axis[-1]+1,
-	step = 1))
+# plt.ylabel('SNR (c2 | out 1)', size = axis_label_size)
 
-plt.xlim(x_axis[0], x_axis[-1])
-plt.ylim(0.0, np.max(data_c1_on2))
+# plt.xticks(np.arange(
+# 	x_axis[0], 
+# 	x_axis[-1]+1,
+# 	step = 1))
 
-plt.show()
+# plt.xlim(x_axis[0], x_axis[-1])
+# plt.ylim(0.0, np.max(data_c2_on1))
+
+# ax = plt.gca()
+# ax.axes.xaxis.set_ticklabels([])
+
+# # ----------------- SNR out 2 | c2 -----------------
+# f2_ax3 = fig0.add_subplot(spec2[1, 0])
+
+# counter = 0
+# for y in data_c2_on2:
+# 	plt.plot(
+# 		x_axis, 
+# 		y, 
+# 		linestyle = '-', 
+# 		marker = markers[counter],
+# 		label = str(pattern_ids_c2[counter]))
+# 	counter += 1
+
+# f2_ax3.legend(prop = {'size': legend_font_size}, title = 'pattern ID')
+
+# plt.ylabel('SNR (c2 | out 2)', size = axis_label_size)
+# plt.xlabel('# presentation', size = axis_label_size)
+
+# plt.xticks(np.arange(
+# 	x_axis[0], 
+# 	x_axis[-1]+1,
+# 	step = 1))
+
+# plt.xlim(x_axis[0], x_axis[-1])
+# plt.ylim(0.0, np.max(data_c2_on2))
+
+# # ----------------- SNR out 2 | c1 -----------------
+# f2_ax4 = fig0.add_subplot(spec2[1, 1])
+
+# counter = 0
+# for y in data_c1_on2:
+# 	plt.plot(
+# 		x_axis, 
+# 		y, 
+# 		linestyle = '-', 
+# 		marker = markers[counter],
+# 		label = str(pattern_ids_c1[counter]))
+# 	counter += 1
+
+# f2_ax4.legend(prop = {'size': legend_font_size}, title = 'pattern ID')
+
+# plt.ylabel('SNR (c1 | out 2)', size = axis_label_size)
+# plt.xlabel('# presentation', size = axis_label_size)
+
+# plt.xticks(np.arange(
+# 	x_axis[0], 
+# 	x_axis[-1]+1,
+# 	step = 1))
+
+# plt.xlim(x_axis[0], x_axis[-1])
+# plt.ylim(0.0, np.max(data_c1_on2))
+
+# plt.show()
 
 

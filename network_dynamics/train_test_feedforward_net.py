@@ -206,7 +206,7 @@ def main():
 	# ----------- Finalizing Training (saving network state) -----------
 
 	# 6 - binarize weights based on synaptic internal state variable
-	# network.binarize_syn_matrix()
+	network.binarize_syn_matrix()
 
 	# network.export_syn_matrix(name = 'trained_withClasses_', class1 = reshaped_c1, class2 = reshaped_c2)
 

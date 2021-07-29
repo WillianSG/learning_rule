@@ -38,7 +38,7 @@ sys.path.append(os.path.join(dir_two_up, dataset_dir))
 # }
 
 with open(
-	'28Jul2021_15-34-26__LR3_1.D_bistTrue_dict_array_snr.pickle',
+	'28Jul2021_23-23-44__LR3_1.D_bistTrue_dict_array_snr.pickle',
 	'rb') as f:(
 	dict_array_snr,
 	M_syn,
