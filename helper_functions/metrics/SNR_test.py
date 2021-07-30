@@ -102,7 +102,7 @@ def main():
 	# ----------- Results Directories -----------
 
 	# Results Directories
-	results_dir = os.path.join(dir_two_up, 'network_results_SNR_w_binarized_2nd_run')
+	results_dir = os.path.join(dir_two_up, 'network_results_SNR_w_binarized_3nd_run_varying_epochs')
 	if not(os.path.isdir(results_dir)):
 		os.mkdir(results_dir)
 
@@ -397,15 +397,10 @@ def main():
 	network.export_dict_array_snr(
 		dataset_metadata = meta_data,
 		correct_response = correct_response,
-		wrong_response = wrong_response)
+		wrong_response = wrong_response,
+		epochs = num_epochs)
 
 if __name__ == "__main__":
-	bar = Bar(
-		'network training runs', 
-		max = 40)
-	for x in range(0, 40):
-		main()
-		bar.next()
-	bar.finish()
+	main()
 
 	# print("\nfeedforward_net.py - END\n")

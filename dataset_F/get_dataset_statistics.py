@@ -33,10 +33,10 @@ with open('12Jul2021_18-25-21_dataset_Fusi-size_10.pickle','rb') as f:(
 	meta_data,
 	full_dataset) = pickle.load(f)
 
-print('================== dataset metadata ==================')
-for key, value in meta_data.items():
-	print(key, ':', value)
-print('======================================================\n')
+# print('================== dataset metadata ==================')
+# for key, value in meta_data.items():
+# 	print(key, ':', value)
+# print('======================================================\n')
 
 class1_patterns_sum = np.zeros(len(full_dataset[0]))
 class2_patterns_sum = np.zeros(len(full_dataset[0]))
@@ -78,7 +78,7 @@ most_freq_id_c1 = []
 most_freq_id_count_c1 = []
 
 for i in range(0, len(frequency_class1)):
-	if frequency_class1[i] > 2:
+	if frequency_class1[i] >= 2:
 		most_freq_id_c1.append(int(unique_class1[i]))
 		most_freq_id_count_c1.append(frequency_class1[i])
 
@@ -96,7 +96,7 @@ most_freq_id_c2 = []
 most_freq_id_count_c2 = []
 
 for i in range(0, len(frequency_class2)):
-	if frequency_class2[i] > 2:
+	if frequency_class2[i] >= 2:
 		most_freq_id_c2.append(int(unique_class2[i]))
 		most_freq_id_count_c2.append(frequency_class2[i])
 
@@ -104,29 +104,42 @@ for i in range(0, len(frequency_class2)):
 most_freq_patterns_c1 = []
 most_freq_patterns_c2 = []
 
+
+# lists cotaining patterns that have the repeating IDs (and how many of them) within the class 1
+c1_patterns_with_repeating_IDs = []
+c1_patterns_with_repeating_IDs_count = []
+
+
+# lists cotaining patterns that have the repeating IDs (and how many of them) within the class 2
+c2_patterns_with_repeating_IDs = []
+c2_patterns_with_repeating_IDs_count = []
+
 pattern_id = 0
 for pattern in full_dataset:
 	if (pattern_id % 2) == 0:
 		IDs_temp = get_ids_from_binary_pattern(binarized_pattern = pattern)
 		if len(np.intersect1d(most_freq_id_c1, IDs_temp)) > 0:
 			most_freq_patterns_c1.append(pattern_id)
+			c1_patterns_with_repeating_IDs.append(str(pattern_id))
+			c1_patterns_with_repeating_IDs_count.append(len(np.intersect1d(most_freq_id_c1, IDs_temp)))
 	else:
 		IDs_temp = get_ids_from_binary_pattern(binarized_pattern = pattern)
 		if len(np.intersect1d(most_freq_id_c2, IDs_temp)) > 0:
 			most_freq_patterns_c2.append(pattern_id)
+			c2_patterns_with_repeating_IDs.append(str(pattern_id))
+			c2_patterns_with_repeating_IDs_count.append(len(np.intersect1d(most_freq_id_c2, IDs_temp)))
 
 	pattern_id += 1
 
+# print('IDs: ', most_freq_id_c1)
+# print('count: ', most_freq_id_count_c1)
+# print('patterns has it: ', most_freq_patterns_c1)
 
-print(most_freq_id_c1)
-print(most_freq_id_count_c1)
-print(most_freq_patterns_c1)
+# print('\n')
 
-print('\n')
-
-print(most_freq_id_c2)
-print(most_freq_id_count_c2)
-print(most_freq_patterns_c2)
+# print('IDs: ', most_freq_id_c2)
+# print('count: ', most_freq_id_count_c2)
+# print('patterns has it: ', most_freq_patterns_c2)
 #========================
 
 frequency_class2_unique = np.unique(frequency_class2)
@@ -180,13 +193,13 @@ for pattern in full_dataset:
 
 plot_title_size = 8
 
-fig0 = plt.figure(constrained_layout = True, figsize = (13, 6))
+fig0 = plt.figure(constrained_layout = True, figsize = (15, 6))
 
-widths = [8, 8, 8, 8, 8]
+widths = [8, 8, 8, 8, 8, 8]
 heights = [8, 8]
 
 spec2 = gridspec.GridSpec(
-	ncols = 5, 
+	ncols = 6, 
 	nrows = 2, 
 	width_ratios = widths,
 	height_ratios = heights,
@@ -402,11 +415,55 @@ cbar_s_labels = np.unique(
 
 cbar_s.set_ticks(cbar_s_labels)
 
-fig0.suptitle('Dataset Metadata Summary | size: ' + str(meta_data['dataset_size']) + ', ID: ' + str(meta_data['timestamp']), fontsize = 10)
+# ----------- Patterns with most repeating IDs | class 1 -----------
 
-# plt.savefig(
-# 	str(meta_data['timestamp']) + '_s' + str(meta_data['dataset_size']) + '.png',
-# 	bbox_inches = 'tight', 
-# 	dpi = 200)
+f2_ax8 = fig0.add_subplot(spec2[0, 5])
 
-plt.show()
+plt.title('Class 1 (even IDs)', size = plot_title_size)
+
+plt.bar(
+	c1_patterns_with_repeating_IDs, 
+	c1_patterns_with_repeating_IDs_count,
+	width = 0.5,
+	color = 'lightblue',
+	align = 'center',
+	edgecolor = 'k')
+
+plt.xlabel('Pattern ID', size = 8)
+plt.ylabel('Frequent neurons IDs count', size = 8)
+
+plt.yticks(np.arange(
+	0, 
+	max(c1_patterns_with_repeating_IDs_count)+1, 
+	step = 1))
+
+# ----------- Patterns with most repeating IDs | class 2 -----------
+
+f2_ax8 = fig0.add_subplot(spec2[1, 5])
+
+plt.title('Class 2 (odd IDs)', size = plot_title_size)
+
+plt.bar(
+	c2_patterns_with_repeating_IDs, 
+	c2_patterns_with_repeating_IDs_count,
+	width = 0.5,
+	color = 'tomato',
+	align = 'center',
+	edgecolor = 'k')
+
+plt.xlabel('Pattern ID', size = 8)
+plt.ylabel('Frequent neurons IDs count', size = 8)
+
+plt.yticks(np.arange(
+	0, 
+	max(c2_patterns_with_repeating_IDs_count)+1, 
+	step = 1))
+
+# ----------- Saving / Plotting -----------
+
+plt.savefig(
+	str(meta_data['timestamp']) + '_s' + str(meta_data['dataset_size']) + '.png',
+	bbox_inches = 'tight', 
+	dpi = 200)
+
+# plt.show()

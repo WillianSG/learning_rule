@@ -1,4 +1,12 @@
-import os, pickle
+# -*- coding: utf-8 -*-
+"""
+@author: wgirao
+
+Comments:
+- Calculates the SNR using variance instead of standard deviation as noise.
+"""
+
+import os, pickle, math
 import numpy as np
 import matplotlib.pyplot as plt
  
@@ -76,18 +84,27 @@ for folder in dir_list:
 			# a.1 if len > 1 -> use arra[-1]
 			#		else use arra[0]
 			if len(dict_array_snr[x]['snr_ffrq_out1']) > 1:
+				snr_o1 = dict_array_snr[x]['avg_ffrq_out1'][-1]/np.power(dict_array_snr[x]['std_ffrq_out1'][-1], 2)
+				snr_o2 = dict_array_snr[x]['avg_ffrq_out2'][-1]/np.power(dict_array_snr[x]['std_ffrq_out2'][-1], 2)
+
+				if math.isnan(snr_o1) and math.isnan(snr_o1):
+					print(folder, dict_array_snr[x]['pattern_id'])
+
 				update_pattern_snr_sum(
 					pattern_id = dict_array_snr[x]['pattern_id'], 
-					snr_out1 = dict_array_snr[x]['snr_ffrq_out1'][-1], 
-					snr_out2 = dict_array_snr[x]['snr_ffrq_out2'][-1], 
+					snr_out1 = snr_o1, 
+					snr_out2 = snr_o2, 
 					dict_array = dict_array_snr_summed)
 			else:
+				snr_o1 = dict_array_snr[x]['avg_ffrq_out1'][0]/np.power(dict_array_snr[x]['std_ffrq_out1'][0], 2)
+				snr_o2 = dict_array_snr[x]['avg_ffrq_out2'][0]/np.power(dict_array_snr[x]['std_ffrq_out2'][0], 2)
+				if math.isnan(snr_o1) and math.isnan(snr_o1):
+					print(folder, dict_array_snr[x]['pattern_id'])
 				update_pattern_snr_sum(
 					pattern_id = dict_array_snr[x]['pattern_id'], 
-					snr_out1 = dict_array_snr[x]['snr_ffrq_out1'][0], 
-					snr_out2 = dict_array_snr[x]['snr_ffrq_out2'][0], 
+					snr_out1 = snr_o1, 
+					snr_out2 = snr_o2, 
 					dict_array = dict_array_snr_summed)
-
 			# b. sum SNR of each pattern per out neuron
 			# c. avg them out (use counter)
 			# d. plot avg SNR per pattern per out/class
@@ -136,6 +153,9 @@ for x in range(0, len(dict_array_snr_summed)):
 #         ['2015', '2016', '2017', '2018', '2019'])
 
 x = np.arange(dataset_size)
+
+print(plot_data_y[0])
+print(plot_data_y[1])
 
 plt.bar(x+0.1, plot_data_y[0], 0.2, label = 'out1', color = 'darkblue')
 plt.bar(x-0.1, plot_data_y[1], 0.2, label = 'out2', color = 'tomato')

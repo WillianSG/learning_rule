@@ -983,7 +983,8 @@ class FeedforwardNetwork:
 		self, 
 		dataset_metadata,
 		correct_response,
-		wrong_response):
+		wrong_response,
+		epochs):
 		fn =  os.path.join(self.simulation_path, self.network_id +  '_dict_array_snr.pickle')
 
 		populations_biasing_dict = {
@@ -1002,6 +1003,8 @@ class FeedforwardNetwork:
 			pickle.dump((
 				self.dict_array_snr,
 				self.M_syn,
+				epochs,
+				self.t_run/second,
 				correct_response,
 				wrong_response,
 				dataset_metadata,
